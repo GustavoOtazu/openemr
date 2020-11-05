@@ -59,6 +59,7 @@ if ($pid == null) {
 // what do we set for the public pid?
 if (isset($_POST["pubpid"]) && ($_POST["pubpid"] != "")) {
     $mypubpid = $_POST["pubpid"];
+    $pid = $_POST["pubpid"]; // ya que vamos a utilizar el pubpid que se inserta en el campo externo como pid caso cuando se crea un paciente desde la web
 } else {
     $mypubpid = $pid;
 }

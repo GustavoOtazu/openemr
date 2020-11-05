@@ -173,7 +173,8 @@ $GLOBALS_METADATA = array(
                 '../new/new.php' => xl('Patient Search/Add Screen'),
                 '../../interface/main/finder/dynamic_finder.php' => xl('Patient Finder Screen'),
                 '../../interface/patient_tracker/patient_tracker.php?skip_timeout_reset=1' => xl('Patient Flow Board'),
-                '../../interface/main/messages/messages.php?form_active=1' => xl('Messages Screen')
+                '../../interface/main/messages/messages.php?form_active=1' => xl('Messages Screen'),
+                '../../interface/tableros/tablero1.php' => xl('Tablero 1'),
             ),
             'main_info.php',                  // default = calendar
             xl('Main Top Pane Screen(Or Default First Tab)')
@@ -187,6 +188,8 @@ $GLOBALS_METADATA = array(
                 '../new/new.php' => xl('Patient Search/Add Screen'),
                 '../../interface/main/finder/dynamic_finder.php' => xl('Patient Finder Screen'),
                 '../../interface/patient_tracker/patient_tracker.php?skip_timeout_reset=1' => xl('Patient Flow Board'),
+                '../../interface/tableros/tablero2.php' => xl('Tablero 2'),
+                '../../interface/tableros/lista_internados.php' => xl('Lista de internados'),
             ),
             '../../interface/main/messages/messages.php?form_active=1',    // default = messages
             xl('Default Second Tab')

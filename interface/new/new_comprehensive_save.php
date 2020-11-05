@@ -47,8 +47,12 @@ $newpid = 1;
 if ($result['pid'] > 1) {
     $newpid = $result['pid'];
 }
-
+// ya que vamos a utilizar el pubpid que se inserta en el campo externo como pid caso cuando se crea un paciente desde la web
+if (!empty($_POST["form_pubpid"])) {
+    $newpid = $form_pubpid;
+}
 setpid($newpid);
+
 
 if (empty($pid)) {
   // sqlStatement("unlock tables");

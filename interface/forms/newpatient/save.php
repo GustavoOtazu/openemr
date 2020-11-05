@@ -38,7 +38,11 @@ $referral_source  = (isset($_POST['form_referral_source'])) ? $_POST['form_refer
 $pos_code         = (isset($_POST['pos_code']))              ? $_POST['pos_code'] : '';
 //save therapy group if exist in external_id column
 $external_id         = isset($_POST['form_gid']) ? $_POST['form_gid'] : '';
-
+$departamento         = isset($_POST['departamento']) ? $_POST['departamento'] : '';
+$servicio         = isset($_POST['servicio']) ? $_POST['servicio'] : '';
+$cuarto         = isset($_POST['cuarto']) ? $_POST['cuarto'] : '';
+$cama         = isset($_POST['cama']) ? $_POST['cama'] : '';
+//alter TABLE `form_encounter` ADD COLUMN departamento VARCHAR(55) AFTER reason, ADD COLUMN servicio VARCHAR(55) AFTER departamento,ADD COLUMN cama VARCHAR(55) AFTER servicio,ADD COLUMN cuarto VARCHAR(55) AFTER cama,ADD COLUMN out_date date AFTER cama;
 $facilityresult = $facilityService->getById($facility_id);
 $facility = $facilityresult['name'];
 
@@ -54,7 +58,7 @@ if ($mode == 'new') {
         "New Patient Encounter",
         sqlInsert(
             "INSERT INTO form_encounter SET
-                date = ?,      
+                date = ?,
                 onset_date = ?,
                 reason = ?,
                 facility = ?,
@@ -67,7 +71,11 @@ if ($mode == 'new') {
                 encounter = ?,
                 pos_code = ?,
                 external_id = ?,
-                provider_id = ?",
+                provider_id = ?,
+                departamento=?,
+                servicio=?,
+                cama=?,
+                cuarto=?",
             [
                 $date,
                 $onset_date,
@@ -82,7 +90,11 @@ if ($mode == 'new') {
                 $encounter,
                 $pos_code,
                 $external_id,
-                $provider_id
+                $provider_id,
+                $departamento,
+                $servicio,
+                $cama,
+                $cuarto
             ]
         ),
         "newpatient",
@@ -141,7 +153,7 @@ setencounter($encounter);
 // Update the list of issues associated with this encounter.
 if (is_array($_POST['issues'])) {
     sqlStatement("DELETE FROM issue_encounter WHERE " .
-    "pid = ? AND encounter = ?", array($pid, $encounter));
+        "pid = ? AND encounter = ?", array($pid, $encounter));
     foreach ($_POST['issues'] as $issue) {
         $query = "INSERT INTO issue_encounter ( pid, list_id, encounter ) VALUES (?,?,?)";
         sqlStatement($query, array($pid,$issue,$encounter));
@@ -158,18 +170,18 @@ $result4 = sqlStatement("SELECT fe.encounter,fe.date,openemr_postcalendar_catego
     CalendarCategoryArray=new Array;
     EncounterIdArray=new Array;
     Count=0;
-        <?php
-        if (sqlNumRows($result4)>0) {
-            while ($rowresult4 = sqlFetchArray($result4)) {
-                ?>
-        EncounterIdArray[Count]=<?php echo js_escape($rowresult4['encounter']); ?>;
+    <?php
+    if (sqlNumRows($result4)>0) {
+    while ($rowresult4 = sqlFetchArray($result4)) {
+    ?>
+    EncounterIdArray[Count]=<?php echo js_escape($rowresult4['encounter']); ?>;
     EncounterDateArray[Count]=<?php echo js_escape(oeFormatShortDate(date("Y-m-d", strtotime($rowresult4['date'])))); ?>;
     CalendarCategoryArray[Count]=<?php echo js_escape(xl_appt_category($rowresult4['pc_catname'])); ?>;
-            Count++;
-                <?php
-            }
-        }
-        ?>
+    Count++;
+    <?php
+    }
+    }
+    ?>
 
     // Get the left_nav window, and the name of its sibling (top or bottom) frame that this form is in.
     // This works no matter how deeply we are nested
@@ -180,14 +192,14 @@ $result4 = sqlStatement("SELECT fe.encounter,fe.date,openemr_postcalendar_catego
     var my_win_name = w.name;
     my_left_nav.setPatientEncounter(EncounterIdArray,EncounterDateArray,CalendarCategoryArray);
     top.restoreSession();
-<?php if ($mode == 'new') { ?>
+    <?php if ($mode == 'new') { ?>
     my_left_nav.setEncounter(<?php echo js_escape(oeFormatShortDate($date)) . ", " . js_escape($encounter) . ", window.name"; ?>);
     // Load the tab set for the new encounter, w is usually the RBot frame.
     w.location.href = '<?php echo "$rootdir/patient_file/encounter/encounter_top.php"; ?>';
-<?php } else { // not new encounter ?>
+    <?php } else { // not new encounter ?>
     // Always return to encounter summary page.
     window.location.href = '<?php echo "$rootdir/patient_file/encounter/forms.php"; ?>';
-<?php } // end if not new encounter ?>
+    <?php } // end if not new encounter ?>
 
 </script>
 

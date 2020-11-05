@@ -464,7 +464,7 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
                                       "' style='height:auto;width:100%;font-size:0.9em'>\n";
 
                                     echo "<div class=''>";
-                                    $addendum = $grpname == 'Appearance' ? ' (*'. xl("need to logout/login after changing these settings") .')' : '';
+                                    $addendum = $grpname == 'Appearance' ? ' (*'. xl("necesita cerrar sesión / iniciar sesión después de cambiar esta configuración") .')' : '';
                                     echo "<div class='col-sm-12 oe-global-tab-heading'><div class='oe-pull-toward' style='font-size: 1.4em'>". xlt($grpname) ." &nbsp;</div><div style='margin-top: 5px'>" . text($addendum) ."</div></div>";
                                     echo "<div class='clearfix'></div>";
                                     if ($userMode) {
@@ -668,7 +668,7 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
                                                 "maxlength='15' value='" . attr($fldvalue) . "' />" .
                                                 "<input type='button' value='" . xla('Default'). "' onclick=\"document.forms[0].form_$i.jscolor.fromString(" . attr_js($flddef) . ")\">\n";
                                             } elseif ($fldtype == 'default_visit_category') {
-                                                $sql = "SELECT pc_catid, pc_catname, pc_cattype 
+                                                $sql = "SELECT pc_catid, pc_catname, pc_cattype
                                                 FROM openemr_postcalendar_categories
                                                 WHERE pc_active = 1 ORDER BY pc_seq";
                                                 $result = sqlStatement($sql);

@@ -123,7 +123,6 @@ function showDocument(&$drow)
 
   // show date
     echo "<td>" . text(oeFormatShortDate($docdate)) . "</td>\n";
-
   // show associated issue, if any
     echo "<td>";
     if ($auth_med) {
@@ -324,6 +323,8 @@ for ($idx=0; $idx<count($pagesizes); $idx++) {
 <table>
  <tr class='text'>
   <th><?php echo xlt('Date'); ?></th>
+  <th>Categoría</th>
+  <th>Alta/Fallecimiento</th>
 
 <?php if ($billing_view) { ?>
   <th class='billing_note'><?php echo xlt('Billing Note'); ?></th>
@@ -493,6 +494,14 @@ while ($result4 = sqlFetchArray($res4)) {
         // show encounter date
         echo "<td valign='top' title='" . attr(xl('View encounter') . ' ' . $pid . "." . $result4['encounter']) . "'>" .
             text(oeFormatShortDate($raw_encounter_date)) . "</td>\n";
+    $encounter_type = sqlQuery("SELECT pc_catname, pc_cattype FROM openemr_postcalendar_categories where pc_catid = ?", array($result4['pc_catid']));
+    echo "<td>" . xlt($encounter_type['pc_catname']) . "</td>\n";
+    if ($result4['death_date']) {
+        echo "<td>Fallecimiento en la fecha: " . date('d/m/Y',strtotime($result4['death_date'])) . "</td>\n";
+    }else{
+        echo "<td>Alta en la fecha: " . date('d/m/Y',strtotime($result4['out_date'])) . "</td>\n";
+    }
+
 
     if ($billing_view) {
         // Show billing note that you can click on to edit.

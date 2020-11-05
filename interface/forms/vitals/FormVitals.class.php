@@ -316,4 +316,12 @@ class FormVitals extends ORDataObject
     {
         parent::persist();
     }
+
+    function get_patient() {
+        $GLOBALS['pid'] = $this->pid;
+        $sql = "select * from patient_data where pid=? order by date DESC limit 0,1";
+        $resp=json_decode(json_encode(sqlQuery($sql, array($this->pid))));
+
+        return isset($resp->fname)?$resp->fname.' '.$resp->lname:'';
+    }
 }   // end of Form

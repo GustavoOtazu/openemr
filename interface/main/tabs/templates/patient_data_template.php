@@ -19,10 +19,10 @@
 ?>
 <?php
 
-   $search_any_type = $GLOBALS['search_any_patient'];
-   //$search_any_type = 'comprehensive';
-   //$search_any_type = 'dual';
-   
+$search_any_type = $GLOBALS['search_any_patient'];
+//$search_any_type = 'comprehensive';
+//$search_any_type = 'dual';
+
 if ($search_any_type == 'dual') {
     $any_search_class = "any-search-legacy";
     $search_globals_class = "btn-globals-legacy";
@@ -42,7 +42,7 @@ if ($search_any_type == 'dual') {
                            class="img-thumbnail"
                            onError="this.src = '<?php echo $GLOBALS['images_static_relative']; ?>/patient-picture-default.png'" />
                   </div>
-              <!-- /ko -->
+                <!-- /ko -->
             </div>
             <div class="patientInfo">
                 <?php echo xlt("Patient"); ?>:
@@ -53,7 +53,7 @@ if ($search_any_type == 'dual') {
                     </a>
                 <!-- /ko -->
                 <!-- ko ifnot: patient -->
-                    <?php echo xlt("None{{Patient}}");?>
+                    <?php echo xlt("Ninguno{{Patient}}");?>
                 <!-- /ko -->
                 <!-- ko if: patient -->
                     <a class="btn btn-xs btn-link" href="#" data-bind="click:clearPatient" title="<?php echo xla("Clear") ?>">
@@ -77,15 +77,15 @@ if ($search_any_type == 'dual') {
         </span>
         <span class="patientDataColumn">
         <!-- ko if: patient -->
-        <!-- ko with: patient -->
+            <!-- ko with: patient -->
             <a class="btn btn-xs btn-link" data-bind="click: clickEncounterList" href="#" title="<?php echo xla("Visit History");?>">
                 <i class="fa fa-refresh"></i>
             </a>
-            <a class="btn btn-xs btn-link" data-bind="click: clickNewEncounter" href="#" title="<?php echo xla("New Encounter");?>">
+            <a class="btn btn-xs btn-link" data-bind="click: clickNewEncounter" href="#" title="<?php echo xla("Nuevo encuentro");?>">
                 <i class="fa fa-plus"></i>
             </a>
             <div class="patientCurrentEncounter">
-                <span><?php echo xlt("Open Encounter"); ?>:</span>
+                <span><?php echo xlt("Encuentro Actual"); ?>:</span>
                 <!-- ko if:selectedEncounter() -->
                     <a data-bind="click: refreshEncounter" href="#">
                         <span data-bind="text:selectedEncounter().date()"></span>
@@ -93,7 +93,7 @@ if ($search_any_type == 'dual') {
                     </a>
                 <!-- /ko -->
                 <!-- ko if:!selectedEncounter() -->
-                    <?php echo xlt("None{{Encounter}}") ?>
+                    <?php echo xlt("Ninguno{{Encounter}}") ?>
                 <!-- /ko -->
             </div>
             <!-- ko if: encounterArray().length > 0 -->
@@ -104,7 +104,7 @@ if ($search_any_type == 'dual') {
                         data-toggle="dropdown"
                         aria-haspopup="true"
                         aria-expanded="true">
-                    <?php echo xlt("View Past Encounters"); ?>&nbsp;
+                    <?php echo xlt("Ver encuentros pasados"); ?>&nbsp;
                     (<span data-bind="text:encounterArray().length"></span>)
                     <span class="caret"></span>
                 </button>
@@ -123,60 +123,60 @@ if ($search_any_type == 'dual') {
                 </ul>
             </div>
             <!-- /ko -->
-        <!-- /ko -->
-        <!-- /ko -->
+            <!-- /ko -->
+            <!-- /ko -->
         </span>
         <!-- ko if: user -->
         <!-- ko with: user -->
         <!-- ko if:messages() -->
-            <span class="messagesColumn">
+        <span class="messagesColumn">
                 <a class="btn btn-default" href="#" data-bind="click: viewMessages" title="<?php echo xla("View Messages");?>">
                     <i class="fa fa-envelope"></i>&nbsp;<span class="label label-danger" style="display:inline" data-bind="text: messages()"></span>
                 </a>
             </span>
         <!-- /ko -->
         <!-- ko if: portal() -->
-            <div class="messagesColumn btn-group dropdown">
-                <button class="btn btn-default btn-md dropdown-toggle"
-                        type="button" id="portalMsgAlerts"
-                        data-toggle="dropdown"
-                        aria-haspopup="true"
-                        aria-expanded="true">
-                    <?php echo xlt("Portal Alerts"); ?>&nbsp;
-                    <span class="label label-danger" data-bind="text: portalAlerts()"></span>
-                    <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="portalMsgAlerts">
-                    <li style="display: inline-flex;">
-                        <a href="#" data-bind="click: viewPortalMail">
-                            <i class="fa fa-envelope-o"></i>&nbsp;<?php echo xlt("Portal Mail"); ?>&nbsp;
-                            <span class="label label-success" style="display:inline" data-bind="text: portalMail()"></span>
-                        </a>
-                    </li>
-                    <li class="divider"></li>
-                    <li style="display: inline-flex;">
-                        <a href="#" data-bind="click: viewPortalAudits">
-                            <i class="fa fa-align-justify"></i>&nbsp;<?php echo xlt("Portal Audits"); ?>&nbsp;
-                            <span class="label label-success" style="display:inline"
-                                  data-bind="text: portalAudits()"></span>
-                        </a>
-                    </li>
-                    <li class="divider"></li>
-                    <li style="display: inline-flex;">
-                        <a href="#" data-bind="click: viewPortalChats">
-                            <i class="fa fa-envelope"></i>&nbsp;<?php echo xlt("Portal Chats"); ?>&nbsp;
-                            <span class="label label-success" style="display:inline" data-bind="text: portalChats()"></span>
-                        </a>
-                    </li>
-                    <li class="divider"></li>
-                    <li style="display: inline-flex;">
-                        <a href="#" data-bind="click: viewPortalPayments">
-                            <i class="fa fa-envelope"></i>&nbsp;<?php echo xlt("Portal Payments"); ?>&nbsp;
-                            <span class="label label-success" style="display:inline" data-bind="text: portalPayments()"></span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+        <div class="messagesColumn btn-group dropdown">
+            <button class="btn btn-default btn-md dropdown-toggle"
+                    type="button" id="portalMsgAlerts"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="true">
+                <?php echo xlt("Portal Alerts"); ?>&nbsp;
+                <span class="label label-danger" data-bind="text: portalAlerts()"></span>
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="portalMsgAlerts">
+                <li style="display: inline-flex;">
+                    <a href="#" data-bind="click: viewPortalMail">
+                        <i class="fa fa-envelope-o"></i>&nbsp;<?php echo xlt("Portal Mail"); ?>&nbsp;
+                        <span class="label label-success" style="display:inline" data-bind="text: portalMail()"></span>
+                    </a>
+                </li>
+                <li class="divider"></li>
+                <li style="display: inline-flex;">
+                    <a href="#" data-bind="click: viewPortalAudits">
+                        <i class="fa fa-align-justify"></i>&nbsp;<?php echo xlt("Portal Audits"); ?>&nbsp;
+                        <span class="label label-success" style="display:inline"
+                              data-bind="text: portalAudits()"></span>
+                    </a>
+                </li>
+                <li class="divider"></li>
+                <li style="display: inline-flex;">
+                    <a href="#" data-bind="click: viewPortalChats">
+                        <i class="fa fa-envelope"></i>&nbsp;<?php echo xlt("Portal Chats"); ?>&nbsp;
+                        <span class="label label-success" style="display:inline" data-bind="text: portalChats()"></span>
+                    </a>
+                </li>
+                <li class="divider"></li>
+                <li style="display: inline-flex;">
+                    <a href="#" data-bind="click: viewPortalPayments">
+                        <i class="fa fa-envelope"></i>&nbsp;<?php echo xlt("Portal Payments"); ?>&nbsp;
+                        <span class="label label-success" style="display:inline" data-bind="text: portalPayments()"></span>
+                    </a>
+                </li>
+            </ul>
+        </div>
         <!-- /ko -->
         <!-- /ko -->
         <!-- /ko -->

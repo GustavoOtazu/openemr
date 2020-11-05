@@ -55,14 +55,14 @@ if (!defined('IS_WINDOWS')) {
 // Auto collect the full absolute directory path for openemr.
 $webserver_root = dirname(dirname(__FILE__));
 if (IS_WINDOWS) {
- //convert windows path separators
+    //convert windows path separators
     $webserver_root = str_replace("\\", "/", $webserver_root);
 }
 
 // Collect the apache server document root (and convert to windows slashes, if needed)
 $server_document_root = realpath($_SERVER['DOCUMENT_ROOT']);
 if (IS_WINDOWS) {
- //convert windows path separators
+    //convert windows path separators
     $server_document_root = str_replace("\\", "/", $server_document_root);
 }
 
@@ -131,13 +131,13 @@ if (empty($_SESSION['site_id']) || !empty($_GET['site'])) {
     }
 
     if (isset($_SESSION['site_id']) && ($_SESSION['site_id'] != $tmp)) {
-      // This is to prevent using session to penetrate other OpenEMR instances within same multisite module
+        // This is to prevent using session to penetrate other OpenEMR instances within same multisite module
         session_unset(); // clear session, clean logout
         if (isset($landingpage) && !empty($landingpage)) {
-          // OpenEMR Patient Portal use
+            // OpenEMR Patient Portal use
             header('Location: index.php?site=' . urlencode($tmp));
         } else {
-          // Main OpenEMR use
+            // Main OpenEMR use
             header('Location: ../login/login.php?site=' . urlencode($tmp)); // Assuming in the interface/main directory
         }
 
@@ -146,7 +146,7 @@ if (empty($_SESSION['site_id']) || !empty($_GET['site'])) {
 
     if (!isset($_SESSION['site_id']) || $_SESSION['site_id'] != $tmp) {
         $_SESSION['site_id'] = $tmp;
-      //error_log("Session site ID has been set to '$tmp'"); // debugging
+        //error_log("Session site ID has been set to '$tmp'"); // debugging
     }
 }
 
@@ -280,19 +280,19 @@ $GLOBALS['sell_non_drug_products'] = 0;
 
 $glrow = sqlQuery("SHOW TABLES LIKE 'globals'");
 if (!empty($glrow)) {
-  // Collect user specific settings from user_settings table.
-  //
+    // Collect user specific settings from user_settings table.
+    //
     $gl_user = array();
-  // Collect the user id first
+    // Collect the user id first
     $temp_authuserid = '';
     if (!empty($_SESSION['authUserID'])) {
-      //Set the user id from the session variable
+        //Set the user id from the session variable
         $temp_authuserid = $_SESSION['authUserID'];
     } else {
         if (!empty($_POST['authUser'])) {
             $temp_sql_ret = sqlQuery("SELECT `id` FROM `users` WHERE `username` = ?", array($_POST['authUser']));
             if (!empty($temp_sql_ret['id'])) {
-              //Set the user id from the login variable
+                //Set the user id from the login variable
                 $temp_authuserid = $temp_sql_ret['id'];
             }
         }
@@ -307,15 +307,15 @@ if (!empty($glrow)) {
             array($temp_authuserid)
         );
         for ($iter=0; $row=sqlFetchArray($glres_user); $iter++) {
-          //remove global_ prefix from label
+            //remove global_ prefix from label
             $row['setting_label'] = substr($row['setting_label'], 7);
             $gl_user[$iter]=$row;
         }
     }
 
-  // Set global parameters from the database globals table.
-  // Some parameters require custom handling.
-  //
+    // Set global parameters from the database globals table.
+    // Some parameters require custom handling.
+    //
     $GLOBALS['language_menu_show'] = array();
     $glres = sqlStatement(
         "SELECT gl_name, gl_index, gl_value FROM globals " .
@@ -324,7 +324,7 @@ if (!empty($glrow)) {
     while ($glrow = sqlFetchArray($glres)) {
         $gl_name  = $glrow['gl_name'];
         $gl_value = $glrow['gl_value'];
-      // Adjust for user specific settings
+        // Adjust for user specific settings
         if (!empty($gl_user)) {
             foreach ($gl_user as $setting) {
                 if ($gl_name == $setting['setting_label']) {
@@ -359,28 +359,28 @@ if (!empty($glrow)) {
                 $GLOBALS['sell_non_drug_products'] = 2;
             }
         } elseif ($gl_name == 'gbl_time_zone') {
-          // The default PHP time zone is set here if it was specified, and is used
-          // as source data for the MySQL time zone here and in some other places
-          // where MySQL connections are opened.
+            // The default PHP time zone is set here if it was specified, and is used
+            // as source data for the MySQL time zone here and in some other places
+            // where MySQL connections are opened.
             if ($gl_value) {
                 date_default_timezone_set($gl_value);
             }
 
-          // Synchronize MySQL time zone with PHP time zone.
+            // Synchronize MySQL time zone with PHP time zone.
             sqlStatement("SET time_zone = ?", array((new DateTime())->format("P")));
         } else {
             $GLOBALS[$gl_name] = $gl_value;
         }
     }
 
-  // Language cleanup stuff.
+    // Language cleanup stuff.
     $GLOBALS['language_menu_login'] = false;
     if ((count($GLOBALS['language_menu_show']) > 1) || $GLOBALS['language_menu_showall']) {
         $GLOBALS['language_menu_login'] = true;
     }
 
-  // Added this $GLOBALS['concurrent_layout'] set to 3 in order to support legacy forms
-  // that may use this; note this global has been removed from the standard codebase.
+    // Added this $GLOBALS['concurrent_layout'] set to 3 in order to support legacy forms
+    // that may use this; note this global has been removed from the standard codebase.
     $GLOBALS['concurrent_layout'] = 3;
 
 // Additional logic to override theme name.
@@ -388,7 +388,7 @@ if (!empty($glrow)) {
     $rtl_override = false;
     if (isset($_SESSION['language_direction'])) {
         if ($_SESSION['language_direction'] == 'rtl' &&
-        !strpos($GLOBALS['css_header'], 'rtl')  ) {
+            !strpos($GLOBALS['css_header'], 'rtl')  ) {
             // the $css_header_value is set above
             $rtl_override = true;
         }
@@ -396,13 +396,13 @@ if (!empty($glrow)) {
         //this will support the onsite patient portal which will have a language choice but not yet a set language direction
         $_SESSION['language_direction'] = getLanguageDir($_SESSION['language_choice']);
         if ($_SESSION['language_direction'] == 'rtl' &&
-        !strpos($GLOBALS['css_header'], 'rtl')) {
+            !strpos($GLOBALS['css_header'], 'rtl')) {
             // the $css_header_value is set above
             $rtl_override = true;
         }
     } else {
         //$_SESSION['language_direction'] is not set, so will use the default language
-        $default_lang_id = sqlQuery('SELECT lang_id FROM lang_languages WHERE lang_description = ?', array($GLOBALS['language_default']));
+        $default_lang_id = sqlQuery('SELECT lang_id FROM lang_languages WHERE lang_description = "Spanish (Latin American)" ');
 
         if (getLanguageDir($default_lang_id['lang_id']) === 'rtl' && !strpos($GLOBALS['css_header'], 'rtl')) {
 // @todo eliminate 1 SQL query
@@ -430,16 +430,16 @@ if (!empty($glrow)) {
     unset($temp_css_theme_name, $new_theme, $rtl_override);
     // end of RTL section
 
-  //
-  // End of globals table processing.
+    //
+    // End of globals table processing.
 } else {
-  // Temporary stuff to handle the case where the globals table does not
-  // exist yet.  This will happen in sql_upgrade.php on upgrading to the
-  // first release containing this table.
+    // Temporary stuff to handle the case where the globals table does not
+    // exist yet.  This will happen in sql_upgrade.php on upgrading to the
+    // first release containing this table.
     $GLOBALS['language_menu_login'] = true;
     $GLOBALS['language_menu_showall'] = true;
-    $GLOBALS['language_menu_show'] = array('English (Standard)','Swedish');
-    $GLOBALS['language_default'] = "English (Standard)";
+    $GLOBALS['language_menu_show'] = array('Spanish (Latin American)','Swedish');
+    $GLOBALS['language_default'] = "Spanish (Latin American)";
     $GLOBALS['translate_layout'] = true;
     $GLOBALS['translate_lists'] = true;
     $GLOBALS['translate_gacl_groups'] = true;

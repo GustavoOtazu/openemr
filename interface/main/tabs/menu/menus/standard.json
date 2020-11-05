@@ -15,6 +15,68 @@
       "!ippf_specific"
     ]
   },
+    {
+        "label": "Tableros",
+        "menu_id": "tab0",
+        "children": [{
+            "label": "Tablero 1",
+            "menu_id": "tab0",
+            "target": "tabl",
+            "url": "/interface/tableros/tablero1.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+                "patients",
+                "appt"
+            ],
+            "global_req_strict": [
+                "!disable_calendar",
+                "!ippf_specific"
+            ]
+        },
+            {
+                "label": "Tablero 2",
+                "menu_id": "tab2",
+                "target": "tabl",
+                "url": "/interface/tableros/tablero2.php",
+                "children": [],
+                "requirement": 0,
+                "acl_req": [
+                    "patients",
+                    "appt"
+                ],
+                "global_req_strict": [
+                    "!disable_calendar",
+                    "!ippf_specific"
+                ]
+            },
+            {
+                "label": "Lista de Internados",
+                "menu_id": "tab3",
+                "target": "tabi",
+                "url": "/interface/tableros/lista_internados.php",
+                "children": [],
+                "requirement": 0,
+                "acl_req": [
+                    "patients",
+                    "appt"
+                ],
+                "global_req_strict": [
+                    "!disable_calendar",
+                    "!ippf_specific"
+                ]
+            }
+        ],
+        "requirement": 0,
+        "acl_req": [
+            "patients",
+            "appt"
+        ],
+        "global_req_strict": [
+            "!disable_calendar",
+            "!ippf_specific"
+        ]
+    },
   {
     "label": "Flow Board",
     "menu_id": "pfb0",
@@ -1954,7 +2016,7 @@
         "children": [],
         "requirement": 0,
         "global_req": "track_anything_state"
-      },      
+      },
       {
         "label": "New Documents",
         "menu_id": "adm0",

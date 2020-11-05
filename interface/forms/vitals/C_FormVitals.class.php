@@ -32,7 +32,7 @@ class C_FormVitals extends Controller
         $this->assign("DONT_SAVE_LINK", $GLOBALS['form_exit_url']);
         $this->assign("STYLE", $GLOBALS['style']);
 
-      // Options for units of measurement and things to omit.
+        // Options for units of measurement and things to omit.
         $this->assign("units_of_measurement", $GLOBALS['units_of_measurement']);
         $this->assign("gbl_vitals_options", $GLOBALS['gbl_vitals_options']);
 
@@ -68,11 +68,11 @@ class C_FormVitals extends Controller
 
         //Combined query for retrieval of vital information which is not deleted
         $sql = "SELECT fv.*, fe.date AS encdate " .
-        "FROM form_vitals AS fv, forms AS f, form_encounter AS fe WHERE " .
-        "fv.id != ? and fv.pid = ? AND " .
-        "f.formdir = 'vitals' AND f.deleted = 0 AND f.form_id = fv.id AND " .
-        "fe.pid = f.pid AND fe.encounter = f.encounter " .
-        "ORDER BY encdate DESC, fv.date DESC";
+            "FROM form_vitals AS fv, forms AS f, form_encounter AS fe WHERE " .
+            "fv.id != ? and fv.pid = ? AND " .
+            "f.formdir = 'vitals' AND f.deleted = 0 AND f.form_id = fv.id AND " .
+            "fe.pid = f.pid AND fe.encounter = f.encounter " .
+            "ORDER BY encdate DESC, fv.date DESC";
         $res = sqlStatement($sql, array($form_id, $GLOBALS['pid']));
 
         // get the patient's current age
@@ -84,24 +84,27 @@ class C_FormVitals extends Controller
 
         $i = 1;
         while ($result = sqlFetchArray($res)) {
-            $results[$i]['id'] = $result['id'];
-            $results[$i]['encdate'] = substr($result['encdate'], 0, 10);
-            $results[$i]['date'] = $result['date'];
-            $results[$i]['activity'] = $result['activity'];
-            $results[$i]['bps'] = $result['bps'];
-            $results[$i]['bpd'] = $result['bpd'];
-            $results[$i]['weight'] = $result['weight'];
-            $results[$i]['height'] = $result['height'];
-            $results[$i]['temperature'] = $result['temperature'];
-            $results[$i]['temp_method'] = $result['temp_method'];
-            $results[$i]['pulse'] = $result['pulse'];
-            $results[$i]['respiration'] = $result['respiration'];
-            $results[$i]['BMI'] = $result['BMI'];
-            $results[$i]['BMI_status'] = $result['BMI_status'];
-            $results[$i]['note'] = $result['note'];
-            $results[$i]['waist_circ'] = $result['waist_circ'];
-            $results[$i]['head_circ'] = $result['head_circ'];
-            $results[$i]['oxygen_saturation'] = $result['oxygen_saturation'];
+
+            if ($result['date'] != '0000-00-00 00:00:00') {
+                $results[$i]['id'] = $result['id'];
+                $results[$i]['encdate'] = substr($result['encdate'], 0, 10);
+                $results[$i]['date'] = $result['date'];
+                $results[$i]['activity'] = $result['activity'];
+                $results[$i]['bps'] = $result['bps'];
+                $results[$i]['bpd'] = $result['bpd'];
+                $results[$i]['weight'] = $result['weight'];
+                $results[$i]['height'] = $result['height'];
+                $results[$i]['temperature'] = $result['temperature'];
+                $results[$i]['temp_method'] = $result['temp_method'];
+                $results[$i]['pulse'] = $result['pulse'];
+                $results[$i]['respiration'] = $result['respiration'];
+                $results[$i]['BMI'] = $result['BMI'];
+                $results[$i]['BMI_status'] = $result['BMI_status'];
+                $results[$i]['note'] = $result['note'];
+                $results[$i]['waist_circ'] = $result['waist_circ'];
+                $results[$i]['head_circ'] = $result['head_circ'];
+                $results[$i]['oxygen_saturation'] = $result['oxygen_saturation'];
+            }
             $i++;
         }
 
