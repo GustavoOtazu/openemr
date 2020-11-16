@@ -163,7 +163,7 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
         // Handler for cancel clicked when not creating a new encounter.
         // Just reload the view mode.
         function cancelClickedOld() {
-            location.href = '<?php echo "$rootdir/patient_file/encounter/forms.php"; ?>';
+            top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>"+"/interface/tableros/lista_internados.php";
             return false;
         }
 
