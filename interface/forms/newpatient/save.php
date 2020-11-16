@@ -128,7 +128,11 @@ if ($mode == 'new') {
         $sensitivity,
         $referral_source,
         $pos_code,
-        $id
+        $id,
+        $departamento,
+        $servicio,
+        $cama,
+        $cuarto
     );
     sqlStatement(
         "UPDATE form_encounter SET
@@ -140,7 +144,11 @@ if ($mode == 'new') {
             facility_id = ?,
             billing_facility = ?,
             sensitivity = ?,
-            referral_source = ?,
+            referral_source = ?, departamento=?,
+                servicio=?,
+                cama=?,
+                cuarto=?,
+
             pos_code = ? WHERE id = ?",
         $sqlBindArray
     );

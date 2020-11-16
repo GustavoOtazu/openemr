@@ -34,9 +34,11 @@ require_once("../globals.php");
             <div class="box box-primary">
                 <div class="box-header">
                 </div>
-                <div class="box-body" id="body-vitals-tab">
-                    <div class="alert alert-warning text-center" role="alert">
-                        <p>- No se encontraron datos -</p>
+                <div class="box-body">
+                    <div class="row" style="margin-bottom: 20px" id="body-vitals-tab">
+                        <div class="alert alert-warning text-center col-md-12" role="alert">
+                            <p>- No se encontraron datos -</p>
+                        </div>
                     </div>
                 </div>
 
@@ -111,7 +113,7 @@ require_once("../globals.php");
         $('#body-vitals-tab').html('');
         $.each(result, function (pubpid, index) {
             existen_datos = true;
-            $('#body-vitals-tab').append('<div class="row" style="margin-bottom: 20px"><div class="col-md-12"><div id="chartContainer'+pubpid+'" style="height: 200px; width: 100%;"></div></div></div>');
+            $('#body-vitals-tab').append('<div class="col-md-6"><div id="chartContainer'+pubpid+'" style="height: 200px; width: 100%;"></div></div>');
             new CanvasJS.Chart("chartContainer"+pubpid,
                 {
                     animationEnabled: true,

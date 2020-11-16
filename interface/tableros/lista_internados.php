@@ -21,6 +21,7 @@ use OpenEMR\OeUI\OemrUI;
 $id_encounter = $_GET['id_encounter'];
 $nombre_paciente = $_GET['paciente'];
 $death_date = $_GET['death_date'];
+$update = $_GET['update'];
 if ($death_date) {
     sqlStatement("UPDATE form_encounter set out_date= ? , death_date= ? where id = ?", array($death_date,$death_date,$id_encounter));
     $id_encounter = null;
@@ -99,6 +100,14 @@ for ($iter=0; $row=sqlFetchArray($res); $iter++) {
                         </button>
                     </div>
                 <?php } ?>
+                <?php if ($update!= null) { ?>
+                    <div class="alert alert-success alert-dismissible show" role="alert">
+                        Se actualizó al paciente con éxito!
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar" style="color: black !important;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                <?php } ?>
                 <?php
                     $id_encounter= null;
                 $_GET['id_encounter'] = null;
@@ -129,10 +138,10 @@ for ($iter=0; $row=sqlFetchArray($res); $iter++) {
                             Servicio
                         </th>
                         <th class="head">
-                            Cama
+                            Cuarto
                         </th>
                         <th class="head">
-                            Cuarto
+                            Cama
                         </th>
                         <th class="head">
                             Acciones
@@ -151,6 +160,7 @@ for ($iter=0; $row=sqlFetchArray($res); $iter++) {
                                 '<td>' . text(strtoupper($result['cuarto'])) . '</td>' .
                                 '<td>' . text($result['cama']) . '</td>' .
                                 '<td>
+<button class="btn btn-info btn-editar" type="button" data-id="'. attr($result['id']) .'">Editar</button>
 <button class="btn btn-default btn-alta" type="button" id="'. attr($result['id']) .'" data-title="Dar de alta al paciente: '. $result['paciente'] .'" data-paciente="'. $result['paciente'] .'">Dar de alta al paciente</button>
 <button class="btn btn-danger btn-death" type="button" data-id="'. attr($result['id']) .'" data-title="Registrar muerte del paciente: '. $result['paciente'] .'" data-paciente="'. $result['paciente'] .'">Registrar muerte</button>
 </td>'.
@@ -177,7 +187,7 @@ for ($iter=0; $row=sqlFetchArray($res); $iter++) {
                         <div class="row" id="body_death" style="display: none">
                             <div class="col-md-6">
                                 <label for="death_date">Registrar fecha de muerte</label>
-                                <input id="death_date" name="death_date" class="form-control" type="date" required="required"/>
+                                <input id="death_date" name="death_date" class="form-control" type="date"/>
                             </div>
                         </div>
                     </div>
@@ -194,6 +204,16 @@ for ($iter=0; $row=sqlFetchArray($res); $iter++) {
 </div>
 <?php $oemr_ui->oeBelowContainerDiv();?>
 <script language="JavaScript" type="text/javascript">
+    var webroot_url = <?php echo js_escape($web_root); ?>;
+    var xl_strings_tabs_view_model = <?php echo json_encode(array(
+            'encounter_locked' => xla('This encounter is locked. No new forms can be added.'),
+            'must_select_patient'  => $GLOBALS['enable_group_therapy'] ? xla('You must first select or add a patient or therapy group.') : xla('You must first select or add a patient.'),
+            'must_select_encounter'    => xla('You must first select or create an encounter.'),
+            'new' => xla('New')
+        ));
+        ?>;
+    // Set the csrf_token_js token that is used in the below js/tabs_view_model.js script
+    var csrf_token_js = <?php echo js_escape(CsrfUtils::collectCsrfToken()); ?>;
     $(function () {
         $('#inp_table').dataTable({
             order: [
@@ -216,6 +236,7 @@ for ($iter=0; $row=sqlFetchArray($res); $iter++) {
         $(document).on('click', '.btn-death', function () {
             let id_encounter = $(this).data('id');
             let nombre = $(this).data('title');
+            $('#death_date').attr('required',true);
             $('#body_alta').hide();
             $('#body_death').show();
             $('#modal_title').html("<b>"+nombre+'</b>');
@@ -223,6 +244,10 @@ for ($iter=0; $row=sqlFetchArray($res); $iter++) {
             $('#id_encounter').val(id_encounter);
             $('#nombre_paciente').val($(this).data('paciente'));
             $('#modal_alta').modal('toggle');
+        });
+        $(document).on('click','.btn-editar',function () {
+            let id_encounter = $(this).data('id');
+            top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>"+"/interface/tableros/editar_internado.php?id="+id_encounter;
         });
     });
 </script>
