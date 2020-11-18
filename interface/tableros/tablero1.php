@@ -139,7 +139,7 @@ require_once("../globals.php");
                         '                    </div>\n' +
 
 
-                        '                    <div class="col-xs-6 col-md-2 text-center '+((display_bbps===true || display_bbps==='true')? "":"hidden")+'"  id="bps'+pid+'">\n' +
+                        '                    <div class="col-xs-6 col-md-2  '+((display_bbps===true || display_bbps==='true')? "":"hidden")+'"  id="bps'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+bps+'"  data-width="100" data-height="100"  data-max="300" data-fgColor="#3c8dbc" readonly>\n' +
                         '\n' +
                         '                        <div class="knob-label">Presión arterial sistólica</div>\n' +
@@ -159,77 +159,60 @@ require_once("../globals.php");
                         '                    <!-- ./col -->\n' +
                         '                    <div class="col-xs-6 col-md-2 text-center '+((display_respiracion===true || display_respiracion==='true')? "":"hidden")+' " id="respiracion'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+respiracion+'" data-width="100" data-height="100" data-max="300" data-fgColor="#00c0ef" readonly>\n' +
-                        '\n' +
                         '                        <div class="knob-label">Respiración</div>\n' +
                         '                    </div>\n' +
                         '                    <div class="col-xs-6 col-md-2 text-center  '+((display_pulse===true || display_pulse==='true')? "":"hidden")+'" id="pulse'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+pulse+'" data-width="100" data-height="100" data-max="300" data-fgColor="#1CEB05" readonly>\n' +
-                        '\n' +
                         '                        <div class="knob-label">Pulso</div>\n' +
                         '                    </div>\n' +
                         '                    <div class="col-xs-6 col-md-2 text-center '+((display_oxygen_saturation===true|| display_oxygen_saturation==='true')? "":"hidden")+' " id="oxygen_saturation'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+oxygen_saturation+'" data-width="100" data-height="100" data-max="300" data-fgColor="#DEC112" readonly>\n' +
-                        '\n' +
                         '                        <div class="knob-label">Saturación de oxígeno</div>\n' +
                         '                    </div>\n' +
-
-
-
-
-
-
                         '                    <div class="col-xs-6 col-md-2 text-center '+((display_hr===true|| display_hr==='true')? "":"hidden")+' " id="hr'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+hr+'" data-width="100" data-height="100" data-max="300" data-fgColor="#ED4F37" readonly>\n' +
-                        '\n' +
                         '                        <div class="knob-label">Ritmo cardiaco</div>\n' +
                         '                    </div>\n' +
                         '                    <div class="col-xs-6 col-md-2 text-center '+((display_vpc===true|| display_vpc==='true')? "":"hidden")+' " id="vpc'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+vpc+'" data-width="100" data-height="100" data-max="300" data-fgColor="#73EF93" readonly>\n' +
-                        '\n' +
                         '                        <div class="knob-label">Contracciones ventriculares prematuras</div>\n' +
                         '                    </div>\n' +
                         '                    <div class="col-xs-6 col-md-2 text-center '+((display_lvp_s===true|| display_lvp_s==='true')? "":"hidden")+' " id="lvp_s'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+lvp_s+'" data-width="100" data-height="100" data-max="300" data-fgColor="#F2B0D5" readonly>\n' +
-                        '\n' +
                         '                        <div class="knob-label">Pr. ventricular izq sis</div>\n' +
                         '                    </div>\n' +
                         '                    <div class="col-xs-6 col-md-2 text-center '+((display_lvp_d===true|| display_lvp_d==='true')? "":"hidden")+' " id="lvp_d'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+lvp_d+'" data-width="100" data-height="100" data-max="300" data-fgColor="#B948BD" readonly>\n' +
-                        '\n' +
                         '                        <div class="knob-label">Pr. ventricular izq diast</div>\n' +
                         '                    </div>\n' +
                         '                    <div class="col-xs-6 col-md-2 text-center '+((display_pr_spo2===true|| display_pr_spo2==='true')? "":"hidden")+' " id="pr_spo2'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+pr_spo2+'" data-width="100" data-height="100" data-max="300" data-fgColor="#DEC112" readonly>\n' +
-                        '\n' +
                         '                        <div class="knob-label">Frec. del pulso por sat. de oxígeno</div>\n' +
                         '                    </div>\n' +
-                        '                    <div class="col-xs-6 col-md-2 text-center '+((display_st1===true|| display_st1==='true')? "":"hidden")+' " id="st1'+pid+'">\n' +
+                        '                    <div class="col-xs-6 col-md-2  text-center'+((display_st1===true|| display_st1==='true')? "":"hidden")+' " id="st1'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+st1+'" data-width="100" data-height="100" data-max="300" data-fgColor="#48BDA7" readonly>\n' +
-                        '\n' +
                         '                        <div class="knob-label">ST1</div>\n' +
                         '                    </div>\n' +
-                        '                    <div class="row"><div class="col-xs-6 col-md-2 text-center '+((display_st2===true|| display_st2==='true')? "":"hidden")+' " id="st2'+pid+'">\n' +
+                        '                </div><div class="row">' +
+                        '                    <div class="col-xs-6 col-md-2 text-center '+((display_st2===true|| display_st2==='true')? "":"hidden")+' " id="st2'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+st2+'" data-width="100" data-height="100" data-max="300" data-fgColor="#F0845B" readonly>\n' +
-                        '\n' +
                         '                        <div class="knob-label">ST2</div>\n' +
                         '                    </div>\n' +
-                        '                    <div class="col-xs-6 col-md-2 text-center '+((display_st3===true|| display_st3==='true')? "":"hidden")+' " id="st3'+pid+'">\n' +
+                        '                    <div class="col-xs-6 col-md-2 text-center'+((display_st3===true|| display_st3==='true')? "":"hidden")+' " id="st3'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+st3+'" data-width="100" data-height="100" data-max="300" data-fgColor="#6B62BD" readonly>\n' +
-                        '\n' +
                         '                        <div class="knob-label">ST3</div>\n' +
                         '                    </div>\n' +
                         '                    <div class="col-xs-6 col-md-2 text-center '+((display_nibps_sys===true|| display_nibps_sys==='true')? "":"hidden")+' " id="nibps_sys'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+nibps_sys+'" data-width="100" data-height="100" data-max="300" data-fgColor="#5985BD" readonly>\n' +
-                        '\n' +
                         '                        <div class="knob-label">Presión No Invasiva sis</div>\n' +
                         '                    </div>\n' +
                         '                    <div class="col-xs-6 col-md-2 text-center '+((display_nibps_dys===true|| display_nibps_dys==='true')? "":"hidden")+' " id="nibps_dys'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+nibps_dys+'" data-width="100" data-height="100" data-max="300" data-fgColor="#F0E189" readonly>\n' +
-                        '\n' +
                         '                        <div class="knob-label">Presión No Invasiva Dis</div>\n' +
-                        '                    </div></div>\n' +
-                        '                </div></div><hr style="border-top: 1px solid black;">');
+                        '                    </div>\n'+
+                        '</div></div><hr style="border-top: 1px solid black;margin-bottom: 10px;">');
                 }
+
                 $('.knob').knob();
             }
         }
