@@ -1714,7 +1714,6 @@ CREATE TABLE `form_encounter` (
                                   KEY `encounter_date` (`date`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 ;
 alter TABLE `form_encounter` ADD COLUMN departamento VARCHAR(55) AFTER reason, ADD COLUMN servicio VARCHAR(55) AFTER departamento,ADD COLUMN cama VARCHAR(55) AFTER servicio,ADD COLUMN cuarto VARCHAR(55) AFTER cama,ADD COLUMN out_date date AFTER cama;
-alter TABLE `form_encounter` ADD COLUMN death_date date AFTER out_date ;
 -----------------------------------------------------------
 
 --
@@ -10574,3 +10573,13 @@ CREATE TABLE `benefit_eligibility` (
                                        `response_create_date` date DEFAULT NULL,
                                        `response_modify_date` date DEFAULT NULL
 ) ENGINE=InnoDB;
+alter TABLE `form_vitals` ADD COLUMN hr varchar(40) default NULL AFTER bps ;
+alter TABLE `form_vitals` ADD COLUMN vpc varchar(40) default NULL AFTER bps ;
+alter TABLE `form_vitals` ADD COLUMN lvp_s varchar(40) default NULL AFTER bps ;
+alter TABLE `form_vitals` ADD COLUMN lvp_d varchar(40) default NULL AFTER bps ;
+alter TABLE `form_vitals` ADD COLUMN pr_spo2 varchar(40) default NULL AFTER bps ;
+alter TABLE `form_vitals` ADD COLUMN st1 varchar(40) default NULL AFTER bps ;
+alter TABLE `form_vitals` ADD COLUMN st2 varchar(40) default NULL AFTER bps ;
+alter TABLE `form_vitals` ADD COLUMN st3 varchar(40) default NULL AFTER bps ;
+alter TABLE `form_vitals` ADD COLUMN nibps_sys varchar(40) default NULL AFTER bps ;
+alter TABLE `form_vitals` ADD COLUMN nibps_dys varchar(40) default NULL AFTER bps ;

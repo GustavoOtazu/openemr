@@ -24,7 +24,17 @@ for ($iter=0; $row=sqlFetchArray($res); $iter++) {
             "BMI"=>$vitals["BMI"], //Índice de masa corporal
             "oxygen_saturation"=>$vitals["oxygen_saturation"],
             "date"=>date('H:i:s',strtotime($vitals["date"])),
-            "pid"=>$vitals["pid"]
+            "pid"=>$vitals["pid"],
+            "hr"=>$vitals["hr"],
+            "vpc"=>$vitals["vpc"],
+            "lvp_s"=>$vitals["lvp_s"],
+            "lvp_d"=>$vitals["lvp_d"],
+            "pr_spo2"=>$vitals["pr_spo2"],
+            "st1"=>$vitals["st1"],
+            "st2"=>$vitals["st2"],
+            "st3"=>$vitals["st3"],
+            "nibps_sys"=>$vitals["nibps_sys"],
+            "nibps_dys"=>$vitals["nibps_dys"],
         ];
     }
 

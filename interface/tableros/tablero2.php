@@ -26,10 +26,14 @@ require_once("../globals.php");
     <link rel="shortcut icon" href="../../public/images/favicon.ico" />
     <script type="text/javascript" src="../../public/assets/jquery-ui/jquery-ui.js"></script>
     <script src="../../public/assets/canvas/canvasjs.min.js"></script>
+    <style type="text/css>">
+        .canvasjs-chart-credit{
+            display: none !important;
+        }
+    </style>
 </HEAD>
 <body class="body_top">
-<div class="container">
-    <div class="row">
+    <div class="row" style="margin: 10px">
         <div class="col-sm-12">
             <div class="box box-primary">
                 <div class="box-header">
@@ -44,7 +48,6 @@ require_once("../globals.php");
 
             </div>
         </div>
-    </div>
 </div>
 </body>
 
@@ -79,6 +82,17 @@ require_once("../globals.php");
                 $datos_pulso=[];
                 $datos_bmi=[];
                 $datos_oxy=[];
+
+                $datos_hr=[];
+                $datos_vpc=[];
+                $datos_lvp_d=[];
+                $datos_lvp_s=[];
+                $datos_pr_spo2=[];
+                $datos_st1=[];
+                $datos_st2=[];
+                $datos_st3=[];
+                $datos_nibps_sys=[];
+                $datos_nibps_dys=[];
                 $datos =[];
                 while($row = sqlFetchArray($results)) {
                     $datos_bps[]=["x"=> (strtotime($row["date"]) *1000), "y"=> $row["bps"]];
@@ -88,6 +102,18 @@ require_once("../globals.php");
                     $datos_resp[] = ["x"=> (strtotime($row["date"]) *1000), "y"=> $row["respiration"]];
                     $datos_temp[] = ["x"=> (strtotime($row["date"]) *1000), "y"=> $row["temperature"]];
                     $datos_oxy[] = ["x"=> (strtotime($row["date"]) *1000), "y"=> $row["oxygen_saturation"]];
+
+
+                    $datos_hr[] = ["x"=> (strtotime($row["date"]) *1000), "y"=> $row["hr"]];
+                    $datos_vpc[] = ["x"=> (strtotime($row["date"]) *1000), "y"=> $row["vpc"]];
+                    $datos_lvp_d[] = ["x"=> (strtotime($row["date"]) *1000), "y"=> $row["lvp_d"]];
+                    $datos_lvp_s[] = ["x"=> (strtotime($row["date"]) *1000), "y"=> $row["lvp_s"]];
+                    $datos_pr_spo2[] = ["x"=> (strtotime($row["date"]) *1000), "y"=> $row["pr_spo2"]];
+                    $datos_st1[] = ["x"=> (strtotime($row["date"]) *1000), "y"=> $row["st1"]];
+                    $datos_st2[] = ["x"=> (strtotime($row["date"]) *1000), "y"=> $row["st2"]];
+                    $datos_st3[] = ["x"=> (strtotime($row["date"]) *1000), "y"=> $row["st3"]];
+                    $datos_nibps_sys[] = ["x"=> (strtotime($row["date"]) *1000), "y"=> $row["nibps_sys"]];
+                    $datos_nibps_dys[] = ["x"=> (strtotime($row["date"]) *1000), "y"=> $row["nibps_dys"]];
                     $i++;
                 }
                 if ($i>0) {
@@ -99,6 +125,18 @@ require_once("../globals.php");
                         "resp"=>json_encode($datos_resp, JSON_NUMERIC_CHECK),
                         "temp"=>json_encode($datos_temp, JSON_NUMERIC_CHECK),
                         "oxy"=>json_encode($datos_oxy, JSON_NUMERIC_CHECK),
+
+
+                        "hr"=>json_encode($datos_hr, JSON_NUMERIC_CHECK),
+                        "vpc"=>json_encode($datos_vpc, JSON_NUMERIC_CHECK),
+                        "lvp_s"=>json_encode($datos_lvp_s, JSON_NUMERIC_CHECK),
+                        "lvp_d"=>json_encode($datos_lvp_d, JSON_NUMERIC_CHECK),
+                        "pr_spo2"=>json_encode($datos_pr_spo2, JSON_NUMERIC_CHECK),
+                        "st1"=>json_encode($datos_st1, JSON_NUMERIC_CHECK),
+                        "st2"=>json_encode($datos_st2, JSON_NUMERIC_CHECK),
+                        "st3"=>json_encode($datos_st3, JSON_NUMERIC_CHECK),
+                        "nibps_sys"=>json_encode($datos_nibps_sys, JSON_NUMERIC_CHECK),
+                        "nibps_dys"=>json_encode($datos_nibps_dys, JSON_NUMERIC_CHECK),
 
                     ];
                 }
@@ -162,6 +200,84 @@ require_once("../globals.php");
                             showInLegend: true,
                             xValueType: "dateTime",
                             dataPoints: JSON.parse(result[pubpid]['temp'])
+                        },
+
+                        {
+                            type: "spline",
+                            name:"HR",
+                            showInLegend: true,
+                            xValueType: "dateTime",
+                            dataPoints: JSON.parse(result[pubpid]['hr'])
+                        },
+                        {
+                            type: "spline",
+                            name:"VPC",
+                            showInLegend: true,
+                            xValueType: "dateTime",
+                            dataPoints: JSON.parse(result[pubpid]['vpc'])
+                        },
+                        {
+                            type: "spline",
+                            name:"HR",
+                            showInLegend: true,
+                            xValueType: "dateTime",
+                            dataPoints: JSON.parse(result[pubpid]['hr'])
+                        },
+                        {
+                            type: "spline",
+                            name:"lvp(s)",
+                            showInLegend: true,
+                            xValueType: "dateTime",
+                            dataPoints: JSON.parse(result[pubpid]['lvp_s'])
+                        },
+                        {
+                            type: "spline",
+                            name:"lvp(d)",
+                            showInLegend: true,
+                            xValueType: "dateTime",
+                            dataPoints: JSON.parse(result[pubpid]['lvp_s'])
+                        },
+                        {
+                            type: "spline",
+                            name:"PR(Sp02)",
+                            showInLegend: true,
+                            xValueType: "dateTime",
+                            dataPoints: JSON.parse(result[pubpid]['pr_spo2'])
+                        },
+                        {
+                            type: "spline",
+                            name:"ST1",
+                            showInLegend: true,
+                            xValueType: "dateTime",
+                            dataPoints: JSON.parse(result[pubpid]['st1'])
+                        },
+                        {
+                            type: "spline",
+                            name:"ST2",
+                            showInLegend: true,
+                            xValueType: "dateTime",
+                            dataPoints: JSON.parse(result[pubpid]['st2'])
+                        },
+                        {
+                            type: "spline",
+                            name:"ST3",
+                            showInLegend: true,
+                            xValueType: "dateTime",
+                            dataPoints: JSON.parse(result[pubpid]['st3'])
+                        },
+                        {
+                            type: "spline",
+                            name:"Nibp(S)",
+                            showInLegend: true,
+                            xValueType: "dateTime",
+                            dataPoints: JSON.parse(result[pubpid]['nibps_sys'])
+                        },
+                        {
+                            type: "spline",
+                            name:"Nibps(D)",
+                            showInLegend: true,
+                            xValueType: "dateTime",
+                            dataPoints: JSON.parse(result[pubpid]['nibps_dys'])
                         }
                     ]
                 }

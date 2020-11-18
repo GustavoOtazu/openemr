@@ -21,8 +21,8 @@ require_once("../globals.php");
     <script src="../../public/assets/canvas/canvasjs.min.js"></script>
 </HEAD>
 <body class="body_top">
-<div class="container">
-    <div class="row">
+
+    <div class="row" style="margin: 10px">
         <div class="col-md-12">
             <div class="page-header clearfix">
                 <div class="row" id="body-vitals-tab">
@@ -32,7 +32,7 @@ require_once("../globals.php");
                 </div>
             </div>
         </div>
-</div>
+
 </body>
 
 <!-- (CHEMED) -->
@@ -58,12 +58,33 @@ require_once("../globals.php");
                     let pulse=resp[element]["pulse"];
                     let oxygen_saturation=resp[element]["oxygen_saturation"];
                     let bmi=resp[element]["BMI"];
+                    let hr=resp[element]["hr"];
+                    let vpc=resp[element]["vpc"];
+                    let lvp_s=resp[element]["lvp_s"];
+                    let lvp_d=resp[element]["lvp_d"];
+                    let pr_spo2=resp[element]["pr_spo2"];
+                    let st1=resp[element]["st1"];
+                    let st2=resp[element]["st2"];
+                    let st3=resp[element]["st3"];
+                    let nibps_sys=resp[element]["nibps_sys"];
+                    let nibps_dys=resp[element]["nibps_dys"];
                     let display_bbps = localStorage.getItem('bps-check'+pid) !== null ? localStorage.getItem('bps-check'+pid) : true;
                     let display_bbpd = localStorage.getItem('bpd-check'+pid) !== null ? localStorage.getItem('bpd-check'+pid) : true;
                     let display_temperature = localStorage.getItem('temperature-check'+pid) !== null ? localStorage.getItem('temperature-check'+pid) : true;
                     let display_respiracion = localStorage.getItem('respiracion-check'+pid) !== null ? localStorage.getItem('respiracion-check'+pid) : true;
                     let display_pulse = localStorage.getItem('pulse-check'+pid) !== null ? localStorage.getItem('pulse-check'+pid) : true;
                     let display_oxygen_saturation = localStorage.getItem('oxygen_saturation-check'+pid) !== null ? localStorage.getItem('oxygen_saturation-check'+pid) : true;
+
+                    let display_hr = localStorage.getItem('hr-check'+pid) !== null ? localStorage.getItem('hr-check'+pid) : true;
+                    let display_vpc = localStorage.getItem('vpc-check'+pid) !== null ? localStorage.getItem('vpc-check'+pid) : true;
+                    let display_lvp_s = localStorage.getItem('lvp_s-check'+pid) !== null ? localStorage.getItem('lvp_s-check'+pid) : true;
+                    let display_lvp_d = localStorage.getItem('lvp_d-check'+pid) !== null ? localStorage.getItem('lvp_d-check'+pid) : true;
+                    let display_pr_spo2 = localStorage.getItem('pr_spo2-check'+pid) !== null ? localStorage.getItem('pr_spo2-check'+pid) : true;
+                    let display_st1 = localStorage.getItem('st1-check'+pid) !== null ? localStorage.getItem('st1-check'+pid) : true;
+                    let display_st2 = localStorage.getItem('st2-check'+pid) !== null ? localStorage.getItem('st2-check'+pid) : true;
+                    let display_st3 = localStorage.getItem('st3-check'+pid) !== null ? localStorage.getItem('st3-check'+pid) : true;
+                    let display_nibps_sys = localStorage.getItem('nibps_sys-check'+pid) !== null ? localStorage.getItem('nibps_sys-check'+pid) : true;
+                    let display_nibps_dys = localStorage.getItem('nibps_dys-check'+pid) !== null ? localStorage.getItem('nibps_dys-check'+pid) : true;
                     $('#body-vitals-tab').append('<div class="col-md-12">' +
                         '<div class="row"><h4 class="text-left">Paciente: '+paciente+" - Último signo recibido a las: "+hora+'</h4>' +
                         '<a class="btn btn-primary vitalsbtn" href="javascript:void(0)" title="Ir al Paciente" data-pid="'+pid+'"><i class="fa fa-eye"></i></a>' +
@@ -84,43 +105,129 @@ require_once("../globals.php");
                         '<label for="pulse-check'+pid+'"> Pulso</label><br></li>' +
                         '<li><input type="checkbox" class="sv-item"  '+((display_oxygen_saturation===true || display_oxygen_saturation==='true')? "checked":"")+' id="oxygen_saturation-check'+pid+'"  name="oxygen_saturation-check'+pid+'" data-value="oxygen_saturation'+pid+'">\n' +
                         '<label for="oxygen_saturation-check'+pid+'"> Sat. de Oxígeno</label><br></li>' +
+
+                        '<li><input type="checkbox" class="sv-item"  '+((display_hr===true || display_hr==='true')? "checked":"")+' id="hr-check'+pid+'"  name="hr-check'+pid+'" data-value="hr'+pid+'">\n' +
+                        '<label for="hr-check'+pid+'"> Ritmo cardiaco</label><br></li>' +
+
+                        '<li><input type="checkbox" class="sv-item"  '+((display_vpc===true || display_vpc==='true')? "checked":"")+' id="vpc-check'+pid+'"  name="vpc-check'+pid+'" data-value="vpc'+pid+'">\n' +
+                        '<label for="vpc-check'+pid+'"> Contracciones ventriculares prematuras</label><br></li>' +
+
+                        '<li><input type="checkbox" class="sv-item"  '+((display_lvp_s===true || display_lvp_s==='true')? "checked":"")+' id="lvp_s-check'+pid+'"  name="lvp_s-check'+pid+'" data-value="lvp_s'+pid+'">\n' +
+                        '<label for="lvp_s-check'+pid+'"> Pr. ventricular izq sis</label><br></li>' +
+
+                        '<li><input type="checkbox" class="sv-item"  '+((display_lvp_d===true || display_lvp_d==='true')? "checked":"")+' id="lvp_d-check'+pid+'"  name="lvp_d-check'+pid+'" data-value="lvp_d'+pid+'">\n' +
+                        '<label for="lvp_d-check'+pid+'"> Pr. ventricular izq diast</label><br></li>' +
+
+                        '<li><input type="checkbox" class="sv-item"  '+((display_pr_spo2===true || display_pr_spo2==='true')? "checked":"")+' id="pr_spo2-check'+pid+'"  name="pr_spo2-check'+pid+'" data-value="pr_spo2'+pid+'">\n' +
+                        '<label for="pr_spo2-check'+pid+'"> Frec. del pulso por sat. de oxígeno</label><br></li>' +
+
+                        '<li><input type="checkbox" class="sv-item"  '+((display_st1===true || display_st1==='true')? "checked":"")+' id="st1-check'+pid+'"  name="st1-check'+pid+'" data-value="st1'+pid+'">\n' +
+                        '<label for="st1-check'+pid+'"> ST1</label><br></li>' +
+
+                        '<li><input type="checkbox" class="sv-item"  '+((display_st2===true || display_st2==='true')? "checked":"")+' id="st2-check'+pid+'"  name="st2-check'+pid+'" data-value="st2'+pid+'">\n' +
+                        '<label for="st2-check'+pid+'"> ST2</label><br></li>' +
+
+                        '<li><input type="checkbox" class="sv-item"  '+((display_st3===true || display_st3==='true')? "checked":"")+' id="st3-check'+pid+'"  name="st3-check'+pid+'" data-value="st3'+pid+'">\n' +
+                        '<label for="st3-check'+pid+'"> ST3</label><br></li>' +
+
+                        '<li><input type="checkbox" class="sv-item"  '+((display_nibps_sys===true || display_nibps_sys==='true')? "checked":"")+' id="nibps_sys-check'+pid+'"  name="nibps_sys-check'+pid+'" data-value="nibps_sys'+pid+'">\n' +
+                        '<label for="nibps_sys-check'+pid+'"> Presión No Invasiva sis</label><br></li>' +
+
+                        '<li><input type="checkbox" class="sv-item"  '+((display_nibps_dys===true || display_nibps_dys==='true')? "checked":"")+' id="nibps_dys-check'+pid+'"  name="nibps_dys-check'+pid+'" data-value="nibps_dys'+pid+'">\n' +
+                        '<label for="nibps_dys-check'+pid+'"> Presión No Invasiva Dis</label><br></li>' +
                         '</ul>'+
                         '                    </div>\n' +
 
 
                         '                    <div class="col-xs-6 col-md-2 text-center '+((display_bbps===true || display_bbps==='true')? "":"hidden")+'"  id="bps'+pid+'">\n' +
-                        '                        <input type="text" class="knob" value="'+bps+'"  data-width="100" data-height="100"  data-max="1000" data-fgColor="#3c8dbc" readonly>\n' +
+                        '                        <input type="text" class="knob" value="'+bps+'"  data-width="100" data-height="100"  data-max="300" data-fgColor="#3c8dbc" readonly>\n' +
                         '\n' +
                         '                        <div class="knob-label">Presión arterial sistólica</div>\n' +
                         '                    </div>\n' +
                         '                    <!-- ./col -->\n' +
                         '                    <div class="col-xs-6 col-md-2 text-center '+((display_bbpd===true || display_bbpd==='true')? "":"hidden")+'" id="bpd'+pid+'">\n' +
-                        '                        <input type="text" class="knob" value="'+bpd+'" data-width="100" data-height="100"  data-max="1000" data-fgColor="#f56954" readonly>\n' +
+                        '                        <input type="text" class="knob" value="'+bpd+'" data-width="100" data-height="100"  data-max="300" data-fgColor="#f56954" readonly>\n' +
                         '\n' +
                         '                        <div class="knob-label">Presión arterial diastólica</div>\n' +
                         '                    </div>\n' +
                         '                    <!-- ./col -->\n' +
                         '                    <div class="col-xs-6 col-md-2 text-center '+((display_temperature===true || display_temperature==='true')? "":"hidden")+'" id="temperatura'+pid+'">\n' +
-                        '                        <input type="text" class="knob" value="'+temperatura+'"  data-width="100" data-height="100" data-max="1000" readonly data-fgColor="#00a65a">\n' +
+                        '                        <input type="text" class="knob" value="'+temperatura+'"  data-width="100" data-height="100" data-max="300" readonly data-fgColor="#00a65a">\n' +
                         '\n' +
                         '                        <div class="knob-label">Temperatura</div>\n' +
                         '                    </div>\n' +
                         '                    <!-- ./col -->\n' +
                         '                    <div class="col-xs-6 col-md-2 text-center '+((display_respiracion===true || display_respiracion==='true')? "":"hidden")+' " id="respiracion'+pid+'">\n' +
-                        '                        <input type="text" class="knob" value="'+respiracion+'" data-width="100" data-height="100" data-max="1000" data-fgColor="#00c0ef" readonly>\n' +
+                        '                        <input type="text" class="knob" value="'+respiracion+'" data-width="100" data-height="100" data-max="300" data-fgColor="#00c0ef" readonly>\n' +
                         '\n' +
                         '                        <div class="knob-label">Respiración</div>\n' +
                         '                    </div>\n' +
                         '                    <div class="col-xs-6 col-md-2 text-center  '+((display_pulse===true || display_pulse==='true')? "":"hidden")+'" id="pulse'+pid+'">\n' +
-                        '                        <input type="text" class="knob" value="'+pulse+'" data-width="100" data-height="100" data-max="1000" data-fgColor="#1CEB05" readonly>\n' +
+                        '                        <input type="text" class="knob" value="'+pulse+'" data-width="100" data-height="100" data-max="300" data-fgColor="#1CEB05" readonly>\n' +
                         '\n' +
                         '                        <div class="knob-label">Pulso</div>\n' +
                         '                    </div>\n' +
                         '                    <div class="col-xs-6 col-md-2 text-center '+((display_oxygen_saturation===true|| display_oxygen_saturation==='true')? "":"hidden")+' " id="oxygen_saturation'+pid+'">\n' +
-                        '                        <input type="text" class="knob" value="'+oxygen_saturation+'" data-width="100" data-height="100" data-max="1000" data-fgColor="#DEC112" readonly>\n' +
+                        '                        <input type="text" class="knob" value="'+oxygen_saturation+'" data-width="100" data-height="100" data-max="300" data-fgColor="#DEC112" readonly>\n' +
                         '\n' +
                         '                        <div class="knob-label">Saturación de oxígeno</div>\n' +
                         '                    </div>\n' +
+
+
+
+
+
+
+                        '                    <div class="col-xs-6 col-md-2 text-center '+((display_hr===true|| display_hr==='true')? "":"hidden")+' " id="hr'+pid+'">\n' +
+                        '                        <input type="text" class="knob" value="'+hr+'" data-width="100" data-height="100" data-max="300" data-fgColor="#ED4F37" readonly>\n' +
+                        '\n' +
+                        '                        <div class="knob-label">Ritmo cardiaco</div>\n' +
+                        '                    </div>\n' +
+                        '                    <div class="col-xs-6 col-md-2 text-center '+((display_vpc===true|| display_vpc==='true')? "":"hidden")+' " id="vpc'+pid+'">\n' +
+                        '                        <input type="text" class="knob" value="'+vpc+'" data-width="100" data-height="100" data-max="300" data-fgColor="#73EF93" readonly>\n' +
+                        '\n' +
+                        '                        <div class="knob-label">Contracciones ventriculares prematuras</div>\n' +
+                        '                    </div>\n' +
+                        '                    <div class="col-xs-6 col-md-2 text-center '+((display_lvp_s===true|| display_lvp_s==='true')? "":"hidden")+' " id="lvp_s'+pid+'">\n' +
+                        '                        <input type="text" class="knob" value="'+lvp_s+'" data-width="100" data-height="100" data-max="300" data-fgColor="#F2B0D5" readonly>\n' +
+                        '\n' +
+                        '                        <div class="knob-label">Pr. ventricular izq sis</div>\n' +
+                        '                    </div>\n' +
+                        '                    <div class="col-xs-6 col-md-2 text-center '+((display_lvp_d===true|| display_lvp_d==='true')? "":"hidden")+' " id="lvp_d'+pid+'">\n' +
+                        '                        <input type="text" class="knob" value="'+lvp_d+'" data-width="100" data-height="100" data-max="300" data-fgColor="#B948BD" readonly>\n' +
+                        '\n' +
+                        '                        <div class="knob-label">Pr. ventricular izq diast</div>\n' +
+                        '                    </div>\n' +
+                        '                    <div class="col-xs-6 col-md-2 text-center '+((display_pr_spo2===true|| display_pr_spo2==='true')? "":"hidden")+' " id="pr_spo2'+pid+'">\n' +
+                        '                        <input type="text" class="knob" value="'+pr_spo2+'" data-width="100" data-height="100" data-max="300" data-fgColor="#DEC112" readonly>\n' +
+                        '\n' +
+                        '                        <div class="knob-label">Frec. del pulso por sat. de oxígeno</div>\n' +
+                        '                    </div>\n' +
+                        '                    <div class="col-xs-6 col-md-2 text-center '+((display_st1===true|| display_st1==='true')? "":"hidden")+' " id="st1'+pid+'">\n' +
+                        '                        <input type="text" class="knob" value="'+st1+'" data-width="100" data-height="100" data-max="300" data-fgColor="#48BDA7" readonly>\n' +
+                        '\n' +
+                        '                        <div class="knob-label">ST1</div>\n' +
+                        '                    </div>\n' +
+                        '                    <div class="row"><div class="col-xs-6 col-md-2 text-center '+((display_st2===true|| display_st2==='true')? "":"hidden")+' " id="st2'+pid+'">\n' +
+                        '                        <input type="text" class="knob" value="'+st2+'" data-width="100" data-height="100" data-max="300" data-fgColor="#F0845B" readonly>\n' +
+                        '\n' +
+                        '                        <div class="knob-label">ST2</div>\n' +
+                        '                    </div>\n' +
+                        '                    <div class="col-xs-6 col-md-2 text-center '+((display_st3===true|| display_st3==='true')? "":"hidden")+' " id="st3'+pid+'">\n' +
+                        '                        <input type="text" class="knob" value="'+st3+'" data-width="100" data-height="100" data-max="300" data-fgColor="#6B62BD" readonly>\n' +
+                        '\n' +
+                        '                        <div class="knob-label">ST3</div>\n' +
+                        '                    </div>\n' +
+                        '                    <div class="col-xs-6 col-md-2 text-center '+((display_nibps_sys===true|| display_nibps_sys==='true')? "":"hidden")+' " id="nibps_sys'+pid+'">\n' +
+                        '                        <input type="text" class="knob" value="'+nibps_sys+'" data-width="100" data-height="100" data-max="300" data-fgColor="#5985BD" readonly>\n' +
+                        '\n' +
+                        '                        <div class="knob-label">Presión No Invasiva sis</div>\n' +
+                        '                    </div>\n' +
+                        '                    <div class="col-xs-6 col-md-2 text-center '+((display_nibps_dys===true|| display_nibps_dys==='true')? "":"hidden")+' " id="nibps_dys'+pid+'">\n' +
+                        '                        <input type="text" class="knob" value="'+nibps_dys+'" data-width="100" data-height="100" data-max="300" data-fgColor="#F0E189" readonly>\n' +
+                        '\n' +
+                        '                        <div class="knob-label">Presión No Invasiva Dis</div>\n' +
+                        '                    </div></div>\n' +
                         '                </div></div><hr style="border-top: 1px solid black;">');
                 }
                 $('.knob').knob();
