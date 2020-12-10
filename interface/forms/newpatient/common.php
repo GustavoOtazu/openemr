@@ -477,7 +477,7 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
                             <div class="col-sm-8">
                                 <select class="form-control col-sm-9" name="cama" id="cama">
                                     <?php
-                                    for ($pc =1; $pc<=10; $pc++) {
+                                    for ($pc =1; $pc<=32; $pc++) {
                                         echo "<option value=\"" . $pc . "\" ";
 
                                         echo "> Cama " . $pc;
