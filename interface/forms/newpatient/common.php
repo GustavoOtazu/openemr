@@ -459,7 +459,7 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
                         </div>
                         <br>
                         <div class="form-group internacion">
-                            <label class="control-label col-sm-2 oe-text-to-right" id="cuarto">Cuarto</label>
+                            <label class="control-label col-sm-2 oe-text-to-right" id="cuarto">Sala</label>
                             <div class="col-sm-8">
                                 <select class="form-control  col-sm-9" name="cuarto" id="cuarto">
                                     <option value="a">A</option>

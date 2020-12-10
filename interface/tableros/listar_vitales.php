@@ -1,7 +1,7 @@
 <?php
 require_once("../globals.php");
 /*Extraer todos los internados actuales, tabla: form_encounter, con tipo Internación pc_catid = 16 (referencia tabla: openemr_postcalendar_categories	)*/
-$internados_actuales_consult = "SELECT f.pid, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null order by f.id ASC";
+$internados_actuales_consult = "SELECT f.pid, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, f.cuarto as sala, f.cama as cama from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null order by f.id ASC";
 $res = sqlStatement($internados_actuales_consult);
 $inpatient=[];
 $result=[];
@@ -16,6 +16,8 @@ for ($iter=0; $row=sqlFetchArray($res); $iter++) {
     if ($vitals) {
         $result[] = [
             "paciente"=>$row['paciente'],
+            "sala"=>strtoupper($row['sala']),
+            "cama"=>$row['cama'],
             "bps"=> $vitals["bps"], //blood pressure systolic
             "bpd"=>$vitals["bpd"], //blood pressure diastolic
             "temperatura"=>$vitals["temperature"],

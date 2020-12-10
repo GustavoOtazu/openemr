@@ -49,6 +49,8 @@ require_once("../globals.php");
                 }
                 for ( element in resp) {
                     let paciente=resp[element]["paciente"];
+                    let sala=resp[element]["sala"];
+                    let cama=resp[element]["cama"];
                     let bps= resp[element]["bps"];
                     let bpd=resp[element]["bpd"];
                     let temperatura=resp[element]["temperatura"];
@@ -81,12 +83,13 @@ require_once("../globals.php");
                     let display_lvp_d = localStorage.getItem('lvp_d-check'+pid) !== null ? localStorage.getItem('lvp_d-check'+pid) : true;
                     let display_pr_spo2 = localStorage.getItem('pr_spo2-check'+pid) !== null ? localStorage.getItem('pr_spo2-check'+pid) : true;
                     let display_st1 = localStorage.getItem('st1-check'+pid) !== null ? localStorage.getItem('st1-check'+pid) : true;
+                    console.log(localStorage.getItem('st1-check'+pid), localStorage.getItem('st2-check'+pid) !== null)
                     let display_st2 = localStorage.getItem('st2-check'+pid) !== null ? localStorage.getItem('st2-check'+pid) : true;
                     let display_st3 = localStorage.getItem('st3-check'+pid) !== null ? localStorage.getItem('st3-check'+pid) : true;
                     let display_nibps_sys = localStorage.getItem('nibps_sys-check'+pid) !== null ? localStorage.getItem('nibps_sys-check'+pid) : true;
                     let display_nibps_dys = localStorage.getItem('nibps_dys-check'+pid) !== null ? localStorage.getItem('nibps_dys-check'+pid) : true;
                     $('#body-vitals-tab').append('<div class="col-md-12">' +
-                        '<div class="row"><h4 class="text-left">Paciente: '+paciente+" - Último signo recibido a las: "+hora+'</h4>' +
+                        '<div class="row"><h4 class="text-left"> Sala '+sala+' - Cama '+cama+' - '+paciente+" - Último signo recibido a las: "+hora+'</h4>' +
                         '<a class="btn btn-primary vitalsbtn" href="javascript:void(0)" title="Ir al Paciente" data-pid="'+pid+'"><i class="fa fa-eye"></i></a>' +
                         '<button title="Seleccionar signos vitales a visualizar" data-id="list_sv'+pid+'" class="btn show-list btn-success"><i class="fa fa-caret-down" aria-hidden="true"></i></button></div>\n' +
                         '                <div class="row">\n' +
@@ -189,7 +192,7 @@ require_once("../globals.php");
                         '                        <input type="text" class="knob" value="'+pr_spo2+'" data-width="100" data-height="100" data-max="300" data-fgColor="#DEC112" readonly>\n' +
                         '                        <div class="knob-label">Frec. del pulso por sat. de oxígeno</div>\n' +
                         '                    </div>\n' +
-                        '                    <div class="col-xs-6 col-md-2  text-center'+((display_st1===true|| display_st1==='true')? "":"hidden")+' " id="st1'+pid+'">\n' +
+                        '                    <div class="col-xs-6 col-md-2  text-center '+((display_st1===true|| display_st1==='true')? "":"hidden")+' " id="st1'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+st1+'" data-width="100" data-height="100" data-max="300" data-fgColor="#48BDA7" readonly>\n' +
                         '                        <div class="knob-label">ST1</div>\n' +
                         '                    </div>\n' +
@@ -198,7 +201,7 @@ require_once("../globals.php");
                         '                        <input type="text" class="knob" value="'+st2+'" data-width="100" data-height="100" data-max="300" data-fgColor="#F0845B" readonly>\n' +
                         '                        <div class="knob-label">ST2</div>\n' +
                         '                    </div>\n' +
-                        '                    <div class="col-xs-6 col-md-2 text-center'+((display_st3===true|| display_st3==='true')? "":"hidden")+' " id="st3'+pid+'">\n' +
+                        '                    <div class="col-xs-6 col-md-2 text-center '+((display_st3===true|| display_st3==='true')? "":"hidden")+' " id="st3'+pid+'">\n' +
                         '                        <input type="text" class="knob" value="'+st3+'" data-width="100" data-height="100" data-max="300" data-fgColor="#6B62BD" readonly>\n' +
                         '                        <div class="knob-label">ST3</div>\n' +
                         '                    </div>\n' +

@@ -125,6 +125,9 @@ for ($iter=0; $row=sqlFetchArray($res); $iter++) {
                 <table border="0" cellpadding="0" cellspacing="0" class="display" id="inp_table" style="width:100%">
                     <thead>
                     <tr>
+                    <th class="head">
+                            Identificador
+                        </th>
                         <th class="head">
                             Paciente
                         </th>
@@ -138,7 +141,7 @@ for ($iter=0; $row=sqlFetchArray($res); $iter++) {
                             Servicio
                         </th>
                         <th class="head">
-                            Cuarto
+                            Sala
                         </th>
                         <th class="head">
                             Cama
@@ -153,6 +156,7 @@ for ($iter=0; $row=sqlFetchArray($res); $iter++) {
                     if (isset($inpatient)) {
                         foreach ($inpatient as $index => $result) {
                             echo '<tr>' .
+                                '<td>' . text($result['pid']) . '</td>' .
                                 '<td>' . text($result['paciente']) . '</td>' .
                                 '<td>' . date('d/m/Y',strtotime($result['date'])) . '</td>' .
                                 '<td>' . text($result['departamento']==='terapia_adulto'? 'Terapia Adulto':'Terapia niños') . '</td>' .
