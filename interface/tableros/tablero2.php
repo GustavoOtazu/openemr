@@ -65,7 +65,7 @@ require_once("../globals.php");
             array_push($dataPoints, array("x" => $i, "y" => $y));
         }
         //array_push($dataPoints, array("x" => $i, "y" => $y));
-        $internados_actuales_consult = "SELECT f.pid, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null order by f.id ASC";
+        $internados_actuales_consult = "SELECT f.pid, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, f.cuarto as sala, f.cama as cama from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null order by f.id ASC";
         $res = sqlStatement($internados_actuales_consult);
         $inpatient=[];
         $result=[];
@@ -119,6 +119,8 @@ require_once("../globals.php");
                 if ($i>0) {
                     $result[$encounter['pid']]=[
                         "paciente"=>$encounter['paciente'],
+                        "cama"=>$encounter['cama'],
+                        "sala"=>$encounter['sala'],
                         "bps"=>json_encode($datos_bps, JSON_NUMERIC_CHECK),
                         "bpd"=>json_encode($datos_bpd, JSON_NUMERIC_CHECK),
                         "pulso"=>json_encode($datos_pulso, JSON_NUMERIC_CHECK),
@@ -157,7 +159,7 @@ require_once("../globals.php");
                     animationEnabled: true,
                     exportEnabled: true,
                     title: {
-                        text: result[pubpid]['paciente']
+                        text: 'Sala: '+result[pubpid]['sala']+' Cama: '+result[pubpid]['cama']+' Nro Registro: '+pubpid+'   '+result[pubpid]['paciente']
                     },
                     axisY: {
                         title: "Signo vitales"
