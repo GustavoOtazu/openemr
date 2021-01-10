@@ -1,7 +1,35 @@
 <?php
+
+use Particle\Validator\Rule\Length;
+
 require_once("../globals.php");
+
 /*Extraer todos los internados actuales, tabla: form_encounter, con tipo Internación pc_catid = 16 (referencia tabla: openemr_postcalendar_categories	)*/
-$internados_actuales_consult = "SELECT f.pid, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, f.cuarto as sala, f.cama as cama from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null order by f.id ASC";
+$salas=$_GET['salas'];
+$camas=$_GET['camas'];
+$query_where='where f.pc_catid = 16 and f.out_date is null';
+
+if($salas!=''){
+    $query_where.=' and f.cuarto IN (';
+    $salas=explode(',',$salas);
+    foreach ($salas as $key => $sala) {
+        $query_where.='"'.$salas[$key].'",';
+    }
+    $query_where=rtrim($query_where, ',');
+    $query_where.=')';
+    
+}
+if($camas!=''){
+    $query_where.=' and f.cama IN (';
+    $camas=explode(',',$camas);
+    foreach ($camas as $key => $cama) {
+        $query_where.='"'.$camas[$key].'",';
+    }
+    $query_where=rtrim($query_where, ',');
+    $query_where.=')';
+    
+}
+$internados_actuales_consult = "SELECT f.pid, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, f.cuarto as sala, f.cama as cama from form_encounter as f join patient_data as p on p.pid = f.pid ".$query_where." order by f.id ASC";
 $res = sqlStatement($internados_actuales_consult);
 $inpatient=[];
 $result=[];
