@@ -251,6 +251,7 @@ require_once("../globals.php");
                     animationEnabled: true,
                     exportEnabled: true,
                     title: {
+                        fontFamily: "tahoma",
                         text: 'Sala: ' + result[pubpid]['sala'] + ' Cama: ' + result[pubpid]['cama'] + ' Nro Registro: ' + pubpid + '   ' + result[pubpid]['paciente']
                     },
                     axisY: {
