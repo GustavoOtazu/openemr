@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Main info frame.
  *
@@ -18,28 +19,30 @@ use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
 use OpenEMR\OeUI\OemrUI;
 /*Extraer todos los internados actuales, tabla: form_encounter, con tipo Internación pc_catid = 16 (referencia tabla: openemr_postcalendar_categories	)*/
+
 $id_encounter = $_GET['id_encounter'];
 $nombre_paciente = $_GET['paciente'];
 $death_date = $_GET['death_date'];
 $update = $_GET['update'];
 if ($death_date) {
-    sqlStatement("UPDATE form_encounter set out_date= ? , death_date= ? where id = ?", array($death_date,$death_date,$id_encounter));
+    sqlStatement("UPDATE form_encounter set out_date= ? , death_date= ? where id = ?", array($death_date, $death_date, $id_encounter));
     $id_encounter = null;
-}elseif ($id_encounter) {
+} elseif ($id_encounter) {
     sqlStatement("UPDATE form_encounter set out_date= DATE(NOW()) where id = ?", array($id_encounter));
 }
-$internados_actuales_consult = "SELECT f.*, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null" ;
+$internados_actuales_consult = "SELECT f.*, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null";
 $res = sqlStatement($internados_actuales_consult);
-$inpatient=[];
-for ($iter=0; $row=sqlFetchArray($res); $iter++) {
+$inpatient = [];
+for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
     $inpatient[$iter] = $row;
 }
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <HTML>
+
 <HEAD>
-    <?php Header::setupHeader(['no_bootstrap']);?>
+    <?php Header::setupHeader(['no_bootstrap']); ?>
     <TITLE><?php echo xlt('Internados'); ?></TITLE>
     <link rel=stylesheet href="../../public/themes/style_light.css">
     <link rel="stylesheet" href="../../public/assets/bootstrap/dist/css/bootstrap.min.css" type="text/css">
@@ -51,6 +54,8 @@ for ($iter=0; $row=sqlFetchArray($res); $iter++) {
     <script type="text/javascript" src="../../public/assets/jquery-ui/jquery-ui.js"></script>
     <link rel="stylesheet" href="../../public/assets/datatable-last/jquery.dataTables.min.css" type="text/css">
     <script type="text/javascript" src="../../public/assets/datatable-last/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="../../public/assets/select2/dist/js/select2.min.js"></script>
+    <link rel="stylesheet" href="../../public/assets/select2/dist/css/select2.min.css" type="text/css">
     <style type="text/css">
         /* Finder Processing style */
         div.dataTables_wrapper div.dataTables_processing {
@@ -60,203 +65,286 @@ for ($iter=0; $row=sqlFetchArray($res); $iter++) {
             color: red;
             transform: translateX(-50%);
         }
+
         @media screen and (max-width: 640px) {
-            .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter {
+
+            .dataTables_wrapper .dataTables_length,
+            .dataTables_wrapper .dataTables_filter {
                 float: inherit;
                 text-align: justify;
             }
         }
-
     </style>
     <?php
     $arrOeUiSettings = array(
         'heading_title' => xl('Patient Finder'),
         'include_patient_name' => false,
         'expandable' => true,
-        'expandable_files' => array('dynamic_finder_xpd'),//all file names need suffix _xpd
-        'action' => "search",//conceal, reveal, search, reset, link or back
-        'action_title' => "",//only for action link, leave empty for conceal, reveal, search
-        'action_href' => "",//only for actions - reset, link or back
+        'expandable_files' => array('dynamic_finder_xpd'), //all file names need suffix _xpd
+        'action' => "search", //conceal, reveal, search, reset, link or back
+        'action_title' => "", //only for action link, leave empty for conceal, reveal, search
+        'action_href' => "", //only for actions - reset, link or back
         'show_help_icon' => false,
         'help_file_name' => ""
     );
     $oemr_ui = new OemrUI($arrOeUiSettings);
     ?>
 </HEAD>
+
 <body class="body_top">
-<div id="container" class="<?php echo attr($oemr_ui->oeContainer()); ?>">
-    <div class="row">
-        <div class="col-sm-12">
-            <div class="page-header clearfix">
-                <h2>
-                    Lista de Internados
-                </h2>
-                <br/>
-                <?php if ($id_encounter!= null) { ?>
-                    <div class="alert alert-success alert-dismissible show" role="alert">
-                        Se dió de alta al paciente <strong>  <?php echo $nombre_paciente ?></strong> con éxito!
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar" style="color: black !important;">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                <?php } ?>
-                <?php if ($update!= null) { ?>
-                    <div class="alert alert-success alert-dismissible show" role="alert">
-                        Se actualizó al paciente con éxito!
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar" style="color: black !important;">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                <?php } ?>
-                <?php
-                    $id_encounter= null;
-                $_GET['id_encounter'] = null;
-                $_GET['death_date'] = null;
-                $death_date=null;
-
-                ?>
-
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-12">
-            <div id="dynamic">
-                <table border="0" cellpadding="0" cellspacing="0" class="display" id="inp_table" style="width:100%">
-                    <thead>
-                    <tr>
-                    <th class="head">
-                            Identificador
-                        </th>
-                        <th class="head">
-                            Paciente
-                        </th>
-                        <th class="head">
-                            Fecha de Ingreso
-                        </th>
-                        <th class="head">
-                            Departamento
-                        </th>
-                        <th class="head">
-                            Servicio
-                        </th>
-                        <th class="head">
-                            Sala
-                        </th>
-                        <th class="head">
-                            Cama
-                        </th>
-                        <th class="head">
-                            Acciones
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
+    <div id="container" class="<?php echo attr($oemr_ui->oeContainer()); ?>">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="page-header clearfix">
+                    <h2>
+                        Lista de Internados
+                    </h2>
+                    <br />
+                    <?php if ($id_encounter != null) { ?>
+                        <div class="alert alert-success alert-dismissible show" role="alert">
+                            Se dió de alta al paciente <strong> <?php echo $nombre_paciente ?></strong> con éxito!
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar" style="color: black !important;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    <?php } ?>
+                    <?php if ($update != null) { ?>
+                        <div class="alert alert-success alert-dismissible show" role="alert">
+                            Se actualizó al paciente con éxito!
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar" style="color: black !important;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    <?php } ?>
                     <?php
-                    if (isset($inpatient)) {
-                        foreach ($inpatient as $index => $result) {
-                            echo '<tr>' .
-                                '<td>' . text($result['pid']) . '</td>' .
-                                '<td>' . text($result['paciente']) . '</td>' .
-                                '<td>' . date('d/m/Y',strtotime($result['date'])) . '</td>' .
-                                '<td>' . text($result['departamento']==='terapia_adulto'? 'Terapia Adulto':'Terapia niños') . '</td>' .
-                                '<td>' . text(strtoupper($result['servicio'])) . '</td>' .
-                                '<td>' . text(strtoupper($result['cuarto'])) . '</td>' .
-                                '<td>' . text($result['cama']) . '</td>' .
-                                '<td>
-<button class="btn btn-info btn-editar" type="button" data-id="'. attr($result['id']) .'">Editar</button>
-<button class="btn btn-default btn-alta" type="button" id="'. attr($result['id']) .'" data-title="Dar de alta al paciente: '. $result['paciente'] .'" data-paciente="'. $result['paciente'] .'">Dar de alta al paciente</button>
-<button class="btn btn-danger btn-death" type="button" data-id="'. attr($result['id']) .'" data-title="Registrar muerte del paciente: '. $result['paciente'] .'" data-paciente="'. $result['paciente'] .'">Registrar muerte</button>
-</td>'.
-                                '</tr>';
-                        }
-                    } ?>
-                    </tbody>
-                </table>
+                    $id_encounter = null;
+                    $_GET['id_encounter'] = null;
+                    $_GET['death_date'] = null;
+                    $death_date = null;
+
+                    ?>
+
+                </div>
             </div>
         </div>
-    </div>
-    <div class="modal" tabindex="-1" role="dialog" id="modal_alta">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modal_title">Modal title</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true" style="color: black !important;"><i class="fa fa-times"></i></span>
-                    </button>
-                </div>
-                <form method="get" name="form" action="lista_internados.php" >
-                    <div class="modal-body">
-                        <p id="body_alta">¿Está seguro que desea dar el alta al paciente: <b id="paciente_name"></b>?</p>
-                        <div class="row" id="body_death" style="display: none">
-                            <div class="col-md-6">
-                                <label for="death_date">Registrar fecha de muerte</label>
-                                <input id="death_date" name="death_date" class="form-control" type="date"/>
-                            </div>
+        <div class="row" style="margin-bottom: 5%;">
+            <div class="col-md-12">
+                <h4 class="text-center">Filtros</h4>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="col-sm-2 oe-text-to-right" for="sala">Sala</label>
+                        <div class="col-sm-8">
+                            <select class="form-control col-sm-9" name="sala" id="sala" multiple="">
+                                <option value="A">Sala A</option>
+                                <option value="B">Sala B</option>
+                                <option value="C">Sala C</option>
+                                <option value="D">Sala D</option>
+                                <option value="E">Sala E</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <input type="hidden" name="id_encounter" id="id_encounter"/>
-                        <input type="hidden" name="paciente" id="nombre_paciente" />
-                        <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Cancelar</button>
-                        <input type="submit" value="Confirmar" class="btn btn-success pull-right">
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-2 oe-text-to-right" for="cama">Camas</label>
+                        <div class="col-sm-8">
+                            <select class="form-control col-sm-9" name="cama" id="cama" multiple="">
+                                <option value="1">Cama 1</option>
+                                <option value="2">Cama 2</option>
+                                <option value="3">Cama 3</option>
+                                <option value="4">Cama 4</option>
+                                <option value="5">Cama 5</option>
+                                <option value="6">Cama 6</option>
+                                <option value="7">Cama 7</option>
+                                <option value="8">Cama 8</option>
+                                <option value="9">Cama 9</option>
+                                <option value="10">Cama 10</option>
+                                <option value="11">Cama 11</option>
+                                <option value="12">Cama 12</option>
+                                <option value="13">Cama 13</option>
+                                <option value="14">Cama 14</option>
+                                <option value="15">Cama 15</option>
+                                <option value="16">Cama 16</option>
+                                <option value="17">Cama 17</option>
+                                <option value="18">Cama 18</option>
+                                <option value="19">Cama 19</option>
+                                <option value="20">Cama 1</option>
+                                <option value="21">Cama 21</option>
+                                <option value="22">Cama 22</option>
+                                <option value="23">Cama 23</option>
+                                <option value="24">Cama 24</option>
+                                <option value="25">Cama 25</option>
+                                <option value="26">Cama 26</option>
+                                <option value="27">Cama 27</option>
+                                <option value="28">Cama 28</option>
+                                <option value="29">Cama 29</option>
+                                <option value="30">Cama 30</option>
+                                <option value="31">Cama 31</option>
+                                <option value="32">Cama 32</option>
+                            </select>
+                        </div>
                     </div>
-                </form>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div id="dynamic">
+                    <table border="0" cellpadding="0" cellspacing="0" class="display" id="inp_table" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th class="head">
+                                    Identificador
+                                </th>
+                                <th class="head">
+                                    Paciente
+                                </th>
+                                <th class="head">
+                                    Fecha de Ingreso
+                                </th>
+                                <th class="head">
+                                    Departamento
+                                </th>
+                                <th class="head">
+                                    Servicio
+                                </th>
+                                <th class="head">
+                                    Sala
+                                </th>
+                                <th class="head">
+                                    Cama
+                                </th>
+                                <th class="head">
+                                    Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            if (isset($inpatient)) {
+                                foreach ($inpatient as $index => $result) {
+                                    echo '<tr>' .
+                                        '<td>' . text($result['pid']) . '</td>' .
+                                        '<td>' . text($result['paciente']) . '</td>' .
+                                        '<td>' . date('d/m/Y', strtotime($result['date'])) . '</td>' .
+                                        '<td>' . text($result['departamento'] === 'terapia_adulto' ? 'Terapia Adulto' : 'Terapia niños') . '</td>' .
+                                        '<td>' . text(strtoupper($result['servicio'])) . '</td>' .
+                                        '<td>' . text(strtoupper($result['cuarto'])) . '</td>' .
+                                        '<td>' . text($result['cama']) . '</td>' .
+                                        '<td>
+<button class="btn btn-info btn-editar" type="button" data-id="' . attr($result['id']) . '">Editar</button>
+<button class="btn btn-default btn-alta" type="button" id="' . attr($result['id']) . '" data-title="Dar de alta al paciente: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">Dar de alta al paciente</button>
+<button class="btn btn-danger btn-death" type="button" data-id="' . attr($result['id']) . '" data-title="Registrar muerte del paciente: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">Registrar muerte</button>
+</td>' .
+                                        '</tr>';
+                                }
+                            } ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="modal" tabindex="-1" role="dialog" id="modal_alta">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modal_title">Modal title</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true" style="color: black !important;"><i class="fa fa-times"></i></span>
+                        </button>
+                    </div>
+                    <form method="get" name="form" action="lista_internados.php">
+                        <div class="modal-body">
+                            <p id="body_alta">¿Está seguro que desea dar el alta al paciente: <b id="paciente_name"></b>?</p>
+                            <div class="row" id="body_death" style="display: none">
+                                <div class="col-md-6">
+                                    <label for="death_date">Registrar fecha de muerte</label>
+                                    <input id="death_date" name="death_date" class="form-control" type="date" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <input type="hidden" name="id_encounter" id="id_encounter" />
+                            <input type="hidden" name="paciente" id="nombre_paciente" />
+                            <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Cancelar</button>
+                            <input type="submit" value="Confirmar" class="btn btn-success pull-right">
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<?php $oemr_ui->oeBelowContainerDiv();?>
-<script language="JavaScript" type="text/javascript">
-    var webroot_url = <?php echo js_escape($web_root); ?>;
-    var xl_strings_tabs_view_model = <?php echo json_encode(array(
-            'encounter_locked' => xla('This encounter is locked. No new forms can be added.'),
-            'must_select_patient'  => $GLOBALS['enable_group_therapy'] ? xla('You must first select or add a patient or therapy group.') : xla('You must first select or add a patient.'),
-            'must_select_encounter'    => xla('You must first select or create an encounter.'),
-            'new' => xla('New')
-        ));
-        ?>;
-    // Set the csrf_token_js token that is used in the below js/tabs_view_model.js script
-    var csrf_token_js = <?php echo js_escape(CsrfUtils::collectCsrfToken()); ?>;
-    $(function () {
-        $('#inp_table').dataTable({
-            order: [
-                [1, "asc"],
+    <?php $oemr_ui->oeBelowContainerDiv(); ?>
+    <script language="JavaScript" type="text/javascript">
+        var webroot_url = <?php echo js_escape($web_root); ?>;
+        var xl_strings_tabs_view_model = <?php echo json_encode(array(
+                                                'encounter_locked' => xla('This encounter is locked. No new forms can be added.'),
+                                                'must_select_patient'  => $GLOBALS['enable_group_therapy'] ? xla('You must first select or add a patient or therapy group.') : xla('You must first select or add a patient.'),
+                                                'must_select_encounter'    => xla('You must first select or create an encounter.'),
+                                                'new' => xla('New')
+                                            ));
+                                            ?>;
+        // Set the csrf_token_js token that is used in the below js/tabs_view_model.js script
+        var csrf_token_js = <?php echo js_escape(CsrfUtils::collectCsrfToken()); ?>;
+        $(function() {
 
-            ],
-            responsive:true
+            $(document).on('click', '.btn-alta', function() {
+                let id_encounter = this.id;
+                let nombre = $(this).data('title');
+                $('#body_alta').show();
+                $('#body_death').hide();
+                $('#modal_title').html("<b>" + nombre + '</b>');
+                $('#paciente_name').html("<b>" + $(this).data('paciente') + '</b>');
+                $('#id_encounter').val(id_encounter);
+                $('#nombre_paciente').val($(this).data('paciente'));
+                $('#modal_alta').modal('toggle');
+            });
+            $(document).on('click', '.btn-death', function() {
+                let id_encounter = $(this).data('id');
+                let nombre = $(this).data('title');
+                $('#death_date').attr('required', true);
+                $('#body_alta').hide();
+                $('#body_death').show();
+                $('#modal_title').html("<b>" + nombre + '</b>');
+                $('#paciente_name').html("<b>" + $(this).data('paciente') + '</b>');
+                $('#id_encounter').val(id_encounter);
+                $('#nombre_paciente').val($(this).data('paciente'));
+                $('#modal_alta').modal('toggle');
+            });
+            $(document).on('click', '.btn-editar', function() {
+                let id_encounter = $(this).data('id');
+                top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>" + "/interface/tableros/editar_internado.php?id=" + id_encounter;
+            });
+            $(document).ready(function() {
+                const datatable = $('#inp_table').DataTable({
+                    order: [
+                        [1, "asc"],
+
+                    ],
+                    responsive: true,
+                    orderCellsTop: true,
+                    fixedHeader: true
+                });
+                $('#sala').select2({
+                    placeholder: 'Seleccione una o más opciones'
+                }).on("select2:select select2:unselect", function(e) {
+                    //this returns all the selected item
+                    var regEx = $(this).val()
+                        .join("|");
+                    datatable.column(5).search(regEx, true, false).draw();
+                });
+                $('#cama').select2({
+                    placeholder: 'Seleccione una o más opciones'
+                }).on("select2:select select2:unselect", function(e) {
+                    var regEx = $(this).val()
+                        .join("|");
+                    datatable.column(6).search(regEx, true, false).draw();
+
+                });
+            })
         });
-        $(document).on('click', '.btn-alta', function () {
-            let id_encounter = this.id;
-            let nombre = $(this).data('title');
-            $('#body_alta').show();
-            $('#body_death').hide();
-            $('#modal_title').html("<b>"+nombre+'</b>');
-            $('#paciente_name').html("<b>"+$(this).data('paciente')+'</b>');
-            $('#id_encounter').val(id_encounter);
-            $('#nombre_paciente').val($(this).data('paciente'));
-            $('#modal_alta').modal('toggle');
-        });
-        $(document).on('click', '.btn-death', function () {
-            let id_encounter = $(this).data('id');
-            let nombre = $(this).data('title');
-            $('#death_date').attr('required',true);
-            $('#body_alta').hide();
-            $('#body_death').show();
-            $('#modal_title').html("<b>"+nombre+'</b>');
-            $('#paciente_name').html("<b>"+$(this).data('paciente')+'</b>');
-            $('#id_encounter').val(id_encounter);
-            $('#nombre_paciente').val($(this).data('paciente'));
-            $('#modal_alta').modal('toggle');
-        });
-        $(document).on('click','.btn-editar',function () {
-            let id_encounter = $(this).data('id');
-            top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>"+"/interface/tableros/editar_internado.php?id="+id_encounter;
-        });
-    });
-</script>
-<script>
-    document.addEventListener('touchstart', {});
-</script>
+    </script>
+    <script>
+        document.addEventListener('touchstart', {});
+    </script>
 </body>
-
