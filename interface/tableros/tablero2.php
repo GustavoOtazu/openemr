@@ -30,7 +30,8 @@ require_once("../globals.php");
     <script type="text/javascript" src="../../public/assets/select2/dist/js/select2.min.js"></script>
     <link rel="stylesheet" href="../../public/assets/select2/dist/css/select2.min.css" type="text/css">
     <script src="../../public/assets/canvas/canvasjs.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script src="../../public/assets/moment/moment.js"></script>
+    <script src="../../public/assets/moment/locale/es.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
     <style type="text/css>">

@@ -1,7 +1,7 @@
-<?php /* Smarty version 2.6.31, created on 2021-02-03 15:44:08
+<?php /* Smarty version 2.6.31, created on 2021-02-09 21:51:22
          compiled from C:%5Cxampp%5Chtdocs%5Copenemr_empty%5Cinterface%5Cforms%5Cvitals/templates/vitals/general_new.html */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
-smarty_core_load_plugins(array('plugins' => array(array('function', 'headerTemplate', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 12, false),array('function', 'xla', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 23, false),array('function', 'xlj', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 84, false),array('modifier', 'date_format', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 68, false),array('modifier', 'js_escape', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 68, false),)), $this); ?>
+smarty_core_load_plugins(array('plugins' => array(array('function', 'headerTemplate', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 12, false),array('function', 'xla', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 23, false),array('function', 'xlj', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 85, false),array('modifier', 'date_format', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 69, false),array('modifier', 'js_escape', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 69, false),)), $this); ?>
 <html>
 <head>
     <?php echo smarty_function_headerTemplate(array('assets' => 'datetime-picker'), $this);?>
@@ -59,7 +59,8 @@ smarty_core_load_plugins(array('plugins' => array(array('function', 'headerTempl
 </body>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.css" integrity="sha512-QG68tUGWKc1ItPqaThfgSFbubTc+hBv4OW/4W1pGi0HHO5KmijzXzLEOlEbbdfDtVT7t7mOohcOrRC5mxKuaHA==" crossorigin="anonymous" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.min.js" integrity="sha512-opAQpVko4oSCRtt9X4IgpmRkINW9JFIV3An2bZWeFwbsVvDxEkl4TEDiQ2vyhO2TDWfk/lC+0L1dzC5FxKFeJw==" crossorigin="anonymous"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script src="../../../public/assets/moment/moment.js"></script>
+<script src="../../../public/assets/moment/locale/es.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 <script language="javascript">
