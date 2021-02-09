@@ -101,7 +101,6 @@ require_once("../globals.php");
     let camas = [];
     let salas=[];
     function showVitals() {
-        console.log(camas, salas)
         var xmlhttp = new XMLHttpRequest();
         let vitals_show = {};
         xmlhttp.onreadystatechange = function() {
