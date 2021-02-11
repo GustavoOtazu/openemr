@@ -1,7 +1,7 @@
-<?php /* Smarty version 2.6.31, created on 2021-02-09 21:51:22
+<?php /* Smarty version 2.6.31, created on 2021-02-09 21:59:29
          compiled from C:%5Cxampp%5Chtdocs%5Copenemr_empty%5Cinterface%5Cforms%5Cvitals/templates/vitals/general_new.html */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
-smarty_core_load_plugins(array('plugins' => array(array('function', 'headerTemplate', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 12, false),array('function', 'xla', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 23, false),array('function', 'xlj', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 85, false),array('modifier', 'date_format', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 69, false),array('modifier', 'js_escape', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 69, false),)), $this); ?>
+smarty_core_load_plugins(array('plugins' => array(array('function', 'headerTemplate', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 12, false),array('function', 'xla', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 23, false),array('function', 'xlj', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 93, false),array('modifier', 'date_format', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 77, false),array('modifier', 'js_escape', 'C:\\xampp\\htdocs\\openemr_empty\\interface\\forms\\vitals/templates/vitals/general_new.html', 77, false),)), $this); ?>
 <html>
 <head>
     <?php echo smarty_function_headerTemplate(array('assets' => 'datetime-picker'), $this);?>
@@ -33,7 +33,15 @@ smarty_core_load_plugins(array('plugins' => array(array('function', 'headerTempl
         <div class="col-md-6">
             <label for="unidades">Unidades</label>
             <select id="unidades" class="form-control">
-                <option value="weight">Peso (kg)</option>		99.79
+                <option value="hr">Ritmo cardiaco</option>
+                <option value="vpc">Contracciones ventriculares prematuras</option>
+                <option value="lvp_s">Pr. ventricular izq sis</option>
+                <option value="lvp_d"> Pr. ventricular izq diast</option>
+                <option value="pr_spo2">Frec. del pulso por sat. de oxígeno</option>
+                <option value="nibps_sys"> Presión No Invasiva sis</option>
+                <option value="nibps_dys"> Presión No Invasiva Dis</option>
+
+
                 <option value="height">Altura	(cm)</option>
                 <option value="bps">BP Sistólica	(mmHg)</option>
                 <option value="bpd">BP Diastólica	(mmHg)</option>
