@@ -92,7 +92,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
 </HEAD>
 
 <body class="body_top">
-    <div id="container" class="<?php echo attr($oemr_ui->oeContainer()); ?>">
+    <div id="container" class="<?php echo attr($oemr_ui->oeContainer()); ?>" style="width: 90%;">
         <div class="row">
             <div class="col-sm-12">
                 <div class="page-header clearfix">
