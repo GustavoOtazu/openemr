@@ -232,9 +232,9 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                                         '<td>' . text(strtoupper($result['cuarto'])) . '</td>' .
                                         '<td>' . text($result['cama']) . '</td>' .
                                         '<td>
-<button class="btn btn-info btn-editar" type="button" data-id="' . attr($result['id']) . '">Editar</button>
-<button class="btn btn-default btn-alta" type="button" id="' . attr($result['id']) . '" data-title="Dar de alta al paciente: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">Dar de alta al paciente</button>
-<button class="btn btn-danger btn-death" type="button" data-id="' . attr($result['id']) . '" data-title="Registrar muerte del paciente: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">Registrar muerte</button>
+<button class="btn btn-info btn-editar" type="button" data-id="' . attr($result['id']) . '">EDIT</button>
+<button class="btn btn-default btn-alta" type="button" id="' . attr($result['id']) . '" data-title="Dar de alta al paciente: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">ALTA</button>
+<button class="btn btn-danger btn-death" type="button" data-id="' . attr($result['id']) . '" data-title="Registrar muerte del paciente: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">OBITO</button>
 </td>' .
                                         '</tr>';
                                 }
