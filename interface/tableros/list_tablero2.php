@@ -7,7 +7,7 @@ $res = sqlStatement($internados_actuales_consult);
 $inpatient = [];
 $result = [];
 for ($iter = 0; $encounter = sqlFetchArray($res); $iter++) {
-    $sql_vitals = "SELECT p.fname, v.* FROM form_vitals as v JOIN patient_data as p on p.pubpid = v.pid  WHERE v.pid =? and v.date between '".$inicio."' and '".$fin."'  ORDER by v.date ASC";
+    $sql_vitals = "SELECT p.fname, v.* FROM form_vitals as v JOIN patient_data as p on p.pid = v.pid  WHERE v.pid =? and v.date between '".$inicio."' and '".$fin."'  ORDER by v.date ASC";
     $results = sqlStatement($sql_vitals, array($encounter['pid']));
     if ($results) {
         $i = 0;
