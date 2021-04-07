@@ -142,14 +142,14 @@ require_once("../globals.php");
                             }
                         }
                     }
-                    let sala = resp[element]["sala"];
-                    let cama = resp[element]["cama"];
-                    var camaExists = ($('#cama option[value=' + cama + ']').length > 0);
+                    let sala = result[element]["sala"];
+                    let cama = result[element]["cama"];
+                    var camaExists = ($('#cama option[value="' + cama + '"]').length > 0);
 
                     if (!camaExists) {
                         $('#cama').append("<option value='" + cama + "'>" + cama + "</option>");
                     }
-                    var salaExists = ($('#sala option[value=' + sala + ']').length > 0);
+                    var salaExists = ($('#sala option[value="' + sala + '"]').length > 0);
 
                     if (!salaExists) {
                         $('#sala').append("<option value='" + sala + "'>" + sala + "</option>");

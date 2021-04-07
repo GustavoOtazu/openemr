@@ -301,7 +301,11 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 $('#inp_table thead tr').clone(true).appendTo('#inp_table thead');
                 $('#inp_table thead tr:eq(1) th').each(function(i) {
                     var title = $(this).text();
-                    $(this).html('<input type="text" placeholder="Buscar ' + title + '"  title="Ingrese aquí lo que desea buscar"/>');
+                    if (title.trim() !== 'Acciones') {
+                        $(this).html('<input type="text" placeholder="Buscar ' + title + '"  title="Ingrese aquí lo que desea buscar"/>');   
+                    }else{
+                        $(this).html('')
+                    }
 
                     $('input', this).on('keyup change', function() {
                         if (datatable.column(i).search() !== this.value) {
