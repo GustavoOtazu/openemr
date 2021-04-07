@@ -29,7 +29,7 @@ if($camas!=''){
     $query_where.=')';
     
 }
-$internados_actuales_consult = "SELECT f.pid, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, f.cuarto as sala, f.cama as cama from form_encounter as f join patient_data as p on p.pid = f.pid ".$query_where." order by f.id ASC";
+$internados_actuales_consult = "SELECT f.pid, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, f.cuarto as sala, f.cama as cama from form_encounter as f join patient_data as p on p.pid = f.pid ".$query_where." order by sala ASC";
 $res = sqlStatement($internados_actuales_consult);
 $inpatient=[];
 $result=[];
