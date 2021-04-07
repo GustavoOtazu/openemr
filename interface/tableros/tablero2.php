@@ -57,11 +57,7 @@ require_once("../globals.php");
                                         <label class="control-label col-sm-2 oe-text-to-right" for="sala">Sala</label>
                                         <div class="col-sm-8">
                                             <select class="form-control col-sm-9" name="sala" id="sala" multiple="">
-                                                <option value="A">Sala A</option>
-                                                <option value="B">Sala B</option>
-                                                <option value="C">Sala C</option>
-                                                <option value="D">Sala D</option>
-                                                <option value="E">Sala E</option>
+                                               
                                             </select>
                                         </div>
                                     </div>
@@ -71,38 +67,7 @@ require_once("../globals.php");
                                         <label class="control-label col-sm-2 oe-text-to-right" for="cama">Camas</label>
                                         <div class="col-sm-8">
                                             <select class="form-control col-sm-9" name="cama" id="cama" multiple="">
-                                                <option value="1">Cama 1</option>
-                                                <option value="2">Cama 2</option>
-                                                <option value="3">Cama 3</option>
-                                                <option value="4">Cama 4</option>
-                                                <option value="5">Cama 5</option>
-                                                <option value="6">Cama 6</option>
-                                                <option value="7">Cama 7</option>
-                                                <option value="8">Cama 8</option>
-                                                <option value="9">Cama 9</option>
-                                                <option value="10">Cama 10</option>
-                                                <option value="11">Cama 11</option>
-                                                <option value="12">Cama 12</option>
-                                                <option value="13">Cama 13</option>
-                                                <option value="14">Cama 14</option>
-                                                <option value="15">Cama 15</option>
-                                                <option value="16">Cama 16</option>
-                                                <option value="17">Cama 17</option>
-                                                <option value="18">Cama 18</option>
-                                                <option value="19">Cama 19</option>
-                                                <option value="20">Cama 1</option>
-                                                <option value="21">Cama 21</option>
-                                                <option value="22">Cama 22</option>
-                                                <option value="23">Cama 23</option>
-                                                <option value="24">Cama 24</option>
-                                                <option value="25">Cama 25</option>
-                                                <option value="26">Cama 26</option>
-                                                <option value="27">Cama 27</option>
-                                                <option value="28">Cama 28</option>
-                                                <option value="29">Cama 29</option>
-                                                <option value="30">Cama 30</option>
-                                                <option value="31">Cama 31</option>
-                                                <option value="32">Cama 32</option>
+                                                
                                             </select>
                                         </div>
                                     </div>
@@ -177,7 +142,18 @@ require_once("../globals.php");
                             }
                         }
                     }
+                    let sala = resp[element]["sala"];
+                    let cama = resp[element]["cama"];
+                    var camaExists = ($('#cama option[value=' + cama + ']').length > 0);
 
+                    if (!camaExists) {
+                        $('#cama').append("<option value='" + cama + "'>" + cama + "</option>");
+                    }
+                    var salaExists = ($('#sala option[value=' + sala + ']').length > 0);
+
+                    if (!salaExists) {
+                        $('#sala').append("<option value='" + sala + "'>" + sala + "</option>");
+                    }
                     if (mostrar == true) {
                         existen_datos = true;
                         $('#body-vitals-tab').append('<div class="col-md-6"><div id="chartContainer' + pubpid + '" style="height: 200px; width: 100%;"></div></div>');

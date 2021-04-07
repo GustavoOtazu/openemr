@@ -30,7 +30,7 @@ if ($death_date) {
 } elseif ($id_encounter) {
     sqlStatement("UPDATE form_encounter set out_date= DATE(NOW()) where id = ?", array($id_encounter));
 }
-$internados_actuales_consult = "SELECT f.*, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null";
+$internados_actuales_consult = "SELECT f.*, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, p.pubpid as pubpid from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null";
 $res = sqlStatement($internados_actuales_consult);
 $inpatient = [];
 for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
@@ -53,7 +53,10 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
     <link rel="shortcut icon" href="../../public/images/favicon.ico" />
     <script type="text/javascript" src="../../public/assets/jquery-ui/jquery-ui.js"></script>
     <link rel="stylesheet" href="../../public/assets/datatable-last/jquery.dataTables.min.css" type="text/css">
+    <!-- <link rel="stylesheet" href="../../public/assets/datatable-last/searchPanes.dataTables.min.css" type="text/css"> -->
     <script type="text/javascript" src="../../public/assets/datatable-last/jquery.dataTables.min.js"></script>
+    <!-- <script type="text/javascript" src="../../public/assets/datatable-last/dataTables.searchPanes.min.js"></script> -->
+    <script type="text/javascript" src="../../public/assets/datatable-last/dataTables.select.min.js"></script>
     <script type="text/javascript" src="../../public/assets/select2/dist/js/select2.min.js"></script>
     <link rel="stylesheet" href="../../public/assets/select2/dist/css/select2.min.css" type="text/css">
     <style type="text/css">
@@ -73,6 +76,10 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 float: inherit;
                 text-align: justify;
             }
+        }
+
+        thead input {
+            width: 100%;
         }
     </style>
     <?php
@@ -127,66 +134,6 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 </div>
             </div>
         </div>
-        <div class="row" style="margin-bottom: 5%;">
-            <div class="col-md-12">
-                <h4 class="text-center">Filtros</h4>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="col-sm-2 oe-text-to-right" for="sala">Sala</label>
-                        <div class="col-sm-8">
-                            <select class="form-control col-sm-9" name="sala" id="sala" multiple="">
-                                <option value="A">Sala A</option>
-                                <option value="B">Sala B</option>
-                                <option value="C">Sala C</option>
-                                <option value="D">Sala D</option>
-                                <option value="E">Sala E</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="control-label col-sm-2 oe-text-to-right" for="cama">Camas</label>
-                        <div class="col-sm-8">
-                            <select class="form-control col-sm-9" name="cama" id="cama" multiple="">
-                                <option value="1">Cama 1</option>
-                                <option value="2">Cama 2</option>
-                                <option value="3">Cama 3</option>
-                                <option value="4">Cama 4</option>
-                                <option value="5">Cama 5</option>
-                                <option value="6">Cama 6</option>
-                                <option value="7">Cama 7</option>
-                                <option value="8">Cama 8</option>
-                                <option value="9">Cama 9</option>
-                                <option value="10">Cama 10</option>
-                                <option value="11">Cama 11</option>
-                                <option value="12">Cama 12</option>
-                                <option value="13">Cama 13</option>
-                                <option value="14">Cama 14</option>
-                                <option value="15">Cama 15</option>
-                                <option value="16">Cama 16</option>
-                                <option value="17">Cama 17</option>
-                                <option value="18">Cama 18</option>
-                                <option value="19">Cama 19</option>
-                                <option value="20">Cama 1</option>
-                                <option value="21">Cama 21</option>
-                                <option value="22">Cama 22</option>
-                                <option value="23">Cama 23</option>
-                                <option value="24">Cama 24</option>
-                                <option value="25">Cama 25</option>
-                                <option value="26">Cama 26</option>
-                                <option value="27">Cama 27</option>
-                                <option value="28">Cama 28</option>
-                                <option value="29">Cama 29</option>
-                                <option value="30">Cama 30</option>
-                                <option value="31">Cama 31</option>
-                                <option value="32">Cama 32</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
         <div class="row">
             <div class="col-sm-12">
                 <div id="dynamic">
@@ -203,7 +150,10 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                                     Fecha de Ingreso
                                 </th>
                                 <th class="head">
-                                    Departamento
+                                    CI (RG Paciente)
+                                </th>
+                                <th class="head">
+                                    NRO Prontuario
                                 </th>
                                 <th class="head">
                                     Servicio
@@ -227,7 +177,8 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                                         '<td>' . text($result['pid']) . '</td>' .
                                         '<td>' . text($result['paciente']) . '</td>' .
                                         '<td>' . date('d/m/Y', strtotime($result['date'])) . '</td>' .
-                                        '<td>' . text($result['departamento'] === 'terapia_adulto' ? 'Terapia Adulto' : 'Terapia niños') . '</td>' .
+                                        '<td>' . text($result['pubpid']) . '</td>' .
+                                        '<td>' . text('-') . '</td>' .
                                         '<td>' . text(strtoupper($result['servicio'])) . '</td>' .
                                         '<td>' . text(strtoupper($result['cuarto'])) . '</td>' .
                                         '<td>' . text($result['cama']) . '</td>' .
@@ -240,6 +191,37 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                                 }
                             } ?>
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <th class="head">
+                                    Identificador
+                                </th>
+                                <th class="head">
+                                    Paciente
+                                </th>
+                                <th class="head">
+                                    Fecha de Ingreso
+                                </th>
+                                <th class="head">
+                                    CI (RG Paciente)
+                                </th>
+                                <th class="head">
+                                    NRO Prontuario
+                                </th>
+                                <th class="head">
+                                    Servicio
+                                </th>
+                                <th class="head">
+                                    Sala
+                                </th>
+                                <th class="head">
+                                    Cama
+                                </th>
+                                <th class="head">
+                                    Acciones
+                                </th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -316,6 +298,20 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>" + "/interface/tableros/editar_internado.php?id=" + id_encounter;
             });
             $(document).ready(function() {
+                $('#inp_table thead tr').clone(true).appendTo('#inp_table thead');
+                $('#inp_table thead tr:eq(1) th').each(function(i) {
+                    var title = $(this).text();
+                    $(this).html('<input type="text" placeholder="Buscar ' + title + '"  title="Ingrese aquí lo que desea buscar"/>');
+
+                    $('input', this).on('keyup change', function() {
+                        if (datatable.column(i).search() !== this.value) {
+                            datatable
+                                .column(i)
+                                .search(this.value)
+                                .draw();
+                        }
+                    });
+                });
                 const datatable = $('#inp_table').DataTable({
                     order: [
                         [1, "asc"],
@@ -325,22 +321,9 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                     orderCellsTop: true,
                     fixedHeader: true
                 });
-                $('#sala').select2({
-                    placeholder: 'Seleccione una o más opciones'
-                }).on("select2:select select2:unselect", function(e) {
-                    //this returns all the selected item
-                    var regEx = $(this).val()
-                        .join("|");
-                    datatable.column(5).search(regEx, true, false).draw();
-                });
-                $('#cama').select2({
-                    placeholder: 'Seleccione una o más opciones'
-                }).on("select2:select select2:unselect", function(e) {
-                    var regEx = $(this).val()
-                        .join("|");
-                    datatable.column(6).search(regEx, true, false).draw();
+                
 
-                });
+
             })
         });
     </script>
