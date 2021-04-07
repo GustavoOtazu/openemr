@@ -318,7 +318,9 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 });
                 const datatable = $('#inp_table').DataTable({
                     order: [
-                        [1, "asc"],
+                        [6, "asc"],
+                        [7, "asc"],
+                        [8, "asc"],
 
                     ],
                     responsive: true,
