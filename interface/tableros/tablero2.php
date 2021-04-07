@@ -142,8 +142,8 @@ require_once("../globals.php");
                             }
                         }
                     }
-                    let sala = result[element]["sala"];
-                    let cama = result[element]["cama"];
+                    let sala = result[pubpid]["sala"];
+                    let cama = result[pubpid]["cama"];
                     var camaExists = ($('#cama option[value="' + cama + '"]').length > 0);
 
                     if (!camaExists) {
