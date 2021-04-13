@@ -81,6 +81,15 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
         thead input {
             width: 100%;
         }
+
+        .inner {
+            display: inline-block;
+        }
+
+        .outer {
+            width: 100%;
+            text-align: center;
+        }
     </style>
     <?php
     $arrOeUiSettings = array(
@@ -140,7 +149,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                     <table border="0" cellpadding="0" cellspacing="0" class="display" id="inp_table" style="width:100%">
                         <thead>
                             <tr>
-                                <th class="head">
+                                <th class="head" style="width: 10%;">
                                     Identificador
                                 </th>
                                 <th class="head">
@@ -182,11 +191,11 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                                         '<td>' . text(strtoupper($result['servicio'])) . '</td>' .
                                         '<td>' . text(strtoupper($result['cuarto'])) . '</td>' .
                                         '<td>' . text($result['cama']) . '</td>' .
-                                        '<td>
-<button class="btn btn-info btn-editar btn-sm" type="button" data-id="' . attr($result['id']) . '">EDIT</button>
-<button class="btn btn-default btn-alta btn-sm" type="button" id="' . attr($result['id']) . '" data-title="Dar de alta al paciente: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">ALTA</button>
-<button class="btn btn-danger btn-death btn-sm" type="button" data-id="' . attr($result['id']) . '" data-title="Registrar muerte del paciente: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">OBITO</button>
-</td>' .
+                                        '<td><div class="outer">
+                                        <div class="inner"><button class="btn btn-info btn-editar btn-xs" type="button" data-id="' . attr($result['id']) . '">EDIT</button>
+</div><div class="inner"><button class="btn btn-default btn-alta btn-xs" type="button" id="' . attr($result['id']) . '" data-title="Dar de alta al paciente: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">ALTA</button>
+</div><div class="inner"><button class="btn btn-danger btn-death btn-xs" type="button" data-id="' . attr($result['id']) . '" data-title="Registrar muerte del paciente: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">OBITO</button>
+</div></div></td>' .
                                         '</tr>';
                                 }
                             } ?>
@@ -302,8 +311,8 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 $('#inp_table thead tr:eq(1) th').each(function(i) {
                     var title = $(this).text();
                     if (title.trim() !== 'Acciones') {
-                        $(this).html('<input type="text" placeholder="Buscar ' + title + '"  title="Ingrese aquí lo que desea buscar"/>');   
-                    }else{
+                        $(this).html('<input type="text" placeholder="Buscar ' + title + '"  title="Ingrese aquí lo que desea buscar"/>');
+                    } else {
                         $(this).html('')
                     }
 
@@ -327,7 +336,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                     orderCellsTop: true,
                     fixedHeader: true
                 });
-                
+
 
 
             })
