@@ -156,7 +156,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                                     Paciente
                                 </th>
                                 <th class="head">
-                                    Fecha de Ingreso
+                                    Ingreso
                                 </th>
                                 <th class="head">
                                     CI (RG Paciente)
@@ -167,13 +167,13 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                                 <th class="head">
                                     Servicio
                                 </th>
-                                <th class="head">
+                                <th class="head" style="width: 5%;">
                                     Sala
                                 </th>
-                                <th class="head">
+                                <th class="head" style="width: 5%;">
                                     Cama
                                 </th>
-                                <th class="head">
+                                <th class="head" style="width: 10%;">
                                     Acciones
                                 </th>
                             </tr>
