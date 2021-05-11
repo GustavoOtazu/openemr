@@ -149,7 +149,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                     <table border="0" cellpadding="0" cellspacing="0" class="display" id="inp_table" style="width:100%">
                         <thead>
                             <tr>
-                                <th class="head" style="width: 10%;">
+                                <th class="head" style="width: 5%;">
                                     Identificador
                                 </th>
                                 <th class="head">
@@ -161,13 +161,13 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                                 <th class="head">
                                     CI (RG Paciente)
                                 </th>
-                                <th class="head">
+                                <th class="head" style="width: 4%;">
                                     NRO Prontuario
                                 </th>
-                                <th class="head">
+                                <th class="head" style="width: 10%;">
                                     Servicio
                                 </th>
-                                <th class="head" style="width: 5%;">
+                                <th class="head" style="width: 10%;">
                                     Sala
                                 </th>
                                 <th class="head" style="width: 5%;">
