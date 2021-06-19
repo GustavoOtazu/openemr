@@ -2,7 +2,7 @@
 require_once("../globals.php");
 $inicio = $_REQUEST["inicio"];
 $fin = $_REQUEST["fin"];
-$internados_actuales_consult = "SELECT f.pid, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, f.cuarto as sala, f.cama as cama from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null order by sala ASC";
+$internados_actuales_consult = "SELECT f.pid, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, f.cuarto as sala, f.cama as cama from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null order by sala ASC, cama ASC";
 $res = sqlStatement($internados_actuales_consult);
 $inpatient = [];
 $result = [];
