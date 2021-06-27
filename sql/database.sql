@@ -10583,3 +10583,4 @@ alter TABLE `form_vitals` ADD COLUMN st2 varchar(40) default NULL AFTER bps ;
 alter TABLE `form_vitals` ADD COLUMN st3 varchar(40) default NULL AFTER bps ;
 alter TABLE `form_vitals` ADD COLUMN nibps_sys varchar(40) default NULL AFTER bps ;
 alter TABLE `form_vitals` ADD COLUMN nibps_dys varchar(40) default NULL AFTER bps ;
+alter TABLE `form_encounter` ADD COLUMN nro_registro varchar(40) default NULL AFTER pid;
