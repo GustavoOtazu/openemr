@@ -10583,4 +10583,21 @@ alter TABLE `form_vitals` ADD COLUMN st2 varchar(40) default NULL AFTER bps ;
 alter TABLE `form_vitals` ADD COLUMN st3 varchar(40) default NULL AFTER bps ;
 alter TABLE `form_vitals` ADD COLUMN nibps_sys varchar(40) default NULL AFTER bps ;
 alter TABLE `form_vitals` ADD COLUMN nibps_dys varchar(40) default NULL AFTER bps ;
+
+-----------------------------------------------------------
+
+--
+-- Table structure for table `amendments_history`
+--
+
+DROP TABLE IF EXISTS `configuracion_signos_vitales_parametros`;
+CREATE TABLE `configuracion_signos_vitales_parametros` (
+                                      `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Configuracion Signos Vitales ID',
+                                      `identificador` VARCHAR(50) NULL COMMENT 'Identificador de la Tabla',
+                                      `nombre_parametro` VARCHAR(100) NULL COMMENT 'Nombre del Parametro Vital',
+                                      `valor_maximo` int(10) NOT NULL COMMENT 'valor maximo del parametro',
+                                      `valor_minimo` int(10) NOT NULL COMMENT 'valor minimo del parametro',
+                                      `unidad_medida` VARCHAR(50) NULL COMMENT 'Unidad de medida referente al parametro',
+                                      PRIMARY KEY (`id`)
+) ENGINE = InnoDB;
 alter TABLE `form_encounter` ADD COLUMN nro_registro varchar(40) default NULL AFTER pid;

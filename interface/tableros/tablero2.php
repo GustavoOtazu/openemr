@@ -57,7 +57,7 @@ require_once("../globals.php");
                                         <label class="control-label col-sm-2 oe-text-to-right" for="sala">Sala</label>
                                         <div class="col-sm-8">
                                             <select class="form-control col-sm-9" name="sala" id="sala" multiple="">
-                                               
+
                                             </select>
                                         </div>
                                     </div>
@@ -67,7 +67,7 @@ require_once("../globals.php");
                                         <label class="control-label col-sm-2 oe-text-to-right" for="cama">Camas</label>
                                         <div class="col-sm-8">
                                             <select class="form-control col-sm-9" name="cama" id="cama" multiple="">
-                                                
+
                                             </select>
                                         </div>
                                     </div>
@@ -116,15 +116,15 @@ require_once("../globals.php");
                 result = $.parseJSON(this.responseText)
                 $('#body-vitals-tab').html('');
                 let existen_datos = false;
-                $.each(result, function(pubpid, index) {
+                $.each(result, function(index, I) {
                     let mostrar = false;
                     if (camas.length === 0 && salas.length === 0) {
                         mostrar = true;
                     }
                     if (salas.length > 0) {
-                        if (salas.includes(result[pubpid]['sala'].toUpperCase())) {
+                        if (salas.includes(result[index]['sala'].toUpperCase())) {
                             if (camas.length > 0) {
-                                if (camas.includes(result[pubpid]['cama'])) {
+                                if (camas.includes(result[index]['cama'])) {
                                     mostrar = true;
                                 } else {
                                     mostrar = false;
@@ -135,15 +135,16 @@ require_once("../globals.php");
                         }
                     } else {
                         if (camas.length > 0) {
-                            if (camas.includes(result[pubpid]['cama'])) {
+                            if (camas.includes(result[index]['cama'])) {
                                 mostrar = true;
                             } else {
                                 mostrar = false;
                             }
                         }
                     }
-                    let sala = result[pubpid]["sala"];
-                    let cama = result[pubpid]["cama"];
+                    let sala = result[index]["sala"];
+                    let cama = result[index]["cama"];
+                    let pid = result[index]["pid"];
                     var camaExists = ($('#cama option[value="' + cama + '"]').length > 0);
 
                     if (!camaExists) {
@@ -156,16 +157,16 @@ require_once("../globals.php");
                     }
                     if (mostrar == true) {
                         existen_datos = true;
-                        $('#body-vitals-tab').append('<div class="col-md-6"><div id="chartContainer' + pubpid + '" style="height: 200px; width: 100%;"></div></div>');
-                        new CanvasJS.Chart("chartContainer" + pubpid, {
+                        $('#body-vitals-tab').append('<div class="col-md-6"><div id="chartContainer' + pid + '" style="height: 350px; width: 100%;"></div></div>');
+                        new CanvasJS.Chart("chartContainer" + pid, {
                             animationEnabled: true,
-                            exportEnabled: true,
+                            exportEnabled: false,
                             title: {
                                 fontFamily: "tahoma",
-                                text: 'Sala: ' + result[pubpid]['sala'] + ' Cama: ' + result[pubpid]['cama'] + ' Nro Registro: ' + pubpid + '   ' + result[pubpid]['paciente']
+                                text: 'Sala: ' + result[index]['sala'] + ' Cama: ' + result[index]['cama'] + ' Nro Registro: ' + pid + '   ' + result[index]['paciente']
                             },
                             axisY: {
-                                title: "Signo vitales"
+                                title: "Signos vitales"
                             },
                             legend: {
                                 cursor: "pointer",
@@ -176,35 +177,35 @@ require_once("../globals.php");
                                     type: "spline",
                                     name: "BPS",
                                     showInLegend: true,
-                                    dataPoints: JSON.parse(result[pubpid]['bps'])
+                                    dataPoints: JSON.parse(result[index]['bps'])
                                 },
                                 {
                                     type: "spline",
                                     name: "BPD",
                                     showInLegend: true,
                                     xValueType: "dateTime",
-                                    dataPoints: JSON.parse(result[pubpid]['bpd'])
+                                    dataPoints: JSON.parse(result[index]['bpd'])
                                 },
                                 {
                                     type: "spline",
                                     name: "Sat. Ox",
                                     showInLegend: true,
                                     xValueType: "dateTime",
-                                    dataPoints: JSON.parse(result[pubpid]['oxy'])
+                                    dataPoints: JSON.parse(result[index]['oxy'])
                                 },
                                 {
                                     type: "spline",
                                     name: "Pulso",
                                     showInLegend: true,
                                     xValueType: "dateTime",
-                                    dataPoints: JSON.parse(result[pubpid]['pulso'])
+                                    dataPoints: JSON.parse(result[index]['pulso'])
                                 },
                                 {
                                     type: "spline",
                                     name: "Temperatura",
                                     showInLegend: true,
                                     xValueType: "dateTime",
-                                    dataPoints: JSON.parse(result[pubpid]['temp'])
+                                    dataPoints: JSON.parse(result[index]['temp'])
                                 },
 
                                 {
@@ -212,77 +213,77 @@ require_once("../globals.php");
                                     name: "HR",
                                     showInLegend: true,
                                     xValueType: "dateTime",
-                                    dataPoints: JSON.parse(result[pubpid]['hr'])
+                                    dataPoints: JSON.parse(result[index]['hr'])
                                 },
                                 {
                                     type: "spline",
                                     name: "VPC",
                                     showInLegend: true,
                                     xValueType: "dateTime",
-                                    dataPoints: JSON.parse(result[pubpid]['vpc'])
+                                    dataPoints: JSON.parse(result[index]['vpc'])
                                 },
                                 {
                                     type: "spline",
                                     name: "HR",
                                     showInLegend: true,
                                     xValueType: "dateTime",
-                                    dataPoints: JSON.parse(result[pubpid]['hr'])
+                                    dataPoints: JSON.parse(result[index]['hr'])
                                 },
                                 {
                                     type: "spline",
                                     name: "lvp(s)",
                                     showInLegend: true,
                                     xValueType: "dateTime",
-                                    dataPoints: JSON.parse(result[pubpid]['lvp_s'])
+                                    dataPoints: JSON.parse(result[index]['lvp_s'])
                                 },
                                 {
                                     type: "spline",
                                     name: "lvp(d)",
                                     showInLegend: true,
                                     xValueType: "dateTime",
-                                    dataPoints: JSON.parse(result[pubpid]['lvp_s'])
+                                    dataPoints: JSON.parse(result[index]['lvp_s'])
                                 },
                                 {
                                     type: "spline",
                                     name: "PR(Sp02)",
                                     showInLegend: true,
                                     xValueType: "dateTime",
-                                    dataPoints: JSON.parse(result[pubpid]['pr_spo2'])
+                                    dataPoints: JSON.parse(result[index]['pr_spo2'])
                                 },
                                 {
                                     type: "spline",
                                     name: "ST1",
                                     showInLegend: true,
                                     xValueType: "dateTime",
-                                    dataPoints: JSON.parse(result[pubpid]['st1'])
+                                    dataPoints: JSON.parse(result[index]['st1'])
                                 },
                                 {
                                     type: "spline",
                                     name: "ST2",
                                     showInLegend: true,
                                     xValueType: "dateTime",
-                                    dataPoints: JSON.parse(result[pubpid]['st2'])
+                                    dataPoints: JSON.parse(result[index]['st2'])
                                 },
                                 {
                                     type: "spline",
                                     name: "ST3",
                                     showInLegend: true,
                                     xValueType: "dateTime",
-                                    dataPoints: JSON.parse(result[pubpid]['st3'])
+                                    dataPoints: JSON.parse(result[index]['st3'])
                                 },
                                 {
                                     type: "spline",
                                     name: "Nibp(S)",
                                     showInLegend: true,
                                     xValueType: "dateTime",
-                                    dataPoints: JSON.parse(result[pubpid]['nibps_sys'])
+                                    dataPoints: JSON.parse(result[index]['nibps_sys'])
                                 },
                                 {
                                     type: "spline",
                                     name: "Nibps(D)",
                                     showInLegend: true,
                                     xValueType: "dateTime",
-                                    dataPoints: JSON.parse(result[pubpid]['nibps_dys'])
+                                    dataPoints: JSON.parse(result[index]['nibps_dys'])
                                 }
                             ]
                         }).render();
@@ -362,6 +363,8 @@ require_once("../globals.php");
                 customRangeLabel: "Seleccione un Rango"
             },
             ranges: {
+                //Boton 'para probar' es para uso de desarrollo exclusivo, omitir en produccion
+                'Para probar': [moment().subtract(15, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
                 'Hoy': [moment(), moment()],
                 'Ayer': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
                 'Últimos 7 días': [moment().subtract(6, 'days'), moment()],

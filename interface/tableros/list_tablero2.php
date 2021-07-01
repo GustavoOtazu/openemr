@@ -2,7 +2,8 @@
 require_once("../globals.php");
 $inicio = $_REQUEST["inicio"];
 $fin = $_REQUEST["fin"];
-$internados_actuales_consult = "SELECT f.pid, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, f.cuarto as sala, f.cama as cama from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null order by sala ASC, cama ASC";
+//modificacion de consulta query para visualizar las salas y camas de forma ordenada ascendente
+$internados_actuales_consult = "SELECT f.pid, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, f.cuarto COLLATE utf8_general_ci sala, f.cama as cama from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null order by sala, f.cama ASC";
 $res = sqlStatement($internados_actuales_consult);
 $inpatient = [];
 $result = [];
@@ -54,7 +55,8 @@ for ($iter = 0; $encounter = sqlFetchArray($res); $iter++) {
             $i++;
         }
         if ($i > 0) {
-            $result[$encounter['pid']] = [
+            $result[$iter] = [
+                "pid" => $encounter['pid'],
                 "paciente" => $encounter['paciente'],
                 "cama" => $encounter['cama'],
                 "sala" => $encounter['sala'],
