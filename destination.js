@@ -1,15 +1,23 @@
 var dbConn;
 try {
   dbConn = DatabaseConnectionFactory.createDatabaseConnection('com.mysql.jdbc.Driver', 'jdbc:mysql://localhost:3306/openemr', 'root', '');
-  logger.info("numero de registro que recibe desde el monitor: " + $('patientId'))
-  var pid = null
+  logger.info("numero de registro que recibe desde el monitor: " + $('patientId'));
+  var pid = null;
   var nro_registro = $('patientId');
-  var query_form_encounter = "SELECT pid FROM form_encounter where nro_registro = " + nro_registro + "LIMIT 1";
-  var result_form_encounter = dbConn.executeCachedQuery(query_form_encounter);
-  while (result_form_encounter.next()) {
-    pid = result_form_encounter.getInt(1);
+  var query_form_encounter = "SELECT pid FROM form_encounter where nro_registro = '" + nro_registro + "'";
+  try{
+  	var result_form_encounter = dbConn.executeCachedQuery(query_form_encounter);
+    while (result_form_encounter.next()) {
+      pid = result_form_encounter.getInt(1);
+    }
+  }catch(error){
+    logger.error(error);
+    return ;
   }
-
+  if (!pid) {
+    logger.error('No se encontró el pid asociado');
+    return ;
+  }
 
   //Se insertan los valores procedentes del monitor de constantes
   var hr = $('hr');

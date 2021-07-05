@@ -30,7 +30,7 @@ if ($death_date) {
 } elseif ($id_encounter) {
     sqlStatement("UPDATE form_encounter set out_date= DATE(NOW()) where id = ?", array($id_encounter));
 }
-$internados_actuales_consult = "SELECT f.*, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, p.pubpid as pubpid from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null";
+$internados_actuales_consult = "SELECT f.*, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, p.pubpid as pubpid, f.nro_registro as nro_registro  from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null";
 $res = sqlStatement($internados_actuales_consult);
 $inpatient = [];
 for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
@@ -150,7 +150,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                         <thead>
                             <tr>
                                 <th class="head" style="width: 5%;">
-                                    Identificador
+                                    Nro Prontuario
                                 </th>
                                 <th class="head">
                                     Paciente
@@ -162,7 +162,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                                     CI (RG Paciente)
                                 </th>
                                 <th class="head" style="width: 4%;">
-                                    NRO Prontuario
+                                    NRO Registro
                                 </th>
                                 <th class="head" style="width: 10%;">
                                     Servicio
@@ -187,7 +187,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                                         '<td>' . text($result['paciente']) . '</td>' .
                                         '<td>' . date('d/m/Y', strtotime($result['date'])) . '</td>' .
                                         '<td>' . text($result['pubpid']) . '</td>' .
-                                        '<td>' . text('-') . '</td>' .
+                                        '<td>' . text($result['nro_registro']) . '</td>' .
                                         '<td>' . text(strtoupper($result['servicio'])) . '</td>' .
                                         '<td>' . text(strtoupper($result['cuarto'])) . '</td>' .
                                         '<td>' . text($result['cama']) . '</td>' .
