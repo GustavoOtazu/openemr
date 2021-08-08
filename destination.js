@@ -1,16 +1,26 @@
 var dbConn;
 try {
   dbConn = DatabaseConnectionFactory.createDatabaseConnection('com.mysql.jdbc.Driver', 'jdbc:mysql://localhost:3306/openemr', 'root', '');
-  logger.info("numero de registro que recibe desde el monitor: " + $('patientId'))
-  var pid = null
+  logger.info("numero de registro que recibe desde el monitor: " + $('patientId'));
+  var pid = '';
   var nro_registro = $('patientId');
-  var query_form_encounter = "SELECT pid FROM form_encounter where nro_registro = " + nro_registro + "LIMIT 1";
-  var result_form_encounter = dbConn.executeCachedQuery(query_form_encounter);
-  while (result_form_encounter.next()) {
-    pid = result_form_encounter.getInt(1);
+  var query_form_encounter = "SELECT pid FROM form_encounter where nro_registro = '" + nro_registro + "'";
+  logger.info('query_form_encounter: '+query_form_encounter)
+  try{
+  	var result_form_encounter = dbConn.executeCachedQuery(query_form_encounter);
+    while (result_form_encounter.next()) {
+      pid = result_form_encounter.getInt(1);
+    }
+  }catch(error){
+    logger.error(error);
+    return ;
+  }
+  if (pid=='') {
+    logger.error('No se encontró el pid asociado');
+    return ;
   }
 
-
+  logger.info('El pid que encontró: '+ pid);
   //Se insertan los valores procedentes del monitor de constantes
   var hr = $('hr');
   if (!hr) {
@@ -78,8 +88,7 @@ try {
   }
 
   var insert_form_vitals = "INSERT INTO form_vitals (date, pid,bps, nibps_dys, nibps_sys, st3, st2, st1, pr_spo2, lvp_d, lvp_s, vpc, hr, bpd, temperature, pulse, respiration, oxygen_saturation) VALUES('" + $('Fecha') + "'," + pid + "," + bps + "," + nibps_dys + "," + nibps_sys + "," + st3 + "," + st2 + "," + st1 + "," + pr_spo2 + "," + lvp_d + "," + lvp_s + "," + vpc + "," + hr + "," + bpd + "," + temperatura + "," + pulso + "," + respiracion + "," + sat_oxy + ")";
-  logger.info('insert_form_vitals', insert_form_vitals);
-
+  logger.info('insert_form_vitals: '+ insert_form_vitals);
   dbConn.executeUpdate(insert_form_vitals);
   var query_encounter = "SELECT encounter FROM form_encounter WHERE pid=" + pid + "";
   var result_encounter = dbConn.executeCachedQuery(query_encounter);
