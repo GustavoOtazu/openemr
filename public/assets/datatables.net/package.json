@@ -2,7 +2,7 @@
   "_args": [
     [
       "datatables.net@1.10.13",
-      "/home/brady2/git/build/5-0-2-1/openemr"
+      "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3"
     ]
   ],
   "_from": "datatables.net@1.10.13",
@@ -32,7 +32,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/datatables.net/-/datatables.net-1.10.13.tgz",
   "_spec": "1.10.13",
-  "_where": "/home/brady2/git/build/5-0-2-1/openemr",
+  "_where": "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3",
   "author": {
     "name": "SpryMedia Ltd",
     "url": "http://datatables.net"

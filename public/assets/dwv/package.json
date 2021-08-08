@@ -2,7 +2,7 @@
   "_args": [
     [
       "dwv@0.25.2",
-      "/home/brady2/git/build/5-0-2-1/openemr"
+      "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3"
     ]
   ],
   "_from": "dwv@0.25.2",
@@ -26,7 +26,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/dwv/-/dwv-0.25.2.tgz",
   "_spec": "0.25.2",
-  "_where": "/home/brady2/git/build/5-0-2-1/openemr",
+  "_where": "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3",
   "author": {
     "name": "ivmartel",
     "email": "ivmartel@gmail.com"

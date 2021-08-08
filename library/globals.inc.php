@@ -112,7 +112,8 @@ $USER_SPECIFIC_TABS = array('Appearance',
     'Report',
     'Calendar',
     'CDR',
-    'Connectors');
+    'Connectors',
+    'Valores Vitales');
 $USER_SPECIFIC_GLOBALS = array('default_top_pane',
     'default_second_tab',
     'new_tabs_layout',
@@ -145,7 +146,10 @@ $USER_SPECIFIC_GLOBALS = array('default_top_pane',
     'checkout_roll_off',
     'patient_birthday_alert',
     'patient_birthday_alert_manual_off',
-    'erx_import_status_message');
+    'erx_import_status_message',
+    'parametro_vital_a_modificar',
+    'valor_maximo_parametro_vital',
+    'valor_minimo_parametro_vital');
 
 // Gets array of time zones supported by PHP.
 //
@@ -196,7 +200,7 @@ $GLOBALS_METADATA = array(
         ),
 
         'new_tabs_layout' => array(
-            xl('Layout').'*',
+            xl('Layout') . '*',
             array(
                 '0' => xl('Frame'),
                 '1' => xl('Tabs'),
@@ -206,21 +210,21 @@ $GLOBALS_METADATA = array(
         ),
 
         'theme_tabs_layout' => array(
-            xl('Tabs Layout Theme').'*',
+            xl('Tabs Layout Theme') . '*',
             'tabs_css',
             'tabs_style_full.css',
             xl('Theme of the tabs layout (need to logout and then login to see this new setting).')
         ),
 
         'css_header' => array(
-            xl('General Theme') .'*',
+            xl('General Theme') . '*',
             'css',
             'style_light.css',
             xl('Pick a general theme (need to logout/login after changing this setting).')
         ),
 
         'font-family' => array(
-            xl('Default font') .'*',
+            xl('Default font') . '*',
             array(
                 '__default__' => 'Use Theme Font',
                 'Arial, Helvetica, sans-serif' => "Arial",
@@ -237,7 +241,7 @@ $GLOBALS_METADATA = array(
         ),
 
         'font-size' => array(
-            xl('Default font size').'*',
+            xl('Default font size') . '*',
             array(
                 '__default__' => 'Use Theme Font Size',
                 '10px' => '10px',
@@ -251,7 +255,7 @@ $GLOBALS_METADATA = array(
         ),
 
         'vertical_responsive_menu' => array(
-            xl('Responsive Vertical Menu Style for Tabs')  .'*' ,
+            xl('Responsive Vertical Menu Style for Tabs') . '*',
             array(
                 '736' => xl('iPhone 6/7/8 Plus') . " -  736 X 414" . xl('px'),
                 '740' => xl('Galaxy S9/S9 Plus') . " -  740 X 360" . xl('px'),
@@ -550,7 +554,7 @@ $GLOBALS_METADATA = array(
         ),
 
         'prevent_browser_refresh' => array(
-            xl('Prevent Web Browser Refresh').'*',
+            xl('Prevent Web Browser Refresh') . '*',
             array(
                 '0' => xl('Do not warn or prevent web browser refresh'),
                 '1' => xl('Warn, but do not prevent web browser refresh'),
@@ -1015,7 +1019,7 @@ $GLOBALS_METADATA = array(
         ),
 
         'enable_help' => array(
-           xl('Enable Help Modal'),
+            xl('Enable Help Modal'),
             array(
                 '0' => xl('Hide Help Modal'),
                 '1' => xl('Show Help Modal'),
@@ -1801,7 +1805,7 @@ $GLOBALS_METADATA = array(
             xl('This Allows a Date Range to be Selected in Patient Flow Board.')
         ),
 
-        'ptkr_start_date'=> array(
+        'ptkr_start_date' => array(
             xl('Flow Board: Default Starting Date'),
             array(
                 'D0' => xl('Current Day'),
@@ -1871,13 +1875,11 @@ $GLOBALS_METADATA = array(
         ),
 
         'disable_rcb' => array(
-          xl('Recall Board: Disable'),
-          'bool',                           // data type
-          '0',                              // default
-          xl('Do not display the Recall Board.')
+            xl('Recall Board: Disable'),
+            'bool',                           // data type
+            '0',                              // default
+            xl('Do not display the Recall Board.')
         ),
-
-
 
 
     ),
@@ -2863,10 +2865,10 @@ $GLOBALS_METADATA = array(
         ),
 
         'medex_enable' => array(
-          xl('Enable MedEx Communication Service'),
-          'bool',                           // data type
-          '0',
-          xl('Enable MedEx Communication Service')
+            xl('Enable MedEx Communication Service'),
+            'bool',                           // data type
+            '0',
+            xl('Enable MedEx Communication Service')
         ),
 
         'erx_enable' => array(
@@ -3236,6 +3238,7 @@ $GLOBALS_METADATA = array(
             xl('Name of zend template for pdf export, possible to add custom template in the PrescriptionTemplate module')
         ),
     ),
+
     'PDF' => array(
         'pdf_layout' => array(
             xl('Layout'),
@@ -3599,6 +3602,36 @@ $GLOBALS_METADATA = array(
             'num',                           // data type
             '220',
             xl('Distance from the right most edge of the envelope in portrait position in mm')
+        ),
+
+    ),
+
+    'Valores Vitales' => array(
+
+        'parametro_vital_a_modificar' => array(
+            xl('Parametro Vital a Configurar'),       // descriptive name
+            array(
+                xl('Presión arterial sistólica'),
+                xl('Presión arterial diastólica'),
+                xl('Temperatura'),
+                xl('Respiración'),
+                xl('Pulso'),
+                xl('Saturación de oxígeno'),
+            ),
+        ),
+
+        'valor_minimo_parametro_vital' => array(
+            xl('Valor minimo de parametro vital'),
+            'num',
+            '0',                       // default
+            xl('Ingrese el valor minimo del parametro que debe estar sujeto a situaciones clinicas normales')
+        ),
+
+        'valor_maximo_parametro_vital' => array(
+            xl('Valor maximo de parametro vital'),
+            'num',
+            '0',                       // default
+            xl('Ingrese el valor maximo del parametro que debe estar sujeto a situaciones clinicas normales')
         ),
 
     ),

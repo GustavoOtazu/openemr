@@ -2,7 +2,7 @@
   "_args": [
     [
       "magic-wand-js@1.0.0",
-      "/home/brady2/git/build/5-0-2-1/openemr"
+      "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3"
     ]
   ],
   "_from": "magic-wand-js@1.0.0",
@@ -27,7 +27,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/magic-wand-js/-/magic-wand-js-1.0.0.tgz",
   "_spec": "1.0.0",
-  "_where": "/home/brady2/git/build/5-0-2-1/openemr",
+  "_where": "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3",
   "author": {
     "name": "Tamersoul"
   },

@@ -2,7 +2,7 @@
   "_args": [
     [
       "anythingslider@https://github.com/CSS-Tricks/AnythingSlider/archive/v1.9.4.tar.gz",
-      "/home/brady2/git/build/5-0-2-1/openemr"
+      "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3"
     ]
   ],
   "_from": "anythingslider@https://github.com/CSS-Tricks/AnythingSlider/archive/v1.9.4.tar.gz",
@@ -25,7 +25,7 @@
   ],
   "_resolved": false,
   "_spec": "https://github.com/CSS-Tricks/AnythingSlider/archive/v1.9.4.tar.gz",
-  "_where": "/home/brady2/git/build/5-0-2-1/openemr",
+  "_where": "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3",
   "author": {
     "name": "Chris Coyier",
     "url": "https://github.com/chriscoyier"

@@ -2,7 +2,7 @@
   "_args": [
     [
       "datatables.net-scroller-jqui@1.4.2",
-      "/home/brady2/git/build/5-0-2-1/openemr"
+      "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3"
     ]
   ],
   "_from": "datatables.net-scroller-jqui@1.4.2",
@@ -26,7 +26,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/datatables.net-scroller-jqui/-/datatables.net-scroller-jqui-1.4.2.tgz",
   "_spec": "1.4.2",
-  "_where": "/home/brady2/git/build/5-0-2-1/openemr",
+  "_where": "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3",
   "author": {
     "name": "SpryMedia Ltd",
     "url": "http://datatables.net"

@@ -2,7 +2,7 @@
   "_args": [
     [
       "github:EastDesire/jscolor",
-      "/home/brady2/git/build/5-0-2-1/openemr"
+      "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3"
     ]
   ],
   "_from": "github:EastDesire/jscolor",
@@ -24,16 +24,49 @@
   ],
   "_resolved": "github:EastDesire/jscolor#0fb8b8e33569b0edcb5bafbae124f5d440146897",
   "_spec": "github:EastDesire/jscolor",
-  "_where": "/home/brady2/git/build/5-0-2-1/openemr",
+  "_where": "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3",
   "author": {
-    "name": "EastDesire"
+    "name": "Jan Odvarko - East Desire"
   },
   "bugs": {
     "url": "https://github.com/EastDesire/jscolor/issues"
   },
-  "description": "Web Color Picker that aims to be super easy both for developers and end users. http://jscolor.com",
-  "homepage": "https://github.com/EastDesire/jscolor#readme",
-  "license": "GPLv3",
+  "description": "Web color picker with opacity (alpha channel) and custom palette. Supports CSS colors such as rgba() and hex, including #rrggbbaa.",
+  "homepage": "https://jscolor.com",
+  "keywords": [
+    "JavaScript",
+    "js",
+    "hex",
+    "rgba",
+    "rrggbbaa",
+    "color",
+    "picker",
+    "palette",
+    "swatch",
+    "input",
+    "chooser",
+    "selector",
+    "opacity",
+    "transparency",
+    "alpha",
+    "channel",
+    "support",
+    "AJAX",
+    "ColorPicker",
+    "ColorPalette",
+    "plugin",
+    "touchscreen",
+    "tablet",
+    "smartphone",
+    "mobile",
+    "popup",
+    "widget",
+    "dialog",
+    "dropdown",
+    "control",
+    "HTML5"
+  ],
+  "license": "GPL-3.0-or-later",
   "main": "jscolor.js",
   "name": "jscolor",
   "repository": {
@@ -43,5 +76,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "2.0.4"
+  "version": "2.4.5"
 }

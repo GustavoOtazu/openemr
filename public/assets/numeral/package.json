@@ -2,7 +2,7 @@
   "_args": [
     [
       "numeral@1.5.3",
-      "/home/brady2/git/build/5-0-2-1/openemr"
+      "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3"
     ]
   ],
   "_from": "numeral@1.5.3",
@@ -26,7 +26,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/numeral/-/numeral-1.5.3.tgz",
   "_spec": "1.5.3",
-  "_where": "/home/brady2/git/build/5-0-2-1/openemr",
+  "_where": "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3",
   "author": {
     "name": "Adam Draper",
     "email": "adamwdraper@gmail.com",

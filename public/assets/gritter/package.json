@@ -2,7 +2,7 @@
   "_args": [
     [
       "gritter@1.7.4",
-      "/home/brady2/git/build/5-0-2-1/openemr"
+      "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3"
     ]
   ],
   "_from": "gritter@1.7.4",
@@ -26,7 +26,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/gritter/-/gritter-1.7.4.tgz",
   "_spec": "1.7.4",
-  "_where": "/home/brady2/git/build/5-0-2-1/openemr",
+  "_where": "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3",
   "bugs": {
     "url": "https://github.com/jboesch/Gritter/issues"
   },

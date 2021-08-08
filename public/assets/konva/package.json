@@ -2,7 +2,7 @@
   "_args": [
     [
       "konva@1.6.8",
-      "/home/brady2/git/build/5-0-2-1/openemr"
+      "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3"
     ]
   ],
   "_from": "konva@1.6.8",
@@ -26,7 +26,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/konva/-/konva-1.6.8.tgz",
   "_spec": "1.6.8",
-  "_where": "/home/brady2/git/build/5-0-2-1/openemr",
+  "_where": "C:\\Users\\Alejandro Aguilera\\PhpstormProjects\\openemr3",
   "author": {
     "name": "Anton Lavrenov"
   },
