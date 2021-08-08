@@ -91,10 +91,10 @@ include("../fusioncharts.php");
                             </div>
                         </div>
                     </div>
-                    <div class="row" style="margin-bottom: 20px" id="chart-container">
+                    <div class="row" style="margin-bottom: 20px" >
 
                         <?php
-                        $inicio = '2021-06-18 00:00';
+                        $inicio = '2021-06-01 00:00';
                         $fin = '2021-06-20 00:00';
                         //modificacion de consulta query para visualizar las salas y camas de forma ordenada ascendente
                         $internados_actuales_consult = "SELECT f.pid, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, f.cuarto COLLATE utf8_general_ci sala, f.cama as cama from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null order by sala, f.cama ASC";
@@ -131,7 +131,7 @@ include("../fusioncharts.php");
                                     $i++;
                                 }
                                 if ($i > 0) {
-
+                                    echo '<div id="chart-container-'. $encounter['pid'].'"class="col-md-6"></div>';
                                     $data = json_encode($paciente);
                                     //print_r(json_encode($paciente));
                                     $schema = '[{"name": "Time","type": "date","format": "%d-%b-%y %H:%M:%S"}, {"name": "Type","type": "string"}, {"name": "valor_vital","type": "number"}]';
@@ -149,10 +149,10 @@ include("../fusioncharts.php");
                                     // chart object
                                     $Chart = new FusionCharts(
                                         "timeseries",
-                                        "MyFirstChart" . $encounter['pid'],
+                                        "pid-chart-" . $encounter['pid'],
                                         "700",
                                         "450",
-                                        "chart-container",
+                                        "chart-container-". $encounter['pid'],
                                         "json",
                                         $timeSeries
                                     );
