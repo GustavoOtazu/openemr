@@ -68,6 +68,22 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
             color: red;
             transform: translateX(-50%);
         }
+        .buttonE {
+              background-color: #4CAF50; /* Green */
+              border: none;
+              color: white;
+              padding: 40px 60px;
+              text-align: center;
+              text-decoration: none;
+              display: inline-block;
+              font-size: 10px;
+              margin-left:1%;
+              
+        }
+
+        .button1 {background-color: #4CAF50;} /* Green */
+        .button2 {background-color: #008CBA;} /* Blue */
+        .button3 {background-color: #f44336;} /* Red */
 
         @media screen and (max-width: 640px) {
 
@@ -182,8 +198,9 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                             <?php
                             if (isset($inpatient)) {
                                 foreach ($inpatient as $index => $result) {
+                                    
                                     echo '<tr>' .
-                                        '<td>' . text($result['pid']) . '</td>' .
+                                        '<td class="btn-pacienteData" style="text-decoration:underline;"  data-pid="' . attr($result['pid']) . '"  data-encounter="' . attr($result['encounter ']) . '">' . text($result['pid']) . '</td>' .
                                         '<td>' . text($result['paciente']) . '</td>' .
                                         '<td>' . date('d/m/Y', strtotime($result['date'])) . '</td>' .
                                         '<td>' . text($result['pubpid']) . '</td>' .
@@ -195,6 +212,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                                         <div class="inner"><button class="btn btn-info btn-editar btn-xs" type="button" data-id="' . attr($result['id']) . '">EDIT</button>
 </div><div class="inner"><button class="btn btn-default btn-alta btn-xs" type="button" id="' . attr($result['id']) . '" data-title="Dar de alta al paciente: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">ALTA</button>
 </div><div class="inner"><button class="btn btn-danger btn-death btn-xs" type="button" data-id="' . attr($result['id']) . '" data-title="Registrar muerte del paciente: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">OBITO</button>
+</div><div class="inner"><button class="btn btn-default btn-Enferm btn-xs" type="button" id="' . attr($result['id']) . '" data-title="Opciones de Enfermeria: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">Enfermeria</button>
 </div></div></td>' .
                                         '</tr>';
                                 }
@@ -264,10 +282,44 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 </div>
             </div>
         </div>
+
+
+        <div class="modal" tabindex="-1" role="dialog" id="modal_Enf">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modal_title_enf">Modal title</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true" style="color: black !important;"><i class="fa fa-times"></i></span>
+                        </button>
+                    </div>
+                    <form method="get" name="form" action="lista_internados.php">
+                               <div class="col-md-12">
+                               <button class="btn buttonE button1 btn-enfRedired1" type="button" data-id="' . attr($result['id']) . '">Curaciones</button>
+                              
+                               <button class="btn buttonE button2 btn-enfRedired2" type="button" data-id="' . attr($result['id']) . '">Aplicaciones</button>
+                              
+                               <button class="btn buttonE button3 btn-enfRedired3" type="button" data-id="' . attr($result['id']) . '">Cuidados</button>   
+                                </div>
+                               
+
+
+                        <div class="modal-footer">
+                              &nbsp;
+                              <?php
+                                echo "<br>";
+                               ?>
+                            <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
     <?php $oemr_ui->oeBelowContainerDiv(); ?>
     <script language="JavaScript" type="text/javascript">
         var webroot_url = <?php echo js_escape($web_root); ?>;
+        var encounter;
         var xl_strings_tabs_view_model = <?php echo json_encode(array(
                                                 'encounter_locked' => xla('This encounter is locked. No new forms can be added.'),
                                                 'must_select_patient'  => $GLOBALS['enable_group_therapy'] ? xla('You must first select or add a patient or therapy group.') : xla('You must first select or add a patient.'),
@@ -290,6 +342,18 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 $('#nombre_paciente').val($(this).data('paciente'));
                 $('#modal_alta').modal('toggle');
             });
+            $(document).on('click', '.btn-Enferm', function() {
+                let id_encounter = this.id;
+                encounter=id_encounter;
+                let nombre = $(this).data('title');
+                $('#body_Enf').show();
+                $('#body_death').hide();
+                $('#modal_title_enf').html("<b>" + nombre + '</b>');
+                $('#paciente_name').html("<b>" + $(this).data('paciente') + '</b>');
+                $('#id_encounter').val(id_encounter);
+                $('#nombre_paciente').val($(this).data('paciente'));
+                $('#modal_Enf').modal('toggle');
+            });
             $(document).on('click', '.btn-death', function() {
                 let id_encounter = $(this).data('id');
                 let nombre = $(this).data('title');
@@ -306,6 +370,32 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 let id_encounter = $(this).data('id');
                 top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>" + "/interface/tableros/editar_internado.php?id=" + id_encounter;
             });
+
+            $(document).on('click', '.btn-enfRedired1', function() {
+                let id_encounter = encounter;
+                top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>" + "/interface/tableros/editar_internado.php?id=" + id_encounter;
+            });
+            $(document).on('click', '.btn-enfRedired2', function() {
+                let id_encounter = encounter;
+                top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>" + "/interface/tableros/editar_internado.php?id=" + id_encounter;
+            });
+
+            $(document).on('click', '.btn-enfRedired3', function() {
+                let id_encounter = encounter;
+                top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>" + "/interface/tableros/editar_internado.php?id=" + id_encounter;
+            });
+
+            $(document).on('click', '.btn-pacienteData', function() {
+                debugger;
+               let pid =null;
+                let encounter = $(this).data('encounter ');
+                pid = $(this).data('pid');
+                //
+                top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>" + "/interface/patient_file/encounter/encounter_top.php?set_encounter=" + encounter+" && pid=" + pid;
+             
+            });
+
+
             $(document).ready(function() {
                 $('#inp_table thead tr').clone(true).appendTo('#inp_table thead');
                 $('#inp_table thead tr:eq(1) th').each(function(i) {

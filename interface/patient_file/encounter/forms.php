@@ -302,6 +302,7 @@ function imdeleted(EncounterId) {
 
 // Called to open the data entry form a specified encounter form instance.
 function openEncounterForm(formdir, formname, formid) {
+    
   var url = <?php echo js_escape($rootdir); ?> + '/patient_file/encounter/view_form.php?formname=' +
       encodeURIComponent(formdir) + '&id=' + encodeURIComponent(formid);
   if (formdir == 'newpatient' || !parent.twAddFrameTab) {
