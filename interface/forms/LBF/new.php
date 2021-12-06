@@ -82,7 +82,13 @@ $formname = isset($_GET['formname']) ? $_GET['formname'] : '';
 $formid = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $portalid = isset($_GET['portalid']) ? intval($_GET['portalid']) : 0;
 
+$encounter = intval(empty($_GET['visitid']) ? $encounter : $_GET['visitid']);
+
 $visitid = intval(empty($_GET['visitid']) ? $encounter : $_GET['visitid']);
+
+
+$internacion = intval(empty($_GET['inter']) ? 0: $_GET['inter']);
+
 
 // If necessary get the encounter from the forms table entry for this form.
 if ($formid && !$visitid) {
@@ -311,9 +317,21 @@ if (!empty($_POST['bn_save']) || !empty($_POST['bn_save_print']) || !empty($_POS
                 "', '_blank');\n" .
                 "</script>\n";
         }
-        formJump();
-        formFooter();
-        exit;
+
+        if ($internacion == '1') {
+            formJump("{$rootdir}/tableros/lista_internados.php?");
+            formFooter();
+            exit;
+        }
+        
+        if ($internacion == '0') {
+            formJump();
+            formFooter();
+            exit;
+        }
+          
+         
+      
     }
 }
 
@@ -366,12 +384,18 @@ if (!empty($_POST['bn_save']) || !empty($_POST['bn_save_print']) || !empty($_POS
     <!-- LiterallyCanvas support -->
     <?php echo lbf_canvas_head(); ?>
     <?php echo signer_head(); ?>
+    
+    
 
     <script language="JavaScript">
 
         // Support for beforeunload handler.
         var somethingChanged = false;
-
+        function renderInterCancel() {
+        
+           top.RTop.location = "<?php echo $GLOBALS['rootdir'] ?>"  +"/tableros/lista_internados.php?";
+           
+        }
         function verifyCancel() {
             if (somethingChanged) {
                 if (!confirm(<?php echo xlj('You have unsaved changes. Do you really want to close this form?'); ?>)) {
@@ -740,7 +764,7 @@ if (!empty($_POST['bn_save']) || !empty($_POST['bn_save_print']) || !empty($_POS
 <div class='container'>
     <?php
     echo "<form method='post' " .
-        "action='$rootdir/forms/LBF/new.php?formname=" . attr_url($formname) . "&id=" . attr_url($formid) . "&portalid=" . attr_url($portalid) . "' " .
+        "action='$rootdir/forms/LBF/new.php?formname=" . attr_url($formname) . "&id=" . attr_url($formid) . "&portalid=" . attr_url($portalid) .  "&visitid=" . attr_url($visitid) . "&inter=" . attr_url($internacion) . "'  " .  
         "onsubmit='return validate(this)'>\n";
 
     $cmsportal_login = '';
@@ -1490,18 +1514,11 @@ if (!empty($_POST['bn_save']) || !empty($_POST['bn_save_print']) || !empty($_POS
                         </button>
 
                         &nbsp;
-                        <button type='submit' class="btn btn-link" name='bn_save_continue'
-                                value='<?php echo xla('Save and Continue') ?>'>
-                            <?php echo xlt('Save and Continue'); ?>
-                        </button>
+                       
                         <?php
                         if (!$from_issue_form) {
                             ?>
-                            &nbsp;
-                            <button type='submit' class="btn btn-link" name='bn_save_print'
-                                    value='<?php echo xla('Save and Print') ?>'>
-                                <?php echo xlt('Save and Print'); ?>
-                            </button>
+                          
                             <?php
                             if (function_exists($formname . '_additional_buttons')) {
                                 // Allow the plug-in to insert more action buttons here.
@@ -1517,11 +1534,23 @@ if (!empty($_POST['bn_save']) || !empty($_POST['bn_save_print']) || !empty($_POS
                                 &nbsp;
                                 <?php
                             } // end form is graphable
-                            ?>
-                            <button type='button' class="btn btn-link btn-cancel" onclick="verifyCancel()">
-                                <?php echo xlt('Cancel'); ?>
-                            </button>
-                            <?php
+                            if($internacion == '1') {
+                                
+                                    ?>
+                                    <button type='button' class="btn btn-link btn-cancel" onclick="renderInterCancel()">
+                                        <?php echo xlt('Cancel'); ?>
+                                    </button>
+        
+                                    <?php
+                            }
+
+                            if($internacion == '0') {
+                                ?>
+                                <button type='button' class="btn btn-link btn-cancel" onclick="verifyCancel()">
+                                    <?php echo xlt('Cancel'); ?>
+                                </button>
+                                <?php
+                        }
                         } // end not from issue form
                         ?>
                         <?php

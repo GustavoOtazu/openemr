@@ -30,7 +30,7 @@ if ($death_date) {
 } elseif ($id_encounter) {
     sqlStatement("UPDATE form_encounter set out_date= DATE(NOW()) where id = ?", array($id_encounter));
 }
-$internados_actuales_consult = "SELECT f.*, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, p.pubpid as pubpid, f.nro_registro as nro_registro  from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null";
+$internados_actuales_consult = "SELECT f.*, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, p.pubpid as pubpid, f.nro_registro as nro_registro, f.encounter as encounter  from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null";
 $res = sqlStatement($internados_actuales_consult);
 $inpatient = [];
 for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
@@ -200,7 +200,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                                 foreach ($inpatient as $index => $result) {
                                     
                                     echo '<tr>' .
-                                        '<td class="btn-pacienteData" style="text-decoration:underline;"  data-pid="' . attr($result['pid']) . '"  data-encounter="' . attr($result['encounter ']) . '">' . text($result['pid']) . '</td>' .
+                                        '<td class="btn-pacienteData btn-link"  data-pid="' . attr($result['pid']) . '"  data-encounter="' . attr($result['encounter']) . '">' . text($result['pid']) . '</td>' .
                                         '<td>' . text($result['paciente']) . '</td>' .
                                         '<td>' . date('d/m/Y', strtotime($result['date'])) . '</td>' .
                                         '<td>' . text($result['pubpid']) . '</td>' .
@@ -212,7 +212,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                                         <div class="inner"><button class="btn btn-info btn-editar btn-xs" type="button" data-id="' . attr($result['id']) . '">EDIT</button>
 </div><div class="inner"><button class="btn btn-default btn-alta btn-xs" type="button" id="' . attr($result['id']) . '" data-title="Dar de alta al paciente: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">ALTA</button>
 </div><div class="inner"><button class="btn btn-danger btn-death btn-xs" type="button" data-id="' . attr($result['id']) . '" data-title="Registrar muerte del paciente: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">OBITO</button>
-</div><div class="inner"><button class="btn btn-default btn-Enferm btn-xs" type="button" id="' . attr($result['id']) . '" data-title="Opciones de Enfermeria: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] . '">Enfermeria</button>
+</div><div class="inner"><button class="btn btn-default btn-Enferm btn-xs" type="button" id="' . attr($result['id']) . '" data-title="Opciones de Enfermeria: ' . $result['paciente'] . '" data-paciente="' . $result['paciente'] .  '"  data-pid="' . attr($result['pid']) . '"  data-encounter="' . attr($result['encounter']) . '">Enfermeria</button>
 </div></div></td>' .
                                         '</tr>';
                                 }
@@ -343,8 +343,10 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 $('#modal_alta').modal('toggle');
             });
             $(document).on('click', '.btn-Enferm', function() {
-                let id_encounter = this.id;
-                encounter=id_encounter;
+
+                //controlar debe ser encounter
+                let encounterInt =$(this).data('encounter');
+                encounter=encounterInt;
                 let nombre = $(this).data('title');
                 $('#body_Enf').show();
                 $('#body_death').hide();
@@ -353,6 +355,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 $('#id_encounter').val(id_encounter);
                 $('#nombre_paciente').val($(this).data('paciente'));
                 $('#modal_Enf').modal('toggle');
+               
             });
             $(document).on('click', '.btn-death', function() {
                 let id_encounter = $(this).data('id');
@@ -372,27 +375,25 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
             });
 
             $(document).on('click', '.btn-enfRedired1', function() {
-                let id_encounter = encounter;
-                top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>" + "/interface/tableros/editar_internado.php?id=" + id_encounter;
+                let encounterInt = encounter;
+                top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>" + "/interface/forms/LBF/new.php?formname= LBF_CURACIONES && visitid=" + encounterInt + "&& inter=1";
             });
             $(document).on('click', '.btn-enfRedired2', function() {
-                let id_encounter = encounter;
-                top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>" + "/interface/tableros/editar_internado.php?id=" + id_encounter;
+                let encounterInt = encounter;
+                top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>" + "/interface/forms/LBF/new.php?formname=LBF_APLICACIONES && visitid=" + encounterInt + "&& inter=1";
             });
 
             $(document).on('click', '.btn-enfRedired3', function() {
-                let id_encounter = encounter;
-                top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>" + "/interface/tableros/editar_internado.php?id=" + id_encounter;
+                let encounterInt = encounter;
+                top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>" + "/interface/forms/LBF/new.php?formname=LBF_CUIDADOS && visitid=" + encounterInt + "&& inter=1";
             });
 
             $(document).on('click', '.btn-pacienteData', function() {
-                debugger;
-               let pid =null;
-                let encounter = $(this).data('encounter ');
-                pid = $(this).data('pid');
-                //
+               
+                let encounter = $(this).data('encounter');
+                let pid = $(this).data('pid');
                 top.RTop.location = "<?php echo $GLOBALS['webroot'] ?>" + "/interface/patient_file/encounter/encounter_top.php?set_encounter=" + encounter+" && pid=" + pid;
-             
+               
             });
 
 
