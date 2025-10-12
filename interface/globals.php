@@ -1,4 +1,12 @@
 <?php
+
+
+// Configuración de errores para OpenEMR
+error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
+ini_set('display_errors', '0'); // Cambiar a '1' solo en desarrollo
+ini_set('log_errors', '1');
+ini_set('error_log', dirname(__FILE__) . '/../sites/default/documents/logs/php_errors.log');
+
 /**
  * Default values for optional variables that are allowed to be set by callers.
  *
