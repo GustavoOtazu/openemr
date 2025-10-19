@@ -24,6 +24,12 @@ $id_encounter = $_GET['id_encounter'] ?? null;
 $nombre_paciente = $_GET['paciente'] ?? null;
 $death_date = $_GET['death_date'] ?? null;
 $update = $_GET['update'] ?? null;
+$curacion_guardada = $_SESSION['curacion_guardada'] ?? null;
+
+// Limpiar la sesión después de leerla
+if ($curacion_guardada) {
+    unset($_SESSION['curacion_guardada']);
+}
 
 if ($death_date) {
     sqlStatement("UPDATE form_encounter set out_date= ? , death_date= ? where id = ?", array($death_date, $death_date, $id_encounter));
@@ -198,6 +204,14 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                     <?php if ($update != null) { ?>
                         <div class="alert alert-success alert-dismissible show" role="alert">
                             Se actualizó al paciente con éxito!
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar" style="color: black !important;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    <?php } ?>
+                    <?php if ($curacion_guardada != null) { ?>
+                        <div class="alert alert-success alert-dismissible show" role="alert">
+                            <strong>¡Éxito!</strong> La curación se guardó correctamente.
                             <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar" style="color: black !important;">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -460,16 +474,19 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
 
             // BOTONES DEL MODAL DE ENFERMERÍA
             
-            // Botón 1: CURACIONES
+            // Botón 1: CURACIONES - REDIRIGE AL NUEVO FORMULARIO
             $(document).on('click', '.btn-enfRedired1', function() {
-                console.log('Click en Curaciones, encounter:', encounter);
-                if (!encounter) {
-                    alert('Error: No se pudo obtener el ID del encuentro');
+                console.log('Click en Curaciones, encounter:', encounter, 'pid:', pid_paciente);
+                if (!encounter || !pid_paciente) {
+                    alert('Error: No se pudo obtener los datos del paciente');
                     return;
                 }
+                
                 $('#modal_Enf').modal('hide');
+                
                 setTimeout(function() {
-                    top.RTop.location = webroot_url + "/interface/forms/LBF/new.php?formname=LBF_CURACIONES&visitid=" + encounter + "&inter=1";
+                    // Redirección al nuevo formulario de curaciones
+                    top.RTop.location = webroot_url + "/interface/forms/curaciones/new.php?mode=new&id=0&pid=" + pid_paciente + "&encounter=" + encounter;
                 }, 300);
             });
 
