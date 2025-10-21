@@ -24,11 +24,31 @@ $id_encounter = $_GET['id_encounter'] ?? null;
 $nombre_paciente = $_GET['paciente'] ?? null;
 $death_date = $_GET['death_date'] ?? null;
 $update = $_GET['update'] ?? null;
-$curacion_guardada = $_SESSION['curacion_guardada'] ?? null;
 
-// Limpiar la sesión después de leerla
-if ($curacion_guardada) {
+// Iniciar sesión si no está iniciada
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Variable para almacenar mensajes
+$mensaje_exito = '';
+
+// Mensaje de éxito para CURACIONES
+if (isset($_SESSION['curacion_guardada']) && $_SESSION['curacion_guardada']) {
+    $mensaje_exito = '¡Éxito! La curación se guardó correctamente.';
     unset($_SESSION['curacion_guardada']);
+}
+
+// Mensaje de éxito para CUIDADOS
+if (isset($_SESSION['cuidado_guardado']) && $_SESSION['cuidado_guardado']) {
+    $mensaje_exito = '¡Éxito! El cuidado se guardó correctamente.';
+    unset($_SESSION['cuidado_guardado']);
+}
+
+// Mensaje de éxito para EVALUACIONES
+if (isset($_SESSION['evaluacion_guardada']) && $_SESSION['evaluacion_guardada']) {
+    $mensaje_exito = '¡Éxito! La evaluación se guardó correctamente.';
+    unset($_SESSION['evaluacion_guardada']);
 }
 
 if ($death_date) {
@@ -94,6 +114,66 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
         .outer {
             width: 100%;
             text-align: center;
+        }
+
+        /* Estilos para alerta de éxito */
+        .alert-success-custom {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+            min-width: 320px;
+            font-weight: bold;
+            animation: slideIn 0.5s ease-out, fadeOut 0.5s ease-in 4.5s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .alert-success-custom .icon-success {
+            font-size: 24px;
+            color: #28a745;
+        }
+        
+        .alert-success-custom .close-btn {
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 20px;
+            margin-left: auto;
+            color: #155724;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        
+        .alert-success-custom .close-btn:hover {
+            color: #0d3d1a;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
         }
 
         /* Estilos para los botones de enfermería */
@@ -167,6 +247,13 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
             .btn-enf-card .enf-icon i {
                 font-size: 24px;
             }
+            
+            .alert-success-custom {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+            }
         }
     </style>
     
@@ -187,6 +274,35 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
 </head>
 
 <body class="body_top">
+
+    <?php if ($mensaje_exito): ?>
+    <div class="alert-success-custom" id="alertaExito">
+        <i class="fa fa-check-circle icon-success"></i>
+        <span><?php echo text($mensaje_exito); ?></span>
+        <button class="close-btn" onclick="cerrarAlerta()" aria-label="Cerrar">
+            <i class="fa fa-times"></i>
+        </button>
+    </div>
+
+    <script>
+        // Cerrar alerta automáticamente después de 5 segundos
+        setTimeout(function() {
+            var alerta = document.getElementById('alertaExito');
+            if (alerta) {
+                alerta.style.display = 'none';
+            }
+        }, 5000);
+        
+        // Función para cerrar manualmente
+        function cerrarAlerta() {
+            var alerta = document.getElementById('alertaExito');
+            if (alerta) {
+                alerta.style.display = 'none';
+            }
+        }
+    </script>
+    <?php endif; ?>
+
     <div id="container" class="<?php echo attr($oemr_ui->oeContainer()); ?>" style="width: 95%;">
         <div class="row">
             <div class="col-sm-12">
@@ -204,14 +320,6 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                     <?php if ($update != null) { ?>
                         <div class="alert alert-success alert-dismissible show" role="alert">
                             Se actualizó al paciente con éxito!
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar" style="color: black !important;">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    <?php } ?>
-                    <?php if ($curacion_guardada != null) { ?>
-                        <div class="alert alert-success alert-dismissible show" role="alert">
-                            <strong>¡Éxito!</strong> La curación se guardó correctamente.
                             <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar" style="color: black !important;">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -472,9 +580,9 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 top.RTop.location = webroot_url + "/interface/tableros/editar_internado.php?id=" + id_encounter;
             });
 
-            // BOTONES DEL MODAL DE ENFERMERÍA
+            // ========== BOTONES DEL MODAL DE ENFERMERÍA ==========
             
-            // Botón 1: CURACIONES - REDIRIGE AL NUEVO FORMULARIO
+            // Botón 1: CURACIONES
             $(document).on('click', '.btn-enfRedired1', function() {
                 console.log('Click en Curaciones, encounter:', encounter, 'pid:', pid_paciente);
                 if (!encounter || !pid_paciente) {
@@ -485,7 +593,6 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 $('#modal_Enf').modal('hide');
                 
                 setTimeout(function() {
-                    // Redirección al nuevo formulario de curaciones
                     top.RTop.location = webroot_url + "/interface/forms/curaciones/new.php?mode=new&id=0&pid=" + pid_paciente + "&encounter=" + encounter;
                 }, 300);
             });
@@ -514,27 +621,24 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 $('#modal_Enf').modal('hide');
                 
                 setTimeout(function() {
-                    window.open(
-                        webroot_url + "/interface/enfermeria/cuidados/index.php?visitid=" + encounter + "&pid=" + pid_paciente,
-                        'Cuidados_Enfermeria',
-                        'width=900,height=700,scrollbars=yes,resizable=yes'
-                    );
+                    top.RTop.location = webroot_url + "/interface/forms/cuidados/new.php?mode=new&id=0&pid=" + pid_paciente + "&encounter=" + encounter;
                 }, 300);
             });
 
-            // Botón 4: EVALUACIONES
+            // Botón: EVALUACIONES
             $(document).on('click', '.btn-enfRedired4', function() {
-                console.log('Click en Evaluaciones, encounter:', encounter);
-                if (!encounter) {
-                    alert('Error: No se pudo obtener el ID del encuentro');
+                console.log('Click en Evaluaciones, encounter:', encounter, 'pid:', pid_paciente);
+                if (!encounter || !pid_paciente) {
+                    alert('Error: No se pudo obtener los datos del paciente');
                     return;
                 }
+                
                 $('#modal_Enf').modal('hide');
+                
                 setTimeout(function() {
-                    top.RTop.location = webroot_url + "/interface/forms/LBF/new.php?formname=LBF_EVALUACIONES&visitid=" + encounter + "&inter=1";
+                    top.RTop.location = webroot_url + "/interface/forms/evaluaciones/new.php?mode=new&id=0&pid=" + pid_paciente + "&encounter=" + encounter;
                 }, 300);
             });
-
             // Botón 5: REGISTRO VM
             $(document).on('click', '.btn-enfRedired5', function() {
                 console.log('Click en Registro VM, encounter:', encounter);

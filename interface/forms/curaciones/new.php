@@ -83,7 +83,7 @@ date_default_timezone_set('America/Asuncion'); // Ajusta según tu zona horaria
         ?>
 
         <div class="mb-3 d-flex align-items-center time-group">
-            <label for="hora_operacion">Hora de Operación:</label>
+            <label for="hora_operacion">Hora de Curaciones:</label>
             <input type="time" id="hora_operacion" name="hora_operacion" class="form-control w-auto" required value="<?php echo date('H:i'); ?>">
         </div>
 
