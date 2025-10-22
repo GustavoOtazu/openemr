@@ -1,207 +1,261 @@
 <?php
 /**
  * Formulario de Evaluaciones - view.php
- * Muestra el registro en modo lectura con opción a editar.
+ * Ruta: interface/forms/evaluaciones/view.php
  */
 
-require_once(__DIR__ . '/../../../globals.php');
-require_once("$srcdir/api.inc");
-require_once("$srcdir/forms.inc");
+include_once("../../globals.php");
 
-// Obtener parámetros
-$id = $_GET['id'] ?? 0;
-$pid = $_GET['pid'] ?? 0;
-$encounter = $_GET['encounter'] ?? 0;
+$pid = $_GET['pid'] ?? $_SESSION['pid'] ?? null;
+$encounter = $_GET['encounter'] ?? $_SESSION['encounter'] ?? null;
 
-// Obtener datos del formulario
-$sql = "SELECT * FROM form_evaluaciones WHERE id = ?";
-$res = sqlQuery($sql, [$id]);
-
-if (!$res) {
-    echo "<div style='padding: 20px; color: red;'>No se encontraron datos para esta evaluación.</div>";
+if (!$pid || !$encounter) {
+    echo "<div class='alert alert-danger'>No se pudo obtener PID o Encounter.</div>";
     exit;
 }
+
+$sql = "SELECT * FROM form_evaluaciones WHERE pid = ? AND encounter = ? ORDER BY date DESC";
+$result = sqlStatement($sql, array($pid, $encounter));
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Evaluación del Paciente</title>
-    <link rel="stylesheet" href="<?php echo $webroot; ?>/public/assets/css/bootstrap.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Evaluaciones</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f6f8fb;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
-        .container-eval {
-            max-width: 900px;
-            background: #fff;
-            margin: 40px auto;
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         h2 {
-            color: #007bff;
-            text-align: center;
+            color: #333;
             margin-bottom: 25px;
-            font-weight: 600;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #007bff;
         }
-        .info-block {
-            margin-bottom: 25px;
-        }
-        .info-title {
-            background-color: #007bff;
-            color: #fff;
-            padding: 10px 15px;
-            border-radius: 5px 5px 0 0;
+        .btn-nuevo {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
             font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .btn-nuevo:hover {
+            background-color: #218838;
         }
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
         }
-        th, td {
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            font-size: 13px;
-        }
-        th {
-            background-color: #f1f4f8;
+        table th {
+            background-color: #007bff;
+            color: white;
+            padding: 12px;
             text-align: left;
-            color: #333;
-        }
-        td {
-            color: #555;
-        }
-        .glasgow {
-            background-color: #fff3cd;
             font-weight: bold;
+        }
+        table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+        table tr:hover {
+            background-color: #f8f9fa;
+        }
+        .badge {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .badge-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .badge-warning {
+            background-color: #fff3cd;
             color: #856404;
         }
-        .glasgow-score {
-            text-align: center;
-            font-size: 16px;
-            padding: 12px;
-            margin-top: 20px;
-            border-left: 4px solid #ffc107;
-            background-color: #fff8e1;
-            border-radius: 5px;
+        .badge-danger {
+            background-color: #f8d7da;
+            color: #721c24;
         }
-        .glasgow-score strong {
-            font-size: 18px;
-        }
-        .buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 25px;
-        }
-        .btn {
-            padding: 10px 20px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
-            transition: all 0.2s ease-in-out;
-        }
-        .btn-edit {
+        .btn-ver {
             background-color: #007bff;
-            color: #fff;
+            color: white;
+            padding: 6px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
         }
-        .btn-edit:hover {
+        .btn-ver:hover {
             background-color: #0056b3;
         }
-        .btn-back {
-            background-color: #6c757d;
-            color: #fff;
-        }
-        .btn-back:hover {
-            background-color: #545b62;
-        }
-        .info-adicional {
-            margin-top: 20px;
-            background-color: #e7f3ff;
-            border-left: 4px solid #007bff;
-            padding: 15px;
-            border-radius: 5px;
-            font-size: 13px;
+        .no-registros {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-style: italic;
         }
     </style>
 </head>
 <body>
-
-<div class="container-eval">
-    <h2>Evaluación del Paciente</h2>
-
-    <div class="info-block">
-        <table>
-            <tr><th width="35%">Conciencia</th><td><?php echo htmlspecialchars($res['conciencia'] ?? '-'); ?></td></tr>
-            <tr><th>Observación</th><td><?php echo htmlspecialchars($res['obs_conciencia'] ?? '-'); ?></td></tr>
-            <tr><th>Tono</th><td><?php echo htmlspecialchars($res['tono'] ?? '-'); ?></td></tr>
-            <tr><th>Observación</th><td><?php echo htmlspecialchars($res['obs_tono'] ?? '-'); ?></td></tr>
-            <tr><th>Pupilas</th><td><?php echo htmlspecialchars($res['pupilas'] ?? '-'); ?></td></tr>
-            <tr><th>Observación</th><td><?php echo htmlspecialchars($res['obs_pupilas'] ?? '-'); ?></td></tr>
-            <tr><th>Mucosas</th><td><?php echo htmlspecialchars($res['mucosas'] ?? '-'); ?></td></tr>
-            <tr><th>Observación</th><td><?php echo htmlspecialchars($res['obs_mucosas'] ?? '-'); ?></td></tr>
-        </table>
-    </div>
-
-    <div class="info-block">
-        <div class="info-title">Escala de Glasgow</div>
-        <table>
-            <tr class="glasgow">
-                <th>Ojos Abiertos</th><td><?php echo htmlspecialchars($res['glasgow_ojos'] ?? '-'); ?></td>
-            </tr>
-            <tr class="glasgow">
-                <th>Respuesta Motora</th><td><?php echo htmlspecialchars($res['glasgow_motora'] ?? '-'); ?></td>
-            </tr>
-            <tr class="glasgow">
-                <th>Respuesta Verbal</th><td><?php echo htmlspecialchars($res['glasgow_verbal'] ?? '-'); ?></td>
-            </tr>
-        </table>
-
-        <div class="glasgow-score">
-            <strong>Puntaje Total: <?php echo htmlspecialchars($res['glasgow_total'] ?? 0); ?>/15</strong><br>
-            <?php
-            $puntaje = $res['glasgow_total'] ?? 0;
-            if ($puntaje >= 13) {
-                echo "<span style='color:green;'>Leve</span>";
-            } elseif ($puntaje >= 9) {
-                echo "<span style='color:orange;'>Moderado</span>";
-            } else {
-                echo "<span style='color:red;'>Severo</span>";
+    <div class="container">
+        <h2>LISTA DE EVALUACIONES</h2>
+        
+        <a href="new.php?pid=<?php echo $pid; ?>&encounter=<?php echo $encounter; ?>" class="btn-nuevo">
+            + Nueva Evaluación
+        </a>
+        
+        <?php
+        $count = 0;
+        while ($row = sqlFetchArray($result)) {
+            if ($count == 0) {
+                echo "<table>";
+                echo "<tr>";
+                echo "<th>Fecha/Hora</th>";
+                echo "<th>Conciencia</th>";
+                echo "<th>Tono</th>";
+                echo "<th>Pupilas</th>";
+                echo "<th>Glasgow</th>";
+                echo "<th>Hora Evaluación</th>";
+                echo "<th>Acciones</th>";
+                echo "</tr>";
             }
-            ?>
+            $count++;
+            
+            // Determinar nivel de Glasgow
+            $glasgow = $row['glasgow_total'] ?? 0;
+            if ($glasgow >= 13) {
+                $glasgow_badge = "badge-success";
+                $glasgow_nivel = "Leve";
+            } elseif ($glasgow >= 9) {
+                $glasgow_badge = "badge-warning";
+                $glasgow_nivel = "Moderado";
+            } else {
+                $glasgow_badge = "badge-danger";
+                $glasgow_nivel = "Severo";
+            }
+            
+            echo "<tr>";
+            echo "<td>" . date('d/m/Y H:i', strtotime($row['date'])) . "</td>";
+            echo "<td>" . htmlspecialchars($row['conciencia'] ?? '-') . "</td>";
+            echo "<td>" . htmlspecialchars($row['tono'] ?? '-') . "</td>";
+            echo "<td>" . htmlspecialchars($row['pupilas'] ?? '-') . "</td>";
+            echo "<td><span class='badge $glasgow_badge'>$glasgow/15 - $glasgow_nivel</span></td>";
+            echo "<td>" . htmlspecialchars($row['hora_evaluacion'] ?? '-') . "</td>";
+            echo "<td>";
+            echo "<a href='#' onclick='verDetalle(" . $row['id'] . ")' class='btn-ver'>Ver Detalle</a>";
+            echo "</td>";
+            echo "</tr>";
+        }
+        
+        if ($count == 0) {
+            echo "<div class='no-registros'>";
+            echo "No hay evaluaciones registradas para este encuentro.";
+            echo "</div>";
+        } else {
+            echo "</table>";
+        }
+        ?>
+    </div>
+    
+    <!-- Modal para ver detalle -->
+    <div class="modal fade" id="modalDetalle" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #007bff; color: white;">
+                    <h4 class="modal-title">Detalle de Evaluación</h4>
+                    <button type="button" class="close" data-dismiss="modal" style="color: white;">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="contenidoDetalle">
+                    <!-- El contenido se carga aquí -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="imprimirDetalle()">
+                        <i class="fa fa-print"></i> Imprimir
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
-
-    <div class="info-adicional">
-        <strong>Información del Registro:</strong><br>
-        Hora de Evaluación: <?php echo htmlspecialchars($res['hora_evaluacion'] ?? '-'); ?><br>
-        Fecha: <?php echo date('d/m/Y H:i', strtotime($res['date'])); ?>
-    </div>
-
-    <div class="buttons">
-        <button class="btn btn-edit" id="btnEditar">Editar</button>
-        <button class="btn btn-back" onclick="top.restoreSession(); top.RTop.location = '<?php echo $webroot; ?>/interface/patient_file/encounter/encounter_top.php?set_encounter=<?php echo attr($encounter); ?>&pid=<?php echo attr($pid); ?>';">Volver</button>
-    </div>
-</div>
-
-<script>
-document.getElementById('btnEditar').addEventListener('click', function() {
-    top.restoreSession();
-    const pid = "<?php echo $pid; ?>";
-    const encounter = "<?php echo $encounter; ?>";
-    const id = "<?php echo $id; ?>";
-    const url = "<?php echo $webroot; ?>/interface/forms/evaluaciones/new.php?mode=edit&id=" + id + "&pid=" + pid + "&encounter=" + encounter;
-    top.RTop.location = url;
-});
-</script>
-
+    
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    
+    <script>
+        function verDetalle(id) {
+            // Cargar el detalle mediante AJAX
+            $.ajax({
+                url: 'report.php',
+                type: 'GET',
+                data: {
+                    id: id,
+                    pid: <?php echo $pid; ?>
+                },
+                success: function(response) {
+                    // Extraer solo el contenido del reporte
+                    var contenido = $(response).find('.reporte-evaluaciones').html();
+                    if (!contenido) {
+                        contenido = response;
+                    }
+                    $('#contenidoDetalle').html(contenido);
+                    $('#modalDetalle').modal('show');
+                },
+                error: function() {
+                    alert('Error al cargar el detalle de la evaluación');
+                }
+            });
+        }
+        
+        function imprimirDetalle() {
+            var contenido = document.getElementById('contenidoDetalle').innerHTML;
+            var ventana = window.open('', '_blank');
+            ventana.document.write('<html><head><title>Evaluación</title>');
+            ventana.document.write('<style>');
+            ventana.document.write('body { font-family: Arial, sans-serif; padding: 20px; }');
+            ventana.document.write('table { width: 100%; border-collapse: collapse; margin-top: 15px; }');
+            ventana.document.write('table th { background-color: #007bff; color: white; padding: 12px; text-align: left; }');
+            ventana.document.write('table td { padding: 10px; border: 1px solid #ddd; }');
+            ventana.document.write('.item-principal { font-weight: bold; background-color: #f8f9fa; }');
+            ventana.document.write('.item-glasgow { background-color: #fff3cd; font-weight: bold; color: #856404; }');
+            ventana.document.write('.subitem { padding-left: 30px; font-style: italic; color: #666; }');
+            ventana.document.write('.seleccionado { background-color: #d4edda; color: #155724; font-weight: bold; }');
+            ventana.document.write('.info-adicional { margin-top: 20px; padding: 15px; background-color: #e7f3ff; border-left: 4px solid #007bff; }');
+            ventana.document.write('.glasgow-score { margin-top: 15px; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107; }');
+            ventana.document.write('</style>');
+            ventana.document.write('</head><body>');
+            ventana.document.write(contenido);
+            ventana.document.write('</body></html>');
+            ventana.document.close();
+            ventana.print();
+        }
+    </script>
 </body>
 </html>
