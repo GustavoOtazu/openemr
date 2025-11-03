@@ -1012,18 +1012,31 @@ if ($pass_sens_squad &&
         echo "<div class='form_header_controls'>";
 
         // If the form is locked, it is no longer editable
+       // a link to edit the form
+        echo "<div class='form_header_controls'>";
+
+        // If the form is locked, it is no longer editable
         if ($esign->isLocked()) {
                  echo "<a href=# class='css_button_small form-edit-button-locked' id='form-edit-button-" . attr($formdir) . "-" . attr($iter['id']) . "'><span>" . xlt('Locked') . "</span></a>";
         } else {
             if ((!$aco_spec || acl_check($aco_spec[0], $aco_spec[1], '', 'write') and $is_group == 0 and $authPostCalendarCategoryWrite)
             or (((!$aco_spec || acl_check($aco_spec[0], $aco_spec[1], '', 'write')) and $is_group and acl_check("groups", "glog", false, 'write')) and $authPostCalendarCategoryWrite)) {
+                
+                // Detectar si es uno de los 5 ABMs personalizados
+                $abms_personalizados = array('aplicaciones', 'curaciones', 'cuidados', 'evaluaciones', 'registro_vm');
+                $es_abm_personalizado = in_array(strtolower($formdir), $abms_personalizados);
+                
+                // Cambiar texto del botón según el tipo de formulario
+                $texto_boton = $es_abm_personalizado ? xlt('Vista') : xlt('Edit');
+                $title_boton = $es_abm_personalizado ? xla('View this form') : xla('Edit this form');
+                
                 echo "<a class='css_button_small form-edit-button' " .
                     "id='form-edit-button-" . attr($formdir) . "-" . attr($iter['id']) . "' " .
                     "href='#' " .
-                    "title='" . xla('Edit this form') . "' " .
+                    "title='" . $title_boton . "' " .
                     "onclick=\"return openEncounterForm(" . attr_js($formdir) . ", " .
                     attr_js($form_name) . ", " . attr_js($iter['form_id']) . ")\">";
-                echo "<span>" . xlt('Edit') . "</span></a>";
+                echo "<span>" . $texto_boton . "</span></a>";
             }
         }
 

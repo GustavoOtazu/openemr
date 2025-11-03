@@ -45,41 +45,51 @@ function curaciones_report($pid, $encounter, $cols, $id) {
             padding: 10px;
         }
         .reporte-curaciones .btn-reporte { 
-            padding: 8px 16px; 
+            padding: 10px 20px; 
             border: none; 
-            border-radius: 4px; 
+            border-radius: 5px; 
             cursor: pointer; 
             font-weight: bold; 
-            font-size: 12px; 
-            margin-bottom: 10px;
-            background-color: #007bff;
+            font-size: 13px; 
+            margin-bottom: 15px;
+            background-color: #2196F3;
             color: white;
+            transition: all 0.3s;
         }
         .reporte-curaciones .btn-reporte:hover { 
-            background-color: #0056b3; 
+            background-color: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
         }
         .reporte-curaciones table { 
             width: 100%; 
             border-collapse: collapse;
             table-layout: fixed;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
         }
         .reporte-curaciones table th { 
-            background-color: #007bff; 
+            background-color: #2196F3; 
             color: white; 
-            padding: 10px; 
+            padding: 12px; 
             text-align: left; 
             font-weight: bold; 
-            font-size: 12px;
+            font-size: 13px;
             word-wrap: break-word;
         }
         .reporte-curaciones table td { 
-            padding: 8px; 
-            border: 1px solid #ddd; 
-            font-size: 11px;
+            padding: 10px; 
+            border: 1px solid #e0e0e0; 
+            font-size: 12px;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            background-color: white;
         }
-        .reporte-curaciones .item-nombre { font-weight: bold; }
+        .reporte-curaciones .item-nombre { 
+            font-weight: bold;
+            color: #333;
+        }
         .reporte-curaciones .si { 
             background-color: #d4edda; 
             color: #155724; 
@@ -93,21 +103,29 @@ function curaciones_report($pid, $encounter, $cols, $id) {
             text-align: center; 
         }
         .reporte-curaciones .info-box { 
-            margin-top: 15px; 
-            padding: 12px; 
-            background-color: #e7f3ff; 
-            border-left: 4px solid #007bff;
-            font-size: 12px;
+            margin-top: 20px; 
+            padding: 15px; 
+            background-color: #e3f2fd; 
+            border-left: 4px solid #2196F3;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #333;
+        }
+        .reporte-curaciones .info-box strong {
+            color: #1976D2;
+            font-size: 14px;
         }
         
         @media print {
             .reporte-curaciones .btn-reporte { display: none; }
             .reporte-curaciones { padding: 0; }
+            .reporte-curaciones table {
+                box-shadow: none;
+            }
         }
     </style>
     
     <div class="reporte-curaciones">
-        <button class="btn-reporte" onclick="window.print()">🖨️ Imprimir</button>
         
         <table>
             <tr>

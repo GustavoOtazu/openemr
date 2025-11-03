@@ -1,7 +1,9 @@
 <?php
 /**
- * Formulario de Cuidados - save.php
+ * Formulario de Cuidados - save.php (CON EDICIÓN)
  * Ruta: interface/forms/cuidados/save.php
+ * Soporta tanto INSERT (crear) como UPDATE (editar)
+ * CORREGIDO: Mensaje de éxito aparece en AMBOS modos (crear y editar)
  */
 
 require_once("../../globals.php");
@@ -16,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Obtener datos del formulario
 $pid = (int)($_POST['pid'] ?? 0);
 $encounter = (int)($_POST['encounter'] ?? 0);
+$id = isset($_POST['id']) ? (int)$_POST['id'] : null; // ← NUEVO: Detectar modo edición
 
 if (!$pid || !$encounter) {
     die("Error: Faltan datos requeridos (PID o Encounter)");
@@ -26,109 +29,188 @@ $user = $_SESSION['authUser'] ?? 'admin';
 $groupname = $_SESSION['authProvider'] ?? 'Default';
 $authorized = $_SESSION['userauthorized'] ?? 1;
 
-// Capturar POSICION DEL PACIENTE (radio button - una sola opción)
+// Capturar datos del formulario
 $posicion_paciente = $_POST['posicion_paciente'] ?? '';
-$obs_posicion = $_POST['obs_posicion'] ?? '';
+$obs_posicion_paciente = $_POST['obs_posicion_paciente'] ?? '';
 
-// Capturar otros items (Sí/No como radio buttons)
-$enjuague_bucal = isset($_POST['enjuague_bucal']) ? (int)$_POST['enjuague_bucal'] : 0;
-$obs_enjuague = $_POST['obs_enjuague'] ?? '';
+$enjuague_bucal = (int)($_POST['enjuague_bucal'] ?? 0);
+$obs_enjuague_bucal = $_POST['obs_enjuague_bucal'] ?? '';
 
-$higiene_manos = isset($_POST['higiene_manos']) ? (int)$_POST['higiene_manos'] : 0;
-$obs_higiene = $_POST['obs_higiene'] ?? '';
+$higiene_manos = (int)($_POST['higiene_manos'] ?? 0);
+$obs_higiene_manos = $_POST['obs_higiene_manos'] ?? '';
 
-$aspirado_secreciones = isset($_POST['aspirado_secreciones']) ? (int)$_POST['aspirado_secreciones'] : 0;
-$obs_aspirado = $_POST['obs_aspirado'] ?? '';
+$aspirado_secreciones = (int)($_POST['aspirado_secreciones'] ?? 0);
+$obs_aspirado_secreciones = $_POST['obs_aspirado_secreciones'] ?? '';
 
-$suspension_sedacion = isset($_POST['suspension_sedacion']) ? (int)$_POST['suspension_sedacion'] : 0;
-$obs_suspension = $_POST['obs_suspension'] ?? '';
+$suspension_sedacion = (int)($_POST['suspension_sedacion'] ?? 0);
+$obs_suspension_sedacion = $_POST['obs_suspension_sedacion'] ?? '';
 
-$medicion_cuff = isset($_POST['medicion_cuff']) ? (int)$_POST['medicion_cuff'] : 0;
-$obs_cuff = $_POST['obs_cuff'] ?? '';
+$medicion_cuff = (int)($_POST['medicion_cuff'] ?? 0);
+$obs_medicion_cuff = $_POST['obs_medicion_cuff'] ?? '';
 
 $hora_cuidado = $_POST['hora_cuidado'] ?? null;
 
-// Preparar SQL INSERT
-$sql = "INSERT INTO form_cuidados (
-    date,
-    pid,
-    encounter,
-    user,
-    groupname,
-    authorized,
-    activity,
-    posicion_paciente,
-    obs_posicion,
-    enjuague_bucal,
-    obs_enjuague,
-    higiene_manos,
-    obs_higiene,
-    aspirado_secreciones,
-    obs_aspirado,
-    suspension_sedacion,
-    obs_suspension,
-    medicion_cuff,
-    obs_cuff,
-    hora_cuidado
-) VALUES (
-    NOW(),
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    1,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?
-)";
+// Determinar si es UPDATE o INSERT
+$modo_edicion = !empty($id);
 
-// Array de parámetros (19 valores)
-$params = array(
-    $pid,                      // 1
-    $encounter,                // 2
-    $user,                     // 3
-    $groupname,                // 4
-    $authorized,               // 5
-    $posicion_paciente,        // 6
-    $obs_posicion,             // 7
-    $enjuague_bucal,           // 8
-    $obs_enjuague,             // 9
-    $higiene_manos,            // 10
-    $obs_higiene,              // 11
-    $aspirado_secreciones,     // 12
-    $obs_aspirado,             // 13
-    $suspension_sedacion,      // 14
-    $obs_suspension,           // 15
-    $medicion_cuff,            // 16
-    $obs_cuff,                 // 17
-    $hora_cuidado              // 18
-);
-
-// Ejecutar INSERT
-$newid = sqlInsert($sql, $params);
-
-if ($newid) {
-    // Agregar el formulario al encuentro
-    addForm($encounter, 'Cuidados', $newid, 'cuidados', $pid, $authorized);
+if ($modo_edicion) {
+    // ============================================
+    // MODO EDICIÓN: UPDATE
+    // ============================================
     
-    // Marcar sesión para mostrar mensaje de éxito
-    $_SESSION['cuidado_guardado'] = true;
+    // Verificar que el registro existe y pertenece al paciente
+    $check_sql = "SELECT id FROM form_cuidados WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1";
+    $check_row = sqlQuery($check_sql, array($id, $pid, $encounter));
     
-    // Redirigir a lista de internados
-    header("Location: " . $GLOBALS['webroot'] . "/interface/tableros/lista_internados.php");
-    exit;
+    if (!$check_row) {
+        die("Error: Registro no encontrado o no tiene permisos para editarlo.");
+    }
+    
+    // Preparar SQL UPDATE
+    $sql = "UPDATE form_cuidados SET
+        date = NOW(),
+        user = ?,
+        groupname = ?,
+        authorized = ?,
+        posicion_paciente = ?,
+        obs_posicion_paciente = ?,
+        enjuague_bucal = ?,
+        obs_enjuague_bucal = ?,
+        higiene_manos = ?,
+        obs_higiene_manos = ?,
+        aspirado_secreciones = ?,
+        obs_aspirado_secreciones = ?,
+        suspension_sedacion = ?,
+        obs_suspension_sedacion = ?,
+        medicion_cuff = ?,
+        obs_medicion_cuff = ?,
+        hora_cuidado = ?
+    WHERE id = ? AND pid = ? AND encounter = ?";
+    
+    // Array de parámetros (19 valores)
+    $params = array(
+        $user,                          // 1
+        $groupname,                     // 2
+        $authorized,                    // 3
+        $posicion_paciente,             // 4
+        $obs_posicion_paciente,         // 5
+        $enjuague_bucal,                // 6
+        $obs_enjuague_bucal,            // 7
+        $higiene_manos,                 // 8
+        $obs_higiene_manos,             // 9
+        $aspirado_secreciones,          // 10
+        $obs_aspirado_secreciones,      // 11
+        $suspension_sedacion,           // 12
+        $obs_suspension_sedacion,       // 13
+        $medicion_cuff,                 // 14
+        $obs_medicion_cuff,             // 15
+        $hora_cuidado,                  // 16
+        $id,                            // 17 WHERE
+        $pid,                           // 18 WHERE
+        $encounter                      // 19 WHERE
+    );
+    
+    // Ejecutar UPDATE
+    $result = sqlStatement($sql, $params);
+    
+    if ($result !== false) {
+        // ✅ IMPORTANTE: Usar MISMA variable de sesión que creación para que aparezca el mensaje
+        $_SESSION['cuidado_guardado'] = true;
+        
+        // Redirigir a lista de internados
+        header("Location: " . $GLOBALS['webroot'] . "/interface/tableros/lista_internados.php");
+        exit;
+    } else {
+        die("Error al actualizar los datos");
+    }
+    
 } else {
-    die("Error al guardar los datos");
+    // ============================================
+    // MODO CREACIÓN: INSERT
+    // ============================================
+    
+    // Preparar SQL INSERT
+    $sql = "INSERT INTO form_cuidados (
+        date,
+        pid,
+        encounter,
+        user,
+        groupname,
+        authorized,
+        activity,
+        posicion_paciente,
+        obs_posicion_paciente,
+        enjuague_bucal,
+        obs_enjuague_bucal,
+        higiene_manos,
+        obs_higiene_manos,
+        aspirado_secreciones,
+        obs_aspirado_secreciones,
+        suspension_sedacion,
+        obs_suspension_sedacion,
+        medicion_cuff,
+        obs_medicion_cuff,
+        hora_cuidado
+    ) VALUES (
+        NOW(),
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        1,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?
+    )";
+    
+    // Array de parámetros (18 valores)
+    $params = array(
+        $pid,                           // 1
+        $encounter,                     // 2
+        $user,                          // 3
+        $groupname,                     // 4
+        $authorized,                    // 5
+        $posicion_paciente,             // 6
+        $obs_posicion_paciente,         // 7
+        $enjuague_bucal,                // 8
+        $obs_enjuague_bucal,            // 9
+        $higiene_manos,                 // 10
+        $obs_higiene_manos,             // 11
+        $aspirado_secreciones,          // 12
+        $obs_aspirado_secreciones,      // 13
+        $suspension_sedacion,           // 14
+        $obs_suspension_sedacion,       // 15
+        $medicion_cuff,                 // 16
+        $obs_medicion_cuff,             // 17
+        $hora_cuidado                   // 18
+    );
+    
+    // Ejecutar INSERT
+    $newid = sqlInsert($sql, $params);
+    
+    if ($newid) {
+        // Agregar el formulario al encuentro
+        addForm($encounter, 'Cuidados', $newid, 'cuidados', $pid, $authorized);
+        
+        // ✅ IMPORTANTE: Usar MISMA variable de sesión que edición para consistencia
+        $_SESSION['cuidado_guardado'] = true;
+        
+        // Redirigir a lista de internados
+        header("Location: " . $GLOBALS['webroot'] . "/interface/tableros/lista_internados.php");
+        exit;
+    } else {
+        die("Error al guardar los datos");
+    }
 }
 ?>

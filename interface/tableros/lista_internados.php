@@ -39,6 +39,12 @@ if (isset($_SESSION['curacion_guardada']) && $_SESSION['curacion_guardada']) {
     unset($_SESSION['curacion_guardada']);
 }
 
+// Mensaje de éxito para APLICACIONES
+if (isset($_SESSION['aplicacion_guardada']) && $_SESSION['aplicacion_guardada']) {
+    $mensaje_exito = '¡Éxito! La aplicación se guardó correctamente.';
+    unset($_SESSION['aplicacion_guardada']);
+}
+
 // Mensaje de éxito para CUIDADOS
 if (isset($_SESSION['cuidado_guardado']) && $_SESSION['cuidado_guardado']) {
     $mensaje_exito = '¡Éxito! El cuidado se guardó correctamente.';
@@ -604,17 +610,18 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
 
             // Botón 2: APLICACIONES
             $(document).on('click', '.btn-enfRedired2', function() {
-                console.log('Click en Aplicaciones, encounter:', encounter);
-                if (!encounter) {
-                    alert('Error: No se pudo obtener el ID del encuentro');
+                console.log('Click en Aplicaciones, encounter:', encounter, 'pid:', pid_paciente);
+                if (!encounter || !pid_paciente) {
+                    alert('Error: No se pudo obtener los datos del paciente');
                     return;
                 }
+                
                 $('#modal_Enf').modal('hide');
+                
                 setTimeout(function() {
-                    top.RTop.location = webroot_url + "/interface/forms/LBF/new.php?formname=LBF_APLICACIONES&visitid=" + encounter + "&inter=1";
+                    top.RTop.location = webroot_url + "/interface/forms/aplicaciones/new.php?mode=new&id=0&pid=" + pid_paciente + "&encounter=" + encounter;
                 }, 300);
             });
-
             // Botón 3: CUIDADOS
             $(document).on('click', '.btn-enfRedired3', function() {
                 console.log('Click en Cuidados, encounter:', encounter, 'pid:', pid_paciente);
@@ -630,22 +637,23 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 }, 300);
             });
 
-            // Botón 5: REGISTRO VM
-                $(document).on('click', '.btn-enfRedired5', function() {
-                    console.log('Click en Registro VM, encounter:', encounter, 'pid:', pid_paciente);
-                    if (!encounter || !pid_paciente) {
-                        alert('Error: No se pudo obtener los datos del paciente');
-                        return;
-                    }
-                    
-                    $('#modal_Enf').modal('hide');
-                    
-                    setTimeout(function() {
-                        top.RTop.location = webroot_url + "/interface/forms/registro_vm/new.php?mode=new&id=0&pid=" + pid_paciente + "&encounter=" + encounter;
-                    }, 300);
-                });
+           
            // Botón: REGISTRO VM
             $(document).on('click', '.btn-enfRedired4', function() {
+                console.log('Click en evaluaciones, encounter:', encounter, 'pid:', pid_paciente);
+                if (!encounter || !pid_paciente) {
+                    alert('Error: No se pudo obtener los datos del paciente');
+                    return;
+                }
+                
+                $('#modal_Enf').modal('hide');
+                
+                setTimeout(function() {
+                    top.RTop.location = webroot_url + "/interface/forms/evaluaciones/new.php?mode=new&id=0&pid=" + pid_paciente + "&encounter=" + encounter;
+                }, 300);
+            });
+             // Botón: REGISTRO VM
+            $(document).on('click', '.btn-enfRedired5', function() {
                 console.log('Click en Registro VM, encounter:', encounter, 'pid:', pid_paciente);
                 if (!encounter || !pid_paciente) {
                     alert('Error: No se pudo obtener los datos del paciente');

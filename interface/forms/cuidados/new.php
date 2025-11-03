@@ -1,176 +1,505 @@
 <?php
 /**
- * Formulario de Cuidados - new.php
+ * Formulario de Cuidados - new.php (CON EDICIÓN)
  * Ruta: interface/forms/cuidados/new.php
+ * Soporta tanto CREAR como EDITAR registros
+ * MODIFICADO: Auto-completa hora actual en modo creación
  */
 
 require_once("../../globals.php");
 require_once("$srcdir/api.inc");
 
-formHeader("Nuevo Registro de Cuidados");
-
+// Obtener parámetros
 $pid = $_GET['pid'] ?? $_SESSION['pid'] ?? null;
 $encounter = $_GET['encounter'] ?? $_SESSION['encounter'] ?? null;
+$id = $_GET['id'] ?? null; // ← NUEVO: Detectar si es modo edición
 
-date_default_timezone_set('America/Asuncion');
+// Determinar si es modo CREAR o EDITAR
+$modo_edicion = !empty($id);
+$titulo = $modo_edicion ? "EDITAR CUIDADOS" : "NUEVOS CUIDADOS";
+
+// Variables para pre-llenar el formulario
+$posicion_paciente = '';
+$obs_posicion_paciente = '';
+$enjuague_bucal = 0;
+$obs_enjuague_bucal = '';
+$higiene_manos = 0;
+$obs_higiene_manos = '';
+$aspirado_secreciones = 0;
+$obs_aspirado_secreciones = '';
+$suspension_sedacion = 0;
+$obs_suspension_sedacion = '';
+$medicion_cuff = 0;
+$obs_medicion_cuff = '';
+$hora_cuidado = '';
+
+// Si es modo EDICIÓN, cargar datos existentes
+if ($modo_edicion) {
+    $sql = "SELECT * FROM form_cuidados WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1";
+    $row = sqlQuery($sql, array($id, $pid, $encounter));
+    
+    if ($row) {
+        // Cargar valores existentes
+        $posicion_paciente = $row['posicion_paciente'] ?? '';
+        $obs_posicion_paciente = $row['obs_posicion_paciente'] ?? '';
+        $enjuague_bucal = (int)$row['enjuague_bucal'];
+        $obs_enjuague_bucal = $row['obs_enjuague_bucal'] ?? '';
+        $higiene_manos = (int)$row['higiene_manos'];
+        $obs_higiene_manos = $row['obs_higiene_manos'] ?? '';
+        $aspirado_secreciones = (int)$row['aspirado_secreciones'];
+        $obs_aspirado_secreciones = $row['obs_aspirado_secreciones'] ?? '';
+        $suspension_sedacion = (int)$row['suspension_sedacion'];
+        $obs_suspension_sedacion = $row['obs_suspension_sedacion'] ?? '';
+        $medicion_cuff = (int)$row['medicion_cuff'];
+        $obs_medicion_cuff = $row['obs_medicion_cuff'] ?? '';
+        $hora_cuidado = $row['hora_cuidado'] ?? '';
+    } else {
+        // Registro no encontrado
+        die("Error: Registro no encontrado o no tiene permisos para editarlo.");
+    }
+}
+
+// Validación básica
+if (!$pid || !$encounter) {
+    die("Error: Faltan parámetros requeridos (PID o Encounter)");
+}
 ?>
 
-<html>
+<!DOCTYPE html>
+<html lang="es">
 <head>
-    <title>Formulario de Cuidados</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?php echo $css_header;?>" type="text/css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo $titulo; ?></title>
     <style>
-        body { background-color: #f8f9fa; }
-        .form-container { max-width: 900px; margin: 30px auto; padding: 25px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .form-title { text-align: center; color: #2c3e50; margin-bottom: 25px; font-size: 28px; font-weight: bold; }
-        .cuidado-card { padding: 15px; margin-bottom: 20px; border-radius: 10px; background-color: #fdfdfe; border: 1px solid #dee2e6; }
-        .cuidado-card h3 { font-size: 18px; color: #34495e; margin-bottom: 12px; }
-        .obs-input { flex: 1; }
-        .time-group label { font-weight: bold; min-width: 150px; }
-        .posicion-group { display: flex; gap: 15px; flex-wrap: wrap; }
-        .posicion-item { display: flex; align-items: center; gap: 8px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .form-content {
+            padding: 40px;
+        }
+
+        .form-group {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-group-posicion {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1976d2;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-group h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .radio-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .radio-container label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .radio-container input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .observaciones {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.3s;
+        }
+
+        .observaciones:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .hora-grupo {
+            margin-top: 20px;
+        }
+
+        .hora-grupo label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .hora-grupo input[type="time"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .hora-grupo input[type="time"]:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .modo-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .modo-crear {
+            background: #28a745;
+            color: white;
+        }
+
+        .modo-editar {
+            background: #ffc107;
+            color: #000;
+        }
     </style>
 </head>
-<body class="body_top">
-
-<div class="form-container">
-    <h2 class="form-title">FORMULARIO DE CUIDADOS</h2>
-    
-    <form method="post" action="<?php echo $rootdir;?>/forms/cuidados/save.php?mode=new" name="cuidados_form">
-        <input type="hidden" name="pid" value="<?php echo attr($pid); ?>" />
-        <input type="hidden" name="encounter" value="<?php echo attr($encounter); ?>" />
-
-        <!-- POSICION DEL PACIENTE (Radio Buttons) -->
-        <div class="cuidado-card">
-            <h3>POSICION DEL PACIENTE</h3>
-            <div class="posicion-group">
-                <div class="posicion-item">
-                    <input type="radio" name="posicion_paciente" value="DLI" id="dli">
-                    <label for="dli">DLI</label>
-                </div>
-                <div class="posicion-item">
-                    <input type="radio" name="posicion_paciente" value="DLD" id="dld">
-                    <label for="dld">DLD</label>
-                </div>
-                <div class="posicion-item">
-                    <input type="radio" name="posicion_paciente" value="DS" id="ds">
-                    <label for="ds">DS</label>
-                </div>
-                <div class="posicion-item">
-                    <input type="radio" name="posicion_paciente" value="DV" id="dv">
-                    <label for="dv">DV</label>
-                </div>
-                <div class="posicion-item">
-                    <input type="radio" name="posicion_paciente" value="CABECERA 30°" id="cabecera">
-                    <label for="cabecera">CABECERA 30°</label>
-                </div>
-            </div>
-            <div style="margin-top: 15px;">
-                <input type="text" name="obs_posicion_paciente" placeholder="Observación" class="form-control">
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <?php echo $titulo; ?>
+                <span class="modo-badge <?php echo $modo_edicion ? 'modo-editar' : 'modo-crear'; ?>">
+                    <?php echo $modo_edicion ? '✏️ MODO EDICIÓN' : '➕ MODO CREACIÓN'; ?>
+                </span>
+            </h1>
+            <div class="subtitle">
+                Encounter: <?php echo htmlspecialchars($encounter); ?>
             </div>
         </div>
 
-        <!-- ENJUAGUE BUCAL -->
-        <div class="cuidado-card d-flex flex-column">
-            <h3>ENJUAGUE BUCAL</h3>
-            <div class="d-flex align-items-center gap-3 flex-wrap">
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="enjuague_bucal" value="1" id="enjuague_si">
-                    <label class="form-check-label" for="enjuague_si">Sí</label>
+        <div class="form-content">
+            <form method="POST" action="save.php" id="formCuidados">
+                <!-- Campos ocultos -->
+                <input type="hidden" name="pid" value="<?php echo htmlspecialchars($pid); ?>">
+                <input type="hidden" name="encounter" value="<?php echo htmlspecialchars($encounter); ?>">
+                <?php if ($modo_edicion): ?>
+                <!-- Campo ID para indicar que es una edición -->
+                <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
+                <?php endif; ?>
+
+                <!-- POSICIÓN DEL PACIENTE (Especial) -->
+                <div class="form-group-posicion">
+                    <h3>🛏️ Posición del Paciente</h3>
+                    <div class="radio-container">
+                        <label>
+                            <input type="radio" 
+                                   name="posicion_paciente" 
+                                   value="DLI"
+                                   <?php echo ($posicion_paciente === 'DLI') ? 'checked' : ''; ?>>
+                            DLI
+                        </label>
+                        <label>
+                            <input type="radio" 
+                                   name="posicion_paciente" 
+                                   value="DLD"
+                                   <?php echo ($posicion_paciente === 'DLD') ? 'checked' : ''; ?>>
+                            DLD
+                        </label>
+                        <label>
+                            <input type="radio" 
+                                   name="posicion_paciente" 
+                                   value="DS"
+                                   <?php echo ($posicion_paciente === 'DS') ? 'checked' : ''; ?>>
+                            DS
+                        </label>
+                        <label>
+                            <input type="radio" 
+                                   name="posicion_paciente" 
+                                   value="DV"
+                                   <?php echo ($posicion_paciente === 'DV') ? 'checked' : ''; ?>>
+                            DV
+                        </label>
+                        <label>
+                            <input type="radio" 
+                                   name="posicion_paciente" 
+                                   value="CABECERA 30°"
+                                   <?php echo ($posicion_paciente === 'CABECERA 30°') ? 'checked' : ''; ?>>
+                            CABECERA 30°
+                        </label>
+                    </div>
+                    <textarea name="obs_posicion_paciente" 
+                              class="observaciones" 
+                              placeholder="Observaciones sobre posición del paciente..."><?php echo htmlspecialchars($obs_posicion_paciente); ?></textarea>
                 </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="enjuague_bucal" value="0" id="enjuague_no" checked>
-                    <label class="form-check-label" for="enjuague_no">No</label>
+
+                <!-- ENJUAGUE BUCAL -->
+                <div class="form-group">
+                    <h3>🦷 Enjuague Bucal</h3>
+                    <div class="radio-container">
+                        <label>
+                            <input type="radio" 
+                                   name="enjuague_bucal" 
+                                   value="1"
+                                   <?php echo $enjuague_bucal ? 'checked' : ''; ?>>
+                            Sí
+                        </label>
+                        <label>
+                            <input type="radio" 
+                                   name="enjuague_bucal" 
+                                   value="0"
+                                   <?php echo !$enjuague_bucal ? 'checked' : ''; ?>>
+                            No
+                        </label>
+                    </div>
+                    <textarea name="obs_enjuague_bucal" 
+                              class="observaciones" 
+                              placeholder="Observaciones sobre enjuague bucal..."><?php echo htmlspecialchars($obs_enjuague_bucal); ?></textarea>
                 </div>
-                <input type="text" name="obs_enjuague_bucal" placeholder="Observación" class="form-control obs-input">
-            </div>
+
+                <!-- HIGIENE DE MANOS -->
+                <div class="form-group">
+                    <h3>🧼 Higiene de Manos Pre y Post Aspirado</h3>
+                    <div class="radio-container">
+                        <label>
+                            <input type="radio" 
+                                   name="higiene_manos" 
+                                   value="1"
+                                   <?php echo $higiene_manos ? 'checked' : ''; ?>>
+                            Sí
+                        </label>
+                        <label>
+                            <input type="radio" 
+                                   name="higiene_manos" 
+                                   value="0"
+                                   <?php echo !$higiene_manos ? 'checked' : ''; ?>>
+                            No
+                        </label>
+                    </div>
+                    <textarea name="obs_higiene_manos" 
+                              class="observaciones" 
+                              placeholder="Observaciones sobre higiene de manos..."><?php echo htmlspecialchars($obs_higiene_manos); ?></textarea>
+                </div>
+
+                <!-- ASPIRADO DE SECRECIONES -->
+                <div class="form-group">
+                    <h3>🫁 Aspirado de Secreciones con Guantes y Ayudante</h3>
+                    <div class="radio-container">
+                        <label>
+                            <input type="radio" 
+                                   name="aspirado_secreciones" 
+                                   value="1"
+                                   <?php echo $aspirado_secreciones ? 'checked' : ''; ?>>
+                            Sí
+                        </label>
+                        <label>
+                            <input type="radio" 
+                                   name="aspirado_secreciones" 
+                                   value="0"
+                                   <?php echo !$aspirado_secreciones ? 'checked' : ''; ?>>
+                            No
+                        </label>
+                    </div>
+                    <textarea name="obs_aspirado_secreciones" 
+                              class="observaciones" 
+                              placeholder="Observaciones sobre aspirado de secreciones..."><?php echo htmlspecialchars($obs_aspirado_secreciones); ?></textarea>
+                </div>
+
+                <!-- SUSPENSIÓN SEDACIÓN -->
+                <div class="form-group">
+                    <h3>💊 Suspensión Diaria de Sedación y Evaluación de Extubación</h3>
+                    <div class="radio-container">
+                        <label>
+                            <input type="radio" 
+                                   name="suspension_sedacion" 
+                                   value="1"
+                                   <?php echo $suspension_sedacion ? 'checked' : ''; ?>>
+                            Sí
+                        </label>
+                        <label>
+                            <input type="radio" 
+                                   name="suspension_sedacion" 
+                                   value="0"
+                                   <?php echo !$suspension_sedacion ? 'checked' : ''; ?>>
+                            No
+                        </label>
+                    </div>
+                    <textarea name="obs_suspension_sedacion" 
+                              class="observaciones" 
+                              placeholder="Observaciones sobre suspensión de sedación..."><?php echo htmlspecialchars($obs_suspension_sedacion); ?></textarea>
+                </div>
+
+                <!-- MEDICIÓN CUFF -->
+                <div class="form-group">
+                    <h3>📏 Medición de Presión de Cuff</h3>
+                    <div class="radio-container">
+                        <label>
+                            <input type="radio" 
+                                   name="medicion_cuff" 
+                                   value="1"
+                                   <?php echo $medicion_cuff ? 'checked' : ''; ?>>
+                            Sí
+                        </label>
+                        <label>
+                            <input type="radio" 
+                                   name="medicion_cuff" 
+                                   value="0"
+                                   <?php echo !$medicion_cuff ? 'checked' : ''; ?>>
+                            No
+                        </label>
+                    </div>
+                    <textarea name="obs_medicion_cuff" 
+                              class="observaciones" 
+                              placeholder="Observaciones sobre medición de cuff..."><?php echo htmlspecialchars($obs_medicion_cuff); ?></textarea>
+                </div>
+
+                <!-- HORA DE REGISTRO -->
+                <div class="form-group">
+                    <div class="hora-grupo">
+                        <label for="hora_cuidado">⏰ Hora de Registro:</label>
+                        <input type="time" 
+                               name="hora_cuidado" 
+                               id="hora_cuidado" 
+                               value="<?php echo htmlspecialchars($hora_cuidado); ?>">
+                    </div>
+                </div>
+
+                <!-- BOTONES -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <?php echo $modo_edicion ? '💾 GUARDAR CAMBIOS' : '💾 GUARDAR'; ?>
+                    </button>
+                    <a href="<?php echo $GLOBALS['webroot']; ?>/interface/tableros/lista_internados.php" 
+                       class="btn btn-secondary">
+                        ❌ CANCELAR
+                    </a>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <!-- HIGIENE DE MANOS PRE Y POST ASPIRADO -->
-        <div class="cuidado-card d-flex flex-column">
-            <h3>HIGIENE DE MANOS PRE Y POST ASPIRADO</h3>
-            <div class="d-flex align-items-center gap-3 flex-wrap">
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="higiene_manos" value="1" id="higiene_si">
-                    <label class="form-check-label" for="higiene_si">Sí</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="higiene_manos" value="0" id="higiene_no" checked>
-                    <label class="form-check-label" for="higiene_no">No</label>
-                </div>
-                <input type="text" name="obs_higiene_manos" placeholder="Observación" class="form-control obs-input">
-            </div>
-        </div>
+    <script>
+        // Auto-completar hora actual solo en modo CREACIÓN
+        document.addEventListener('DOMContentLoaded', function() {
+            const modoEdicion = <?php echo $modo_edicion ? 'true' : 'false'; ?>;
+            const horaInput = document.getElementById('hora_cuidado');
+            
+            if (!modoEdicion && horaInput.value === '') {
+                // Solo en modo CREACIÓN y si el campo está vacío
+                const ahora = new Date();
+                const horas = String(ahora.getHours()).padStart(2, '0');
+                const minutos = String(ahora.getMinutes()).padStart(2, '0');
+                horaInput.value = horas + ':' + minutos;
+            }
+        });
 
-        <!-- ASPIRADO DE SECRECIONES CON GUANTES Y AYUDANTE CON GUANTES -->
-        <div class="cuidado-card d-flex flex-column">
-            <h3>ASPIRADO DE SECRECIONES CON GUANTES Y AYUDANTE CON GUANTES</h3>
-            <div class="d-flex align-items-center gap-3 flex-wrap">
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="aspirado_secreciones" value="1" id="aspirado_si">
-                    <label class="form-check-label" for="aspirado_si">Sí</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="aspirado_secreciones" value="0" id="aspirado_no" checked>
-                    <label class="form-check-label" for="aspirado_no">No</label>
-                </div>
-                <input type="text" name="obs_aspirado_secreciones" placeholder="Observación" class="form-control obs-input">
-            </div>
-        </div>
-
-        <!-- SUSPENSION DIARIA DE SEDACION Y EVALUACION DE EXTUBACION -->
-        <div class="cuidado-card d-flex flex-column">
-            <h3>SUSPENSION DIARIA DE SEDACION Y EVALUACION DE EXTUBACION</h3>
-            <div class="d-flex align-items-center gap-3 flex-wrap">
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="suspension_sedacion" value="1" id="suspension_si">
-                    <label class="form-check-label" for="suspension_si">Sí</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="suspension_sedacion" value="0" id="suspension_no" checked>
-                    <label class="form-check-label" for="suspension_no">No</label>
-                </div>
-                <input type="text" name="obs_suspension_sedacion" placeholder="Observación" class="form-control obs-input">
-            </div>
-        </div>
-
-        <!-- MEDICION DE PRESION DE CUFF -->
-        <div class="cuidado-card d-flex flex-column">
-            <h3>MEDICION DE PRESION DE CUFF</h3>
-            <div class="d-flex align-items-center gap-3 flex-wrap">
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="medicion_cuff" value="1" id="medicion_si">
-                    <label class="form-check-label" for="medicion_si">Sí</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="medicion_cuff" value="0" id="medicion_no" checked>
-                    <label class="form-check-label" for="medicion_no">No</label>
-                </div>
-                <input type="text" name="obs_medicion_cuff" placeholder="Observación" class="form-control obs-input">
-            </div>
-        </div>
-
-        <!-- HORA DE CUIDADO -->
-        <div class="mb-3 d-flex align-items-center time-group">
-            <label for="hora_cuidado">Hora de Cuidado:</label>
-            <input type="time" id="hora_cuidado" name="hora_cuidado" class="form-control w-auto" required value="<?php echo date('H:i'); ?>">
-        </div>
-
-        <div class="d-flex justify-content-center gap-3 mt-4">
-            <button type="submit" class="btn btn-primary">Guardar</button>
-            <button type="button" class="btn btn-secondary"
-                onclick="if(confirm('¿Seguro que deseas cancelar? Se perderán los datos no guardados.')) {
-                    top.RTop.location = '<?php echo $GLOBALS['webroot']; ?>/interface/tableros/lista_internados.php';
-                }">
-                Cancelar
-            </button>
-        </div>
-
-    </form>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+        // Validación simple del formulario
+        document.getElementById('formCuidados').addEventListener('submit', function(e) {
+            console.log('Formulario enviado');
+        });
+    </script>
 </body>
 </html>

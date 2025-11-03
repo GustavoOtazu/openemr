@@ -98,7 +98,6 @@ function evaluaciones_report($pid, $encounter, $cols, $id) {
     </style>
 
     <div class="reporte-evaluaciones">
-        <button class="btn btn-imprimir" onclick="window.print()">Imprimir</button>
 
         <table>
             <tr>

@@ -1,9 +1,10 @@
 <?php
 /**
- * Formulario de Curaciones - new.php (CON EDICIÓN)
- * Ruta: interface/forms/curaciones/new.php
+ * Formulario de Aplicaciones - new.php (CON EDICIÓN)
+ * Ruta: interface/forms/aplicaciones/new.php
  * Soporta tanto CREAR como EDITAR registros
  * MODIFICADO: Auto-completa hora actual en modo creación
+ * MODIFICADO: Radio buttons Sí/No como en curaciones
  */
 
 require_once("../../globals.php");
@@ -16,43 +17,39 @@ $id = $_GET['id'] ?? null; // ← NUEVO: Detectar si es modo edición
 
 // Determinar si es modo CREAR o EDITAR
 $modo_edicion = !empty($id);
-$titulo = $modo_edicion ? "EDITAR CURACIONES" : "NUEVAS CURACIONES";
+$titulo = $modo_edicion ? "EDITAR APLICACIÓN" : "NUEVA APLICACIÓN";
 
 // Variables para pre-llenar el formulario
-$herida_operatoria = 0;
-$obs_herida_operatoria = '';
-$traqueostomia = 0;
-$obs_traqueostomia = '';
-$ostomias = 0;
-$obs_ostomias = '';
-$escaras = 0;
-$obs_escaras = '';
-$via_venosa_central = 0;
-$obs_via_venosa_central = '';
-$via_venosa = 0;
-$obs_via_venosa = '';
-$hora_operacion = '';
+$medicamentos = 0;
+$obs_medicamentos = '';
+$sueros = 0;
+$obs_sueros = '';
+$vacunas = 0;
+$obs_vacunas = '';
+$expansiones = 0;
+$obs_expansiones = '';
+$sangre = 0;
+$obs_sangre = '';
+$hora_registro = '';
 
 // Si es modo EDICIÓN, cargar datos existentes
 if ($modo_edicion) {
-    $sql = "SELECT * FROM form_curaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1";
+    $sql = "SELECT * FROM form_aplicaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1";
     $row = sqlQuery($sql, array($id, $pid, $encounter));
     
     if ($row) {
         // Cargar valores existentes
-        $herida_operatoria = (int)$row['herida_operatoria'];
-        $obs_herida_operatoria = $row['obs_herida_operatoria'] ?? '';
-        $traqueostomia = (int)$row['traqueostomia'];
-        $obs_traqueostomia = $row['obs_traqueostomia'] ?? '';
-        $ostomias = (int)$row['ostomias'];
-        $obs_ostomias = $row['obs_ostomias'] ?? '';
-        $escaras = (int)$row['escaras'];
-        $obs_escaras = $row['obs_escaras'] ?? '';
-        $via_venosa_central = (int)$row['via_venosa_central'];
-        $obs_via_venosa_central = $row['obs_via_venosa_central'] ?? '';
-        $via_venosa = (int)$row['via_venosa'];
-        $obs_via_venosa = $row['obs_via_venosa'] ?? '';
-        $hora_operacion = $row['hora_operacion'] ?? '';
+        $medicamentos = (int)$row['medicamentos'];
+        $obs_medicamentos = $row['obs_medicamentos'] ?? '';
+        $sueros = (int)$row['sueros'];
+        $obs_sueros = $row['obs_sueros'] ?? '';
+        $vacunas = (int)$row['vacunas'];
+        $obs_vacunas = $row['obs_vacunas'] ?? '';
+        $expansiones = (int)$row['expansiones'];
+        $obs_expansiones = $row['obs_expansiones'] ?? '';
+        $sangre = (int)$row['sangre'];
+        $obs_sangre = $row['obs_sangre'] ?? '';
+        $hora_registro = $row['hora_registro'] ?? '';
     } else {
         // Registro no encontrado
         die("Error: Registro no encontrado o no tiene permisos para editarlo.");
@@ -272,7 +269,7 @@ if (!$pid || !$encounter) {
         </div>
 
         <div class="form-content">
-            <form method="POST" action="save.php" id="formCuraciones">
+            <form method="POST" action="save.php" id="formAplicaciones">
                 <!-- Campos ocultos -->
                 <input type="hidden" name="pid" value="<?php echo htmlspecialchars($pid); ?>">
                 <input type="hidden" name="encounter" value="<?php echo htmlspecialchars($encounter); ?>">
@@ -281,158 +278,134 @@ if (!$pid || !$encounter) {
                 <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
                 <?php endif; ?>
 
-                <!-- HERIDA OPERATORIA -->
+                <!-- MEDICAMENTOS -->
                 <div class="form-group">
-                    <h3>🩹 Herida Operatoria</h3>
+                    <h3>💊 Medicamentos</h3>
                     <div class="radio-container">
                         <label>
                             <input type="radio" 
-                                   name="herida_operatoria" 
+                                   name="medicamentos" 
                                    value="1"
-                                   <?php echo $herida_operatoria ? 'checked' : ''; ?>>
+                                   <?php echo $medicamentos ? 'checked' : ''; ?>>
                             Sí
                         </label>
                         <label>
                             <input type="radio" 
-                                   name="herida_operatoria" 
+                                   name="medicamentos" 
                                    value="0"
-                                   <?php echo !$herida_operatoria ? 'checked' : ''; ?>>
+                                   <?php echo !$medicamentos ? 'checked' : ''; ?>>
                             No
                         </label>
                     </div>
-                    <textarea name="obs_herida_operatoria" 
+                    <textarea name="obs_medicamentos" 
                               class="observaciones" 
-                              placeholder="Observaciones sobre herida operatoria..."><?php echo htmlspecialchars($obs_herida_operatoria); ?></textarea>
+                              placeholder="Observaciones sobre medicamentos..."><?php echo htmlspecialchars($obs_medicamentos); ?></textarea>
                 </div>
 
-                <!-- TRAQUEOSTOMÍA -->
+                <!-- SUEROS -->
                 <div class="form-group">
-                    <h3>🫁 Traqueostomía</h3>
+                    <h3>💧 Sueros</h3>
                     <div class="radio-container">
                         <label>
                             <input type="radio" 
-                                   name="traqueostomia" 
+                                   name="sueros" 
                                    value="1"
-                                   <?php echo $traqueostomia ? 'checked' : ''; ?>>
+                                   <?php echo $sueros ? 'checked' : ''; ?>>
                             Sí
                         </label>
                         <label>
                             <input type="radio" 
-                                   name="traqueostomia" 
+                                   name="sueros" 
                                    value="0"
-                                   <?php echo !$traqueostomia ? 'checked' : ''; ?>>
+                                   <?php echo !$sueros ? 'checked' : ''; ?>>
                             No
                         </label>
                     </div>
-                    <textarea name="obs_traqueostomia" 
+                    <textarea name="obs_sueros" 
                               class="observaciones" 
-                              placeholder="Observaciones sobre traqueostomía..."><?php echo htmlspecialchars($obs_traqueostomia); ?></textarea>
+                              placeholder="Observaciones sobre sueros..."><?php echo htmlspecialchars($obs_sueros); ?></textarea>
                 </div>
 
-                <!-- OSTOMÍAS -->
+                <!-- VACUNAS -->
                 <div class="form-group">
-                    <h3>🔍 Ostomías</h3>
+                    <h3>💉 Vacunas</h3>
                     <div class="radio-container">
                         <label>
                             <input type="radio" 
-                                   name="ostomias" 
+                                   name="vacunas" 
                                    value="1"
-                                   <?php echo $ostomias ? 'checked' : ''; ?>>
+                                   <?php echo $vacunas ? 'checked' : ''; ?>>
                             Sí
                         </label>
                         <label>
                             <input type="radio" 
-                                   name="ostomias" 
+                                   name="vacunas" 
                                    value="0"
-                                   <?php echo !$ostomias ? 'checked' : ''; ?>>
+                                   <?php echo !$vacunas ? 'checked' : ''; ?>>
                             No
                         </label>
                     </div>
-                    <textarea name="obs_ostomias" 
+                    <textarea name="obs_vacunas" 
                               class="observaciones" 
-                              placeholder="Observaciones sobre ostomías..."><?php echo htmlspecialchars($obs_ostomias); ?></textarea>
+                              placeholder="Observaciones sobre vacunas..."><?php echo htmlspecialchars($obs_vacunas); ?></textarea>
                 </div>
 
-                <!-- ESCARAS -->
+                <!-- EXPANSIONES -->
                 <div class="form-group">
-                    <h3>🩺 Escaras</h3>
+                    <h3>🔬 Expansiones Plasmáticas</h3>
                     <div class="radio-container">
                         <label>
                             <input type="radio" 
-                                   name="escaras" 
+                                   name="expansiones" 
                                    value="1"
-                                   <?php echo $escaras ? 'checked' : ''; ?>>
+                                   <?php echo $expansiones ? 'checked' : ''; ?>>
                             Sí
                         </label>
                         <label>
                             <input type="radio" 
-                                   name="escaras" 
+                                   name="expansiones" 
                                    value="0"
-                                   <?php echo !$escaras ? 'checked' : ''; ?>>
+                                   <?php echo !$expansiones ? 'checked' : ''; ?>>
                             No
                         </label>
                     </div>
-                    <textarea name="obs_escaras" 
+                    <textarea name="obs_expansiones" 
                               class="observaciones" 
-                              placeholder="Observaciones sobre escaras..."><?php echo htmlspecialchars($obs_escaras); ?></textarea>
+                              placeholder="Observaciones sobre expansiones..."><?php echo htmlspecialchars($obs_expansiones); ?></textarea>
                 </div>
 
-                <!-- VÍA VENOSA CENTRAL -->
+                <!-- SANGRE -->
                 <div class="form-group">
-                    <h3>🩸 Vía Venosa Central</h3>
+                    <h3>🩸 Sangre y Hemoderivados</h3>
                     <div class="radio-container">
                         <label>
                             <input type="radio" 
-                                   name="via_venosa_central" 
+                                   name="sangre" 
                                    value="1"
-                                   <?php echo $via_venosa_central ? 'checked' : ''; ?>>
+                                   <?php echo $sangre ? 'checked' : ''; ?>>
                             Sí
                         </label>
                         <label>
                             <input type="radio" 
-                                   name="via_venosa_central" 
+                                   name="sangre" 
                                    value="0"
-                                   <?php echo !$via_venosa_central ? 'checked' : ''; ?>>
+                                   <?php echo !$sangre ? 'checked' : ''; ?>>
                             No
                         </label>
                     </div>
-                    <textarea name="obs_via_venosa_central" 
+                    <textarea name="obs_sangre" 
                               class="observaciones" 
-                              placeholder="Observaciones sobre vía venosa central..."><?php echo htmlspecialchars($obs_via_venosa_central); ?></textarea>
-                </div>
-
-                <!-- VÍA VENOSA -->
-                <div class="form-group">
-                    <h3>💉 Vía Venosa</h3>
-                    <div class="radio-container">
-                        <label>
-                            <input type="radio" 
-                                   name="via_venosa" 
-                                   value="1"
-                                   <?php echo $via_venosa ? 'checked' : ''; ?>>
-                            Sí
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="via_venosa" 
-                                   value="0"
-                                   <?php echo !$via_venosa ? 'checked' : ''; ?>>
-                            No
-                        </label>
-                    </div>
-                    <textarea name="obs_via_venosa" 
-                              class="observaciones" 
-                              placeholder="Observaciones sobre vía venosa..."><?php echo htmlspecialchars($obs_via_venosa); ?></textarea>
+                              placeholder="Observaciones sobre sangre..."><?php echo htmlspecialchars($obs_sangre); ?></textarea>
                 </div>
 
                 <!-- HORA DE REGISTRO -->
                 <div class="form-group">
                     <div class="hora-grupo">
-                        <label for="hora_operacion">⏰ Hora de Registro:</label>
+                        <label for="hora_registro">⏰ Hora de Registro:</label>
                         <input type="time" 
-                               name="hora_operacion" 
-                               id="hora_operacion" 
-                               value="<?php echo htmlspecialchars($hora_operacion); ?>">
+                               name="hora_registro" 
+                               id="hora_registro" 
+                               value="<?php echo htmlspecialchars($hora_registro); ?>">
                     </div>
                 </div>
 
@@ -454,7 +427,7 @@ if (!$pid || !$encounter) {
         // Auto-completar hora actual solo en modo CREACIÓN
         document.addEventListener('DOMContentLoaded', function() {
             const modoEdicion = <?php echo $modo_edicion ? 'true' : 'false'; ?>;
-            const horaInput = document.getElementById('hora_operacion');
+            const horaInput = document.getElementById('hora_registro');
             
             if (!modoEdicion && horaInput.value === '') {
                 // Solo en modo CREACIÓN y si el campo está vacío
@@ -466,7 +439,7 @@ if (!$pid || !$encounter) {
         });
 
         // Validación simple del formulario
-        document.getElementById('formCuraciones').addEventListener('submit', function(e) {
+        document.getElementById('formAplicaciones').addEventListener('submit', function(e) {
             console.log('Formulario enviado');
         });
     </script>

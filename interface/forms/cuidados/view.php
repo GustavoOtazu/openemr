@@ -1,7 +1,7 @@
 <?php
 /**
- * Formulario de Curaciones - view.php FINAL
- * Ruta: interface/forms/curaciones/view.php
+ * Formulario de Cuidados - view.php FINAL
+ * Ruta: interface/forms/cuidados/view.php
  * Con Logo IPS centralizado en /public/images/
  * MODIFICADO: Muestra solo el registro específico cuando viene id
  */
@@ -32,11 +32,11 @@ if (!empty($paciente['DOB'])) {
 // ← MODIFICADO: Consultar solo el registro específico si viene ID
 if ($id) {
     // Mostrar solo el registro con el ID específico
-    $sql = "SELECT * FROM form_curaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1";
+    $sql = "SELECT * FROM form_cuidados WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1";
     $result = sqlStatement($sql, array($id, $pid, $encounter));
 } else {
     // Mostrar todos los registros del encounter (comportamiento original)
-    $sql = "SELECT * FROM form_curaciones WHERE pid = ? AND encounter = ? ORDER BY date DESC";
+    $sql = "SELECT * FROM form_cuidados WHERE pid = ? AND encounter = ? ORDER BY date DESC";
     $result = sqlStatement($sql, array($pid, $encounter));
 }
 ?>
@@ -46,7 +46,7 @@ if ($id) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Curaciones</title>
+    <title>Lista de Cuidados</title>
     <style>
         * {
             margin: 0;
@@ -233,7 +233,7 @@ if ($id) {
             letter-spacing: 1px;
         }
         
-        .curacion-detalle {
+        .cuidado-detalle {
             background-color: white;
             border: 1px solid #dee2e6;
             border-radius: 3px;
@@ -241,23 +241,27 @@ if ($id) {
             overflow: hidden;
         }
         
-        .curacion-header {
+        .cuidado-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 12px 15px;
             background-color: #f8f9fa;
         }
-        .curacion-header.si {
+        .cuidado-header.si {
             background-color: #d4edda;
             border-left: 4px solid #28a745;
         }
-        .curacion-header.no {
+        .cuidado-header.no {
             background-color: #f8d7da;
             border-left: 4px solid #dc3545;
         }
+        .cuidado-header.posicion {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
         
-        .curacion-nombre {
+        .cuidado-nombre {
             font-size: 14px;
             font-weight: 600;
             color: #333;
@@ -280,16 +284,20 @@ if ($id) {
             background-color: #dc3545;
             color: white;
         }
+        .estado-badge.posicion {
+            background-color: #2196F3;
+            color: white;
+        }
         
-        .curacion-obs {
+        .cuidado-obs {
             padding: 18px 20px;
             background-color: #f8f9fa;
         }
-        .curacion-obs.con-contenido {
+        .cuidado-obs.con-contenido {
             background: linear-gradient(135deg, #e7f3ff 0%, #cfe2ff 100%);
             border-top: 3px solid #0d6efd;
         }
-        .curacion-obs h5 {
+        .cuidado-obs h5 {
             font-size: 12px;
             color: #6c757d;
             margin-bottom: 10px;
@@ -297,32 +305,11 @@ if ($id) {
             letter-spacing: 1px;
             font-weight: 700;
         }
-        .curacion-obs p {
+        .cuidado-obs p {
             font-size: 14px;
             color: #212529;
             line-height: 1.7;
             margin: 0;
-            white-space: pre-wrap;
-        }
-        
-        .observaciones-generales {
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            padding: 20px 25px;
-            border-radius: 12px;
-            margin-top: 25px;
-            border-left: 5px solid #2196F3;
-        }
-        .observaciones-generales h4 {
-            color: #1976D2;
-            font-size: 16px;
-            margin-bottom: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-        .observaciones-generales p {
-            color: #212529;
-            font-size: 14px;
-            line-height: 1.7;
             white-space: pre-wrap;
         }
         
@@ -338,7 +325,7 @@ if ($id) {
 </head>
 <body>
     <div class="container">
-        <h2>🩹 <?php echo $id ? 'DETALLE DE CURACIONES' : 'LISTA DE CURACIONES'; ?></h2>
+        <h2>🛏️ <?php echo $id ? 'DETALLE DE CUIDADOS' : 'LISTA DE CUIDADOS'; ?></h2>
         
         <div class="info-paciente">
             <h3>👤 INFORMACIÓN DEL PACIENTE</h3>
@@ -363,7 +350,7 @@ if ($id) {
         <?php
         if (sqlNumRows($result) == 0) {
             echo "<div class='no-registros'>";
-            echo "<h3>No hay curaciones registradas</h3>";
+            echo "<h3>No hay cuidados registrados</h3>";
             echo "</div>";
         }
         
@@ -377,7 +364,7 @@ if ($id) {
                         <span class="hora-principal">🕐 <?php echo date('H:i', strtotime($row['date'])); ?></span>
                     </div>
                     <div class="registro-acciones">
-                        <a href="<?php echo $GLOBALS['webroot']; ?>/interface/forms/curaciones/new.php?pid=<?php echo $pid; ?>&encounter=<?php echo $encounter; ?>&id=<?php echo $row['id']; ?>" class="btn-accion btn-editar">
+                        <a href="<?php echo $GLOBALS['webroot']; ?>/interface/forms/cuidados/new.php?pid=<?php echo $pid; ?>&encounter=<?php echo $encounter; ?>&id=<?php echo $row['id']; ?>" class="btn-accion btn-editar">
                             ✏️ EDITAR
                         </a>
                         <button onclick="imprimirRegistro(<?php echo $row['id']; ?>)" class="btn-accion btn-imprimir">
@@ -389,7 +376,7 @@ if ($id) {
                 <div class="registro-info">
                     <div class="info-box-small">
                         <strong>⏰ Hora de Registro:</strong>
-                        <span><?php echo htmlspecialchars($row['hora_operacion'] ?? 'N/A'); ?></span>
+                        <span><?php echo htmlspecialchars($row['hora_cuidado'] ?? 'N/A'); ?></span>
                     </div>
                     <div class="info-box-small">
                         <strong>👨‍⚕️ Usuario:</strong>
@@ -397,101 +384,101 @@ if ($id) {
                     </div>
                 </div>
                 
-                <div class="seccion-titulo">🩹 DETALLE DE CURACIONES</div>
+                <div class="seccion-titulo">🛏️ DETALLE DE CUIDADOS</div>
                 
-                <!-- Herida Operatoria -->
-                <div class="curacion-detalle">
-                    <div class="curacion-header <?php echo ($row['herida_operatoria'] == 1) ? 'si' : 'no'; ?>">
-                        <div class="curacion-nombre">
-                            <span>🩹 HERIDA OPERATORIA</span>
+                <!-- Posición del Paciente (Especial) -->
+                <div class="cuidado-detalle">
+                    <div class="cuidado-header posicion">
+                        <div class="cuidado-nombre">
+                            <span>🛏️ POSICIÓN DEL PACIENTE</span>
                         </div>
-                        <span class="estado-badge <?php echo ($row['herida_operatoria'] == 1) ? 'si' : 'no'; ?>">
-                            <?php echo ($row['herida_operatoria'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
+                        <span class="estado-badge posicion">
+                            <?php echo !empty($row['posicion_paciente']) ? htmlspecialchars($row['posicion_paciente']) : 'NO ESPECIFICADO'; ?>
                         </span>
                     </div>
-                    <div class="curacion-obs <?php echo !empty($row['obs_herida_operatoria']) ? 'con-contenido' : ''; ?>">
+                    <div class="cuidado-obs <?php echo !empty($row['obs_posicion_paciente']) ? 'con-contenido' : ''; ?>">
                         <h5>📝 OBSERVACIONES</h5>
-                        <p><?php echo !empty($row['obs_herida_operatoria']) ? nl2br(htmlspecialchars($row['obs_herida_operatoria'])) : 'Sin observaciones registradas'; ?></p>
+                        <p><?php echo !empty($row['obs_posicion_paciente']) ? nl2br(htmlspecialchars($row['obs_posicion_paciente'])) : 'Sin observaciones registradas'; ?></p>
                     </div>
                 </div>
                 
-                <!-- Traqueostomía -->
-                <div class="curacion-detalle">
-                    <div class="curacion-header <?php echo ($row['traqueostomia'] == 1) ? 'si' : 'no'; ?>">
-                        <div class="curacion-nombre">
-                            <span>🫁 TRAQUEOSTOMÍA</span>
+                <!-- Enjuague Bucal -->
+                <div class="cuidado-detalle">
+                    <div class="cuidado-header <?php echo ($row['enjuague_bucal'] == 1) ? 'si' : 'no'; ?>">
+                        <div class="cuidado-nombre">
+                            <span>🦷 ENJUAGUE BUCAL</span>
                         </div>
-                        <span class="estado-badge <?php echo ($row['traqueostomia'] == 1) ? 'si' : 'no'; ?>">
-                            <?php echo ($row['traqueostomia'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
+                        <span class="estado-badge <?php echo ($row['enjuague_bucal'] == 1) ? 'si' : 'no'; ?>">
+                            <?php echo ($row['enjuague_bucal'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
                         </span>
                     </div>
-                    <div class="curacion-obs <?php echo !empty($row['obs_traqueostomia']) ? 'con-contenido' : ''; ?>">
+                    <div class="cuidado-obs <?php echo !empty($row['obs_enjuague_bucal']) ? 'con-contenido' : ''; ?>">
                         <h5>📝 OBSERVACIONES</h5>
-                        <p><?php echo !empty($row['obs_traqueostomia']) ? nl2br(htmlspecialchars($row['obs_traqueostomia'])) : 'Sin observaciones registradas'; ?></p>
+                        <p><?php echo !empty($row['obs_enjuague_bucal']) ? nl2br(htmlspecialchars($row['obs_enjuague_bucal'])) : 'Sin observaciones registradas'; ?></p>
                     </div>
                 </div>
                 
-                <!-- Ostomías -->
-                <div class="curacion-detalle">
-                    <div class="curacion-header <?php echo ($row['ostomias'] == 1) ? 'si' : 'no'; ?>">
-                        <div class="curacion-nombre">
-                            <span>🔍 OSTOMÍAS</span>
+                <!-- Higiene de Manos -->
+                <div class="cuidado-detalle">
+                    <div class="cuidado-header <?php echo ($row['higiene_manos'] == 1) ? 'si' : 'no'; ?>">
+                        <div class="cuidado-nombre">
+                            <span>🧼 HIGIENE DE MANOS PRE Y POST ASPIRADO</span>
                         </div>
-                        <span class="estado-badge <?php echo ($row['ostomias'] == 1) ? 'si' : 'no'; ?>">
-                            <?php echo ($row['ostomias'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
+                        <span class="estado-badge <?php echo ($row['higiene_manos'] == 1) ? 'si' : 'no'; ?>">
+                            <?php echo ($row['higiene_manos'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
                         </span>
                     </div>
-                    <div class="curacion-obs <?php echo !empty($row['obs_ostomias']) ? 'con-contenido' : ''; ?>">
+                    <div class="cuidado-obs <?php echo !empty($row['obs_higiene_manos']) ? 'con-contenido' : ''; ?>">
                         <h5>📝 OBSERVACIONES</h5>
-                        <p><?php echo !empty($row['obs_ostomias']) ? nl2br(htmlspecialchars($row['obs_ostomias'])) : 'Sin observaciones registradas'; ?></p>
+                        <p><?php echo !empty($row['obs_higiene_manos']) ? nl2br(htmlspecialchars($row['obs_higiene_manos'])) : 'Sin observaciones registradas'; ?></p>
                     </div>
                 </div>
                 
-                <!-- Escaras -->
-                <div class="curacion-detalle">
-                    <div class="curacion-header <?php echo ($row['escaras'] == 1) ? 'si' : 'no'; ?>">
-                        <div class="curacion-nombre">
-                            <span>🩺 ESCARAS</span>
+                <!-- Aspirado de Secreciones -->
+                <div class="cuidado-detalle">
+                    <div class="cuidado-header <?php echo ($row['aspirado_secreciones'] == 1) ? 'si' : 'no'; ?>">
+                        <div class="cuidado-nombre">
+                            <span>🫁 ASPIRADO DE SECRECIONES CON GUANTES Y AYUDANTE</span>
                         </div>
-                        <span class="estado-badge <?php echo ($row['escaras'] == 1) ? 'si' : 'no'; ?>">
-                            <?php echo ($row['escaras'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
+                        <span class="estado-badge <?php echo ($row['aspirado_secreciones'] == 1) ? 'si' : 'no'; ?>">
+                            <?php echo ($row['aspirado_secreciones'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
                         </span>
                     </div>
-                    <div class="curacion-obs <?php echo !empty($row['obs_escaras']) ? 'con-contenido' : ''; ?>">
+                    <div class="cuidado-obs <?php echo !empty($row['obs_aspirado_secreciones']) ? 'con-contenido' : ''; ?>">
                         <h5>📝 OBSERVACIONES</h5>
-                        <p><?php echo !empty($row['obs_escaras']) ? nl2br(htmlspecialchars($row['obs_escaras'])) : 'Sin observaciones registradas'; ?></p>
+                        <p><?php echo !empty($row['obs_aspirado_secreciones']) ? nl2br(htmlspecialchars($row['obs_aspirado_secreciones'])) : 'Sin observaciones registradas'; ?></p>
                     </div>
                 </div>
                 
-                <!-- Vía Venosa Central -->
-                <div class="curacion-detalle">
-                    <div class="curacion-header <?php echo ($row['via_venosa_central'] == 1) ? 'si' : 'no'; ?>">
-                        <div class="curacion-nombre">
-                            <span>🩸 VÍA VENOSA CENTRAL</span>
+                <!-- Suspensión Sedación -->
+                <div class="cuidado-detalle">
+                    <div class="cuidado-header <?php echo ($row['suspension_sedacion'] == 1) ? 'si' : 'no'; ?>">
+                        <div class="cuidado-nombre">
+                            <span>💊 SUSPENSIÓN DIARIA DE SEDACIÓN Y EVALUACIÓN DE EXTUBACIÓN</span>
                         </div>
-                        <span class="estado-badge <?php echo ($row['via_venosa_central'] == 1) ? 'si' : 'no'; ?>">
-                            <?php echo ($row['via_venosa_central'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
+                        <span class="estado-badge <?php echo ($row['suspension_sedacion'] == 1) ? 'si' : 'no'; ?>">
+                            <?php echo ($row['suspension_sedacion'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
                         </span>
                     </div>
-                    <div class="curacion-obs <?php echo !empty($row['obs_via_venosa_central']) ? 'con-contenido' : ''; ?>">
+                    <div class="cuidado-obs <?php echo !empty($row['obs_suspension_sedacion']) ? 'con-contenido' : ''; ?>">
                         <h5>📝 OBSERVACIONES</h5>
-                        <p><?php echo !empty($row['obs_via_venosa_central']) ? nl2br(htmlspecialchars($row['obs_via_venosa_central'])) : 'Sin observaciones registradas'; ?></p>
+                        <p><?php echo !empty($row['obs_suspension_sedacion']) ? nl2br(htmlspecialchars($row['obs_suspension_sedacion'])) : 'Sin observaciones registradas'; ?></p>
                     </div>
                 </div>
                 
-                <!-- Vía Venosa -->
-                <div class="curacion-detalle">
-                    <div class="curacion-header <?php echo ($row['via_venosa'] == 1) ? 'si' : 'no'; ?>">
-                        <div class="curacion-nombre">
-                            <span>💉 VÍA VENOSA</span>
+                <!-- Medición Cuff -->
+                <div class="cuidado-detalle">
+                    <div class="cuidado-header <?php echo ($row['medicion_cuff'] == 1) ? 'si' : 'no'; ?>">
+                        <div class="cuidado-nombre">
+                            <span>📏 MEDICIÓN DE PRESIÓN DE CUFF</span>
                         </div>
-                        <span class="estado-badge <?php echo ($row['via_venosa'] == 1) ? 'si' : 'no'; ?>">
-                            <?php echo ($row['via_venosa'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
+                        <span class="estado-badge <?php echo ($row['medicion_cuff'] == 1) ? 'si' : 'no'; ?>">
+                            <?php echo ($row['medicion_cuff'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
                         </span>
                     </div>
-                    <div class="curacion-obs <?php echo !empty($row['obs_via_venosa']) ? 'con-contenido' : ''; ?>">
+                    <div class="cuidado-obs <?php echo !empty($row['obs_medicion_cuff']) ? 'con-contenido' : ''; ?>">
                         <h5>📝 OBSERVACIONES</h5>
-                        <p><?php echo !empty($row['obs_via_venosa']) ? nl2br(htmlspecialchars($row['obs_via_venosa'])) : 'Sin observaciones registradas'; ?></p>
+                        <p><?php echo !empty($row['obs_medicion_cuff']) ? nl2br(htmlspecialchars($row['obs_medicion_cuff'])) : 'Sin observaciones registradas'; ?></p>
                     </div>
                 </div>
                 
@@ -546,7 +533,7 @@ if ($id) {
                     </div>
                 
                     <div style="text-align: center; font-size: 16px; font-weight: bold; color: #000; margin: 12px 0 0 0; padding: 10px 0; background: white; letter-spacing: 2.5px; text-transform: uppercase;">
-                        REGISTRO DE CURACIONES
+                        REGISTRO DE CUIDADOS
                     </div>
                     
                     <div style="height: 2px; background: #000; margin: 0 0 18px 0;"></div>
@@ -579,19 +566,18 @@ if ($id) {
             // Agregar título de sección estilo JasperReports
             htmlContent += `
                 <div style="font-weight: bold; font-size: 11px; color: #000; margin: 15px 0 10px 0; padding: 8px 10px; border: 1px solid #000; border-left: 4px solid #000; background: #f5f5f5; text-transform: uppercase; letter-spacing: 0.5px;">
-                    DETALLE DE CURACIONES
+                    DETALLE DE CUIDADOS
                 </div>
             `;
             
-            // Agregar curaciones - ESTILO JASPERREPORTS
-            var curaciones = registro.querySelectorAll('.curacion-detalle');
-            curaciones.forEach(function(cur) {
-                var nombre = cur.querySelector('.curacion-nombre').textContent.trim();
-                var badge = cur.querySelector('.estado-badge');
-                var esAfirmativo = badge.classList.contains('si');
-                var obsText = cur.querySelector('.curacion-obs p').textContent.trim();
+            // Agregar cuidados - ESTILO JASPERREPORTS
+            var cuidados = registro.querySelectorAll('.cuidado-detalle');
+            cuidados.forEach(function(cuid) {
+                var nombre = cuid.querySelector('.cuidado-nombre').textContent.trim();
+                var badge = cuid.querySelector('.estado-badge');
+                var obsText = cuid.querySelector('.cuidado-obs p').textContent.trim();
                 
-                var estadoTexto = esAfirmativo ? 'SÍ' : 'NO';
+                var estadoTexto = badge.textContent.trim();
                 
                 htmlContent += `
                     <div style="margin-bottom: 8px; border: 1px solid #000; overflow: hidden; background: white;">
@@ -667,7 +653,7 @@ if ($id) {
                     pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, imgWidth, imgHeight);
                 }
                 
-                pdf.save('Curaciones_<?php echo htmlspecialchars($paciente['nombre_completo'] ?? 'Paciente'); ?>_' + new Date().getTime() + '.pdf');
+                pdf.save('Cuidados_<?php echo htmlspecialchars($paciente['nombre_completo'] ?? 'Paciente'); ?>_' + new Date().getTime() + '.pdf');
             }).catch(function(error) {
                 document.body.removeChild(printContainer);
                 document.body.removeChild(loadingMsg);

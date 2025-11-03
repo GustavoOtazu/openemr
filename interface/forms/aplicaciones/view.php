@@ -1,7 +1,7 @@
 <?php
 /**
- * Formulario de Curaciones - view.php FINAL
- * Ruta: interface/forms/curaciones/view.php
+ * Formulario de Aplicaciones - view.php FINAL
+ * Ruta: interface/forms/aplicaciones/view.php
  * Con Logo IPS centralizado en /public/images/
  * MODIFICADO: Muestra solo el registro específico cuando viene id
  */
@@ -32,11 +32,11 @@ if (!empty($paciente['DOB'])) {
 // ← MODIFICADO: Consultar solo el registro específico si viene ID
 if ($id) {
     // Mostrar solo el registro con el ID específico
-    $sql = "SELECT * FROM form_curaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1";
+    $sql = "SELECT * FROM form_aplicaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1";
     $result = sqlStatement($sql, array($id, $pid, $encounter));
 } else {
     // Mostrar todos los registros del encounter (comportamiento original)
-    $sql = "SELECT * FROM form_curaciones WHERE pid = ? AND encounter = ? ORDER BY date DESC";
+    $sql = "SELECT * FROM form_aplicaciones WHERE pid = ? AND encounter = ? ORDER BY date DESC";
     $result = sqlStatement($sql, array($pid, $encounter));
 }
 ?>
@@ -46,7 +46,7 @@ if ($id) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Curaciones</title>
+    <title>Lista de Aplicaciones</title>
     <style>
         * {
             margin: 0;
@@ -233,7 +233,7 @@ if ($id) {
             letter-spacing: 1px;
         }
         
-        .curacion-detalle {
+        .aplicacion-detalle {
             background-color: white;
             border: 1px solid #dee2e6;
             border-radius: 3px;
@@ -241,23 +241,23 @@ if ($id) {
             overflow: hidden;
         }
         
-        .curacion-header {
+        .aplicacion-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 12px 15px;
             background-color: #f8f9fa;
         }
-        .curacion-header.si {
+        .aplicacion-header.si {
             background-color: #d4edda;
             border-left: 4px solid #28a745;
         }
-        .curacion-header.no {
+        .aplicacion-header.no {
             background-color: #f8d7da;
             border-left: 4px solid #dc3545;
         }
         
-        .curacion-nombre {
+        .aplicacion-nombre {
             font-size: 14px;
             font-weight: 600;
             color: #333;
@@ -281,15 +281,15 @@ if ($id) {
             color: white;
         }
         
-        .curacion-obs {
+        .aplicacion-obs {
             padding: 18px 20px;
             background-color: #f8f9fa;
         }
-        .curacion-obs.con-contenido {
+        .aplicacion-obs.con-contenido {
             background: linear-gradient(135deg, #e7f3ff 0%, #cfe2ff 100%);
             border-top: 3px solid #0d6efd;
         }
-        .curacion-obs h5 {
+        .aplicacion-obs h5 {
             font-size: 12px;
             color: #6c757d;
             margin-bottom: 10px;
@@ -297,7 +297,7 @@ if ($id) {
             letter-spacing: 1px;
             font-weight: 700;
         }
-        .curacion-obs p {
+        .aplicacion-obs p {
             font-size: 14px;
             color: #212529;
             line-height: 1.7;
@@ -338,7 +338,7 @@ if ($id) {
 </head>
 <body>
     <div class="container">
-        <h2>🩹 <?php echo $id ? 'DETALLE DE CURACIONES' : 'LISTA DE CURACIONES'; ?></h2>
+        <h2>📋 <?php echo $id ? 'DETALLE DE APLICACIÓN' : 'LISTA DE APLICACIONES'; ?></h2>
         
         <div class="info-paciente">
             <h3>👤 INFORMACIÓN DEL PACIENTE</h3>
@@ -363,7 +363,7 @@ if ($id) {
         <?php
         if (sqlNumRows($result) == 0) {
             echo "<div class='no-registros'>";
-            echo "<h3>No hay curaciones registradas</h3>";
+            echo "<h3>No hay aplicaciones registradas</h3>";
             echo "</div>";
         }
         
@@ -377,7 +377,7 @@ if ($id) {
                         <span class="hora-principal">🕐 <?php echo date('H:i', strtotime($row['date'])); ?></span>
                     </div>
                     <div class="registro-acciones">
-                        <a href="<?php echo $GLOBALS['webroot']; ?>/interface/forms/curaciones/new.php?pid=<?php echo $pid; ?>&encounter=<?php echo $encounter; ?>&id=<?php echo $row['id']; ?>" class="btn-accion btn-editar">
+                        <a href="<?php echo $GLOBALS['webroot']; ?>/interface/forms/aplicaciones/new.php?pid=<?php echo $pid; ?>&encounter=<?php echo $encounter; ?>&id=<?php echo $row['id']; ?>" class="btn-accion btn-editar">
                             ✏️ EDITAR
                         </a>
                         <button onclick="imprimirRegistro(<?php echo $row['id']; ?>)" class="btn-accion btn-imprimir">
@@ -389,7 +389,7 @@ if ($id) {
                 <div class="registro-info">
                     <div class="info-box-small">
                         <strong>⏰ Hora de Registro:</strong>
-                        <span><?php echo htmlspecialchars($row['hora_operacion'] ?? 'N/A'); ?></span>
+                        <span><?php echo htmlspecialchars($row['hora_registro'] ?? 'N/A'); ?></span>
                     </div>
                     <div class="info-box-small">
                         <strong>👨‍⚕️ Usuario:</strong>
@@ -397,103 +397,94 @@ if ($id) {
                     </div>
                 </div>
                 
-                <div class="seccion-titulo">🩹 DETALLE DE CURACIONES</div>
+                <div class="seccion-titulo">📋 DETALLE DE APLICACIONES</div>
                 
-                <!-- Herida Operatoria -->
-                <div class="curacion-detalle">
-                    <div class="curacion-header <?php echo ($row['herida_operatoria'] == 1) ? 'si' : 'no'; ?>">
-                        <div class="curacion-nombre">
-                            <span>🩹 HERIDA OPERATORIA</span>
+                <!-- Medicamentos -->
+                <div class="aplicacion-detalle">
+                    <div class="aplicacion-header <?php echo ($row['medicamentos'] == 1) ? 'si' : 'no'; ?>">
+                        <div class="aplicacion-nombre">
+                            <span>💊 MEDICAMENTOS</span>
                         </div>
-                        <span class="estado-badge <?php echo ($row['herida_operatoria'] == 1) ? 'si' : 'no'; ?>">
-                            <?php echo ($row['herida_operatoria'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
+                        <span class="estado-badge <?php echo ($row['medicamentos'] == 1) ? 'si' : 'no'; ?>">
+                            <?php echo ($row['medicamentos'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
                         </span>
                     </div>
-                    <div class="curacion-obs <?php echo !empty($row['obs_herida_operatoria']) ? 'con-contenido' : ''; ?>">
+                    <div class="aplicacion-obs <?php echo !empty($row['obs_medicamentos']) ? 'con-contenido' : ''; ?>">
                         <h5>📝 OBSERVACIONES</h5>
-                        <p><?php echo !empty($row['obs_herida_operatoria']) ? nl2br(htmlspecialchars($row['obs_herida_operatoria'])) : 'Sin observaciones registradas'; ?></p>
+                        <p><?php echo !empty($row['obs_medicamentos']) ? nl2br(htmlspecialchars($row['obs_medicamentos'])) : 'Sin observaciones registradas'; ?></p>
                     </div>
                 </div>
                 
-                <!-- Traqueostomía -->
-                <div class="curacion-detalle">
-                    <div class="curacion-header <?php echo ($row['traqueostomia'] == 1) ? 'si' : 'no'; ?>">
-                        <div class="curacion-nombre">
-                            <span>🫁 TRAQUEOSTOMÍA</span>
+                <!-- Sueros -->
+                <div class="aplicacion-detalle">
+                    <div class="aplicacion-header <?php echo ($row['sueros'] == 1) ? 'si' : 'no'; ?>">
+                        <div class="aplicacion-nombre">
+                            <span>💧 SUEROS</span>
                         </div>
-                        <span class="estado-badge <?php echo ($row['traqueostomia'] == 1) ? 'si' : 'no'; ?>">
-                            <?php echo ($row['traqueostomia'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
+                        <span class="estado-badge <?php echo ($row['sueros'] == 1) ? 'si' : 'no'; ?>">
+                            <?php echo ($row['sueros'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
                         </span>
                     </div>
-                    <div class="curacion-obs <?php echo !empty($row['obs_traqueostomia']) ? 'con-contenido' : ''; ?>">
+                    <div class="aplicacion-obs <?php echo !empty($row['obs_sueros']) ? 'con-contenido' : ''; ?>">
                         <h5>📝 OBSERVACIONES</h5>
-                        <p><?php echo !empty($row['obs_traqueostomia']) ? nl2br(htmlspecialchars($row['obs_traqueostomia'])) : 'Sin observaciones registradas'; ?></p>
+                        <p><?php echo !empty($row['obs_sueros']) ? nl2br(htmlspecialchars($row['obs_sueros'])) : 'Sin observaciones registradas'; ?></p>
                     </div>
                 </div>
                 
-                <!-- Ostomías -->
-                <div class="curacion-detalle">
-                    <div class="curacion-header <?php echo ($row['ostomias'] == 1) ? 'si' : 'no'; ?>">
-                        <div class="curacion-nombre">
-                            <span>🔍 OSTOMÍAS</span>
+                <!-- Vacunas -->
+                <div class="aplicacion-detalle">
+                    <div class="aplicacion-header <?php echo ($row['vacunas'] == 1) ? 'si' : 'no'; ?>">
+                        <div class="aplicacion-nombre">
+                            <span>💉 VACUNAS</span>
                         </div>
-                        <span class="estado-badge <?php echo ($row['ostomias'] == 1) ? 'si' : 'no'; ?>">
-                            <?php echo ($row['ostomias'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
+                        <span class="estado-badge <?php echo ($row['vacunas'] == 1) ? 'si' : 'no'; ?>">
+                            <?php echo ($row['vacunas'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
                         </span>
                     </div>
-                    <div class="curacion-obs <?php echo !empty($row['obs_ostomias']) ? 'con-contenido' : ''; ?>">
+                    <div class="aplicacion-obs <?php echo !empty($row['obs_vacunas']) ? 'con-contenido' : ''; ?>">
                         <h5>📝 OBSERVACIONES</h5>
-                        <p><?php echo !empty($row['obs_ostomias']) ? nl2br(htmlspecialchars($row['obs_ostomias'])) : 'Sin observaciones registradas'; ?></p>
+                        <p><?php echo !empty($row['obs_vacunas']) ? nl2br(htmlspecialchars($row['obs_vacunas'])) : 'Sin observaciones registradas'; ?></p>
                     </div>
                 </div>
                 
-                <!-- Escaras -->
-                <div class="curacion-detalle">
-                    <div class="curacion-header <?php echo ($row['escaras'] == 1) ? 'si' : 'no'; ?>">
-                        <div class="curacion-nombre">
-                            <span>🩺 ESCARAS</span>
+                <!-- Expansiones -->
+                <div class="aplicacion-detalle">
+                    <div class="aplicacion-header <?php echo ($row['expansiones'] == 1) ? 'si' : 'no'; ?>">
+                        <div class="aplicacion-nombre">
+                            <span>🔬 EXPANSIONES PLASMÁTICAS</span>
                         </div>
-                        <span class="estado-badge <?php echo ($row['escaras'] == 1) ? 'si' : 'no'; ?>">
-                            <?php echo ($row['escaras'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
+                        <span class="estado-badge <?php echo ($row['expansiones'] == 1) ? 'si' : 'no'; ?>">
+                            <?php echo ($row['expansiones'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
                         </span>
                     </div>
-                    <div class="curacion-obs <?php echo !empty($row['obs_escaras']) ? 'con-contenido' : ''; ?>">
+                    <div class="aplicacion-obs <?php echo !empty($row['obs_expansiones']) ? 'con-contenido' : ''; ?>">
                         <h5>📝 OBSERVACIONES</h5>
-                        <p><?php echo !empty($row['obs_escaras']) ? nl2br(htmlspecialchars($row['obs_escaras'])) : 'Sin observaciones registradas'; ?></p>
+                        <p><?php echo !empty($row['obs_expansiones']) ? nl2br(htmlspecialchars($row['obs_expansiones'])) : 'Sin observaciones registradas'; ?></p>
                     </div>
                 </div>
                 
-                <!-- Vía Venosa Central -->
-                <div class="curacion-detalle">
-                    <div class="curacion-header <?php echo ($row['via_venosa_central'] == 1) ? 'si' : 'no'; ?>">
-                        <div class="curacion-nombre">
-                            <span>🩸 VÍA VENOSA CENTRAL</span>
+                <!-- Sangre -->
+                <div class="aplicacion-detalle">
+                    <div class="aplicacion-header <?php echo ($row['sangre'] == 1) ? 'si' : 'no'; ?>">
+                        <div class="aplicacion-nombre">
+                            <span>🩸 SANGRE Y HEMODERIVADOS</span>
                         </div>
-                        <span class="estado-badge <?php echo ($row['via_venosa_central'] == 1) ? 'si' : 'no'; ?>">
-                            <?php echo ($row['via_venosa_central'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
+                        <span class="estado-badge <?php echo ($row['sangre'] == 1) ? 'si' : 'no'; ?>">
+                            <?php echo ($row['sangre'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
                         </span>
                     </div>
-                    <div class="curacion-obs <?php echo !empty($row['obs_via_venosa_central']) ? 'con-contenido' : ''; ?>">
+                    <div class="aplicacion-obs <?php echo !empty($row['obs_sangre']) ? 'con-contenido' : ''; ?>">
                         <h5>📝 OBSERVACIONES</h5>
-                        <p><?php echo !empty($row['obs_via_venosa_central']) ? nl2br(htmlspecialchars($row['obs_via_venosa_central'])) : 'Sin observaciones registradas'; ?></p>
+                        <p><?php echo !empty($row['obs_sangre']) ? nl2br(htmlspecialchars($row['obs_sangre'])) : 'Sin observaciones registradas'; ?></p>
                     </div>
                 </div>
                 
-                <!-- Vía Venosa -->
-                <div class="curacion-detalle">
-                    <div class="curacion-header <?php echo ($row['via_venosa'] == 1) ? 'si' : 'no'; ?>">
-                        <div class="curacion-nombre">
-                            <span>💉 VÍA VENOSA</span>
-                        </div>
-                        <span class="estado-badge <?php echo ($row['via_venosa'] == 1) ? 'si' : 'no'; ?>">
-                            <?php echo ($row['via_venosa'] == 1) ? '✓ SÍ' : '✗ NO'; ?>
-                        </span>
-                    </div>
-                    <div class="curacion-obs <?php echo !empty($row['obs_via_venosa']) ? 'con-contenido' : ''; ?>">
-                        <h5>📝 OBSERVACIONES</h5>
-                        <p><?php echo !empty($row['obs_via_venosa']) ? nl2br(htmlspecialchars($row['obs_via_venosa'])) : 'Sin observaciones registradas'; ?></p>
-                    </div>
+                <?php if (!empty($row['observaciones_generales'])): ?>
+                <div class="observaciones-generales">
+                    <h4>📋 OBSERVACIONES GENERALES</h4>
+                    <p><?php echo nl2br(htmlspecialchars($row['observaciones_generales'])); ?></p>
                 </div>
+                <?php endif; ?>
                 
             </div>
             
@@ -546,7 +537,7 @@ if ($id) {
                     </div>
                 
                     <div style="text-align: center; font-size: 16px; font-weight: bold; color: #000; margin: 12px 0 0 0; padding: 10px 0; background: white; letter-spacing: 2.5px; text-transform: uppercase;">
-                        REGISTRO DE CURACIONES
+                        REGISTRO DE APLICACIÓN
                     </div>
                     
                     <div style="height: 2px; background: #000; margin: 0 0 18px 0;"></div>
@@ -579,17 +570,17 @@ if ($id) {
             // Agregar título de sección estilo JasperReports
             htmlContent += `
                 <div style="font-weight: bold; font-size: 11px; color: #000; margin: 15px 0 10px 0; padding: 8px 10px; border: 1px solid #000; border-left: 4px solid #000; background: #f5f5f5; text-transform: uppercase; letter-spacing: 0.5px;">
-                    DETALLE DE CURACIONES
+                    DETALLE DE APLICACIONES
                 </div>
             `;
             
-            // Agregar curaciones - ESTILO JASPERREPORTS
-            var curaciones = registro.querySelectorAll('.curacion-detalle');
-            curaciones.forEach(function(cur) {
-                var nombre = cur.querySelector('.curacion-nombre').textContent.trim();
-                var badge = cur.querySelector('.estado-badge');
+            // Agregar aplicaciones - ESTILO JASPERREPORTS
+            var aplicaciones = registro.querySelectorAll('.aplicacion-detalle');
+            aplicaciones.forEach(function(app) {
+                var nombre = app.querySelector('.aplicacion-nombre').textContent.trim();
+                var badge = app.querySelector('.estado-badge');
                 var esAfirmativo = badge.classList.contains('si');
-                var obsText = cur.querySelector('.curacion-obs p').textContent.trim();
+                var obsText = app.querySelector('.aplicacion-obs p').textContent.trim();
                 
                 var estadoTexto = esAfirmativo ? 'SÍ' : 'NO';
                 
@@ -608,6 +599,20 @@ if ($id) {
                     </div>
                 `;
             });
+            
+            // Observaciones generales - estilo JasperReports
+            var obsGenerales = registro.querySelector('.observaciones-generales');
+            if (obsGenerales) {
+                var obsGenText = obsGenerales.querySelector('p');
+                if (obsGenText && obsGenText.textContent.trim()) {
+                    htmlContent += `
+                        <div style="margin-top: 10px; padding: 0; background: white; border: 1px solid #000;">
+                            <div style="font-weight: bold; font-size: 10px; color: #000; margin: 0; padding: 8px 10px; border-bottom: 1px solid #000; background: #f5f5f5; text-transform: uppercase; letter-spacing: 0.5px;">OBSERVACIONES GENERALES</div>
+                            <div style="font-size: 9px; color: #000; line-height: 1.5; padding: 8px 10px;">${obsGenText.textContent.trim()}</div>
+                        </div>
+                    `;
+                }
+            }
             
             // PIE DE PÁGINA - ESPACIO PARA FIRMA
             htmlContent += `
@@ -667,7 +672,7 @@ if ($id) {
                     pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, imgWidth, imgHeight);
                 }
                 
-                pdf.save('Curaciones_<?php echo htmlspecialchars($paciente['nombre_completo'] ?? 'Paciente'); ?>_' + new Date().getTime() + '.pdf');
+                pdf.save('Aplicacion_<?php echo htmlspecialchars($paciente['nombre_completo'] ?? 'Paciente'); ?>_' + new Date().getTime() + '.pdf');
             }).catch(function(error) {
                 document.body.removeChild(printContainer);
                 document.body.removeChild(loadingMsg);

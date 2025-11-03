@@ -136,7 +136,6 @@ function cuidados_report($pid, $encounter, $cols, $id) {
     </style>
     
     <div class="reporte-cuidados">
-        <button class="btn-reporte" onclick="window.print()">🖨️ Imprimir</button>
         
         <table>
             <tr>

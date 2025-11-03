@@ -97,7 +97,6 @@ function registro_vm_report($pid, $encounter, $cols, $id) {
     </style>
     
     <div class="reporte-vm">
-        <button class="btn-imprimir" onclick="window.print()">Imprimir</button>
         
         <div class="modo-section">
             <strong>MODO DE VENTILACION:</strong> 
