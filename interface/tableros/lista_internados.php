@@ -1,12 +1,12 @@
 <?php
 
 /**
- * Main info frame.
+ * Lista de Internados - Nursing Dashboard
  *
  * @package   OpenEMR
  * @link      http://www.open-emr.org
- * @author    Brady Miller <brady.g.miller@gmail.com>
- * @copyright Copyright (c) 2018 Brady Miller <brady.g.miller@gmail.com>
+ * @author    OpenEMR Contributors
+ * @copyright Copyright (c) 2026 OpenEMR Contributors
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
@@ -18,70 +18,53 @@ use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
 use OpenEMR\OeUI\OemrUI;
 
-/*Extraer todos los internados actuales, tabla: form_encounter, con tipo Internación pc_catid = 16 (referencia tabla: openemr_postcalendar_categories)*/
-
-$id_encounter = $_GET['id_encounter'] ?? null;
-$nombre_paciente = $_GET['paciente'] ?? null;
-$death_date = $_GET['death_date'] ?? null;
-$update = $_GET['update'] ?? null;
-
-// Iniciar sesión si no está iniciada
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Variable para almacenar mensajes
-$mensaje_exito = '';
-
-// Mensaje de éxito para CURACIONES
-if (isset($_SESSION['curacion_guardada']) && $_SESSION['curacion_guardada']) {
-    $mensaje_exito = '¡Éxito! La curación se guardó correctamente.';
-    unset($_SESSION['curacion_guardada']);
-}
-
-// Mensaje de éxito para APLICACIONES
-if (isset($_SESSION['aplicacion_guardada']) && $_SESSION['aplicacion_guardada']) {
-    $mensaje_exito = '¡Éxito! La aplicación se guardó correctamente.';
-    unset($_SESSION['aplicacion_guardada']);
-}
-
-// Mensaje de éxito para CUIDADOS
-if (isset($_SESSION['cuidado_guardado']) && $_SESSION['cuidado_guardado']) {
-    $mensaje_exito = '¡Éxito! El cuidado se guardó correctamente.';
-    unset($_SESSION['cuidado_guardado']);
-}
-
-// Mensaje de éxito para EVALUACIONES
-if (isset($_SESSION['evaluacion_guardada']) && $_SESSION['evaluacion_guardada']) {
-    $mensaje_exito = '¡Éxito! La evaluación se guardó correctamente.';
-    unset($_SESSION['evaluacion_guardada']);
-}
-// Verificar si se guardó un Registro VM
-if (isset($_SESSION['registro_vm_guardado']) && $_SESSION['registro_vm_guardado'] === true) {
-    $mensaje_exito = '¡Éxito! El Registro VM se guardó correctamente.';
-    unset($_SESSION['registro_vm_guardado']);
-}
+$id_encounter    = isset($_GET['id_encounter']) ? (int)$_GET['id_encounter'] : null;
+$nombre_paciente = isset($_GET['paciente'])     ? $_GET['paciente']          : null;
+$death_date      = isset($_GET['death_date'])   ? $_GET['death_date']        : null;
+$update          = isset($_GET['update'])       ? (int)$_GET['update']       : null;
 
 if ($death_date) {
-    sqlStatement("UPDATE form_encounter set out_date= ? , death_date= ? where id = ?", array($death_date, $death_date, $id_encounter));
+    // Validate date format before using it
+    $death_date_safe = date('Y-m-d', strtotime($death_date));
+    sqlStatement(
+        "UPDATE form_encounter SET out_date = ?, death_date = ? WHERE id = ?",
+        array($death_date_safe, $death_date_safe, $id_encounter)
+    );
     $id_encounter = null;
 } elseif ($id_encounter) {
-    sqlStatement("UPDATE form_encounter set out_date= DATE(NOW()) where id = ?", array($id_encounter));
+    sqlStatement(
+        "UPDATE form_encounter SET out_date = DATE(NOW()) WHERE id = ?",
+        array($id_encounter)
+    );
 }
 
-$internados_actuales_consult = "SELECT f.*, CONCAT(CONCAT(p.fname, ' '),p.lname) as paciente, p.pubpid as pubpid, f.nro_registro as nro_registro, f.encounter as encounter from form_encounter as f join patient_data as p on p.pid = f.pid where f.pc_catid = 16 and f.out_date is null";
-$res = sqlStatement($internados_actuales_consult);
+$res = sqlStatement(
+    "SELECT f.*, CONCAT(p.fname, ' ', p.lname) AS paciente,
+            p.pubpid AS pubpid, f.nro_registro AS nro_registro, f.encounter AS encounter
+     FROM form_encounter AS f
+     JOIN patient_data AS p ON p.pid = f.pid
+     WHERE f.pc_catid = 16 AND f.out_date IS NULL"
+);
 $inpatient = [];
 for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
     $inpatient[$iter] = $row;
 }
+
+// Nursing form definitions: form folder => display label
+$nursing_forms = [
+    'curaciones'  => xlt('Wound Care'),
+    'aplicaciones' => xlt('Nursing Applications'),
+    'cuidados'    => xlt('Nursing Care Bundle'),
+    'evaluaciones' => xlt('Nursing Evaluation'),
+    'registro_vm' => xlt('Ventilation Record'),
+];
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
     <?php Header::setupHeader(['no_bootstrap']); ?>
-    <title><?php echo xlt('Internados'); ?></title>
+    <title><?php echo xlt('Inpatient List'); ?></title>
     <link rel="stylesheet" href="../../public/themes/style_light.css">
     <link rel="stylesheet" href="../../public/assets/bootstrap/dist/css/bootstrap.min.css" type="text/css">
     <link rel="stylesheet" href="../../public/assets/jquery-ui/jquery-ui.css" type="text/css">
@@ -95,9 +78,8 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
     <script type="text/javascript" src="../../public/assets/datatable-last/dataTables.select.min.js"></script>
     <script type="text/javascript" src="../../public/assets/select2/dist/js/select2.min.js"></script>
     <link rel="stylesheet" href="../../public/assets/select2/dist/css/select2.min.css" type="text/css">
-    
+
     <style type="text/css">
-        /* Finder Processing style */
         div.dataTables_wrapper div.dataTables_processing {
             top: -20px;
             width: auto;
@@ -114,171 +96,99 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
             }
         }
 
-        thead input {
-            width: 100%;
+        thead input { width: 100%; }
+
+        .inner { display: inline-block; }
+        .outer { width: 100%; text-align: center; }
+
+        /* Nursing modal — patient bar */
+        .enf-paciente-bar {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #555;
         }
 
-        .inner {
-            display: inline-block;
-        }
+        /* Nursing form card buttons */
+        .enf-col { padding: 8px; }
 
-        .outer {
-            width: 100%;
-            text-align: center;
-        }
-
-        /* Estilos para alerta de éxito */
-        .alert-success-custom {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            border-radius: 8px;
-            padding: 15px 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 9999;
-            min-width: 320px;
-            font-weight: bold;
-            animation: slideIn 0.5s ease-out, fadeOut 0.5s ease-in 4.5s;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .alert-success-custom .icon-success {
-            font-size: 24px;
-            color: #28a745;
-        }
-        
-        .alert-success-custom .close-btn {
-            cursor: pointer;
-            font-size: 20px;
-            line-height: 20px;
-            margin-left: auto;
-            color: #155724;
-            background: none;
-            border: none;
-            padding: 0;
-        }
-        
-        .alert-success-custom .close-btn:hover {
-            color: #0d3d1a;
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        @keyframes fadeOut {
-            from {
-                opacity: 1;
-            }
-            to {
-                opacity: 0;
-            }
-        }
-
-        /* Estilos para los botones de enfermería */
         .btn-enf-card {
             width: 100%;
-            height: 140px;
-            background: white;
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            min-height: 120px;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 15px;
+            padding: 15px 10px;
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
         }
 
         .btn-enf-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.14);
+            transform: translateY(-3px);
         }
 
-        .btn-enf-card:active {
-            transform: translateY(-2px);
-        }
+        .btn-enf-card:active { transform: translateY(-1px); }
 
         .btn-enf-card .enf-icon {
-            width: 60px;
-            height: 60px;
+            width: 54px;
+            height: 54px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s ease;
+            margin-bottom: 10px;
         }
 
-        .btn-enf-card:hover .enf-icon {
-            transform: scale(1.1) rotate(5deg);
-        }
+        .btn-enf-card .enf-icon i { color: #fff; }
 
-        .btn-enf-card .enf-icon i {
-            color: white;
-        }
+        .enf-icon--green  { background: #4CAF50; }
+        .enf-icon--blue   { background: #2196F3; }
+        .enf-icon--red    { background: #e53935; }
+        .enf-icon--orange { background: #FB8C00; }
+        .enf-icon--purple { background: #8E24AA; }
+        .enf-icon--gray   { background: #9e9e9e; }
 
         .btn-enf-card .enf-label {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 700;
             color: #333;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
             text-align: center;
+            line-height: 1.3;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .btn-enf-card {
-                height: 120px;
-            }
-            
-            .btn-enf-card .enf-icon {
-                width: 50px;
-                height: 50px;
-            }
-            
-            .btn-enf-card .enf-icon i {
-                font-size: 24px;
-            }
-            
-            .alert-success-custom {
-                top: 10px;
-                right: 10px;
-                left: 10px;
-                min-width: auto;
-            }
+        .btn-enf-disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 576px) {
+            .btn-enf-card { min-height: 100px; }
+            .btn-enf-card .enf-icon { width: 44px; height: 44px; }
         }
     </style>
-    
+
     <?php
     $arrOeUiSettings = array(
-        'heading_title' => xl('Patient Finder'),
+        'heading_title'        => xl('Patient Finder'),
         'include_patient_name' => false,
-        'expandable' => true,
-        'expandable_files' => array('dynamic_finder_xpd'),
-        'action' => "search",
-        'action_title' => "",
-        'action_href' => "",
-        'show_help_icon' => false,
-        'help_file_name' => ""
+        'expandable'           => true,
+        'expandable_files'     => array('dynamic_finder_xpd'),
+        'action'               => "search",
+        'action_title'         => "",
+        'action_href'          => "",
+        'show_help_icon'       => false,
+        'help_file_name'       => ""
     );
     $oemr_ui = new OemrUI($arrOeUiSettings);
     ?>
@@ -286,116 +196,114 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
 
 <body class="body_top">
 
-    <?php if ($mensaje_exito): ?>
-    <div class="alert-success-custom" id="alertaExito">
-        <i class="fa fa-check-circle icon-success"></i>
-        <span><?php echo text($mensaje_exito); ?></span>
-        <button class="close-btn" onclick="cerrarAlerta()" aria-label="Cerrar">
-            <i class="fa fa-times"></i>
-        </button>
-    </div>
-
-    <script>
-        // Cerrar alerta automáticamente después de 5 segundos
-        setTimeout(function() {
-            var alerta = document.getElementById('alertaExito');
-            if (alerta) {
-                alerta.style.display = 'none';
-            }
-        }, 5000);
-        
-        // Función para cerrar manualmente
-        function cerrarAlerta() {
-            var alerta = document.getElementById('alertaExito');
-            if (alerta) {
-                alerta.style.display = 'none';
-            }
-        }
-    </script>
-    <?php endif; ?>
-
     <div id="container" class="<?php echo attr($oemr_ui->oeContainer()); ?>" style="width: 95%;">
         <div class="row">
             <div class="col-sm-12">
                 <div class="page-header clearfix">
-                    <h2>Lista de Internados</h2>
+                    <h2><?php echo xlt('Inpatient List'); ?></h2>
                     <br />
-                    <?php if ($id_encounter != null) { ?>
-                        <div class="alert alert-success alert-dismissible show" role="alert">
-                            Se dió de alta al paciente <strong><?php echo text($nombre_paciente); ?></strong> con éxito!
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar" style="color: black !important;">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    <?php } ?>
-                    <?php if ($update != null) { ?>
-                        <div class="alert alert-success alert-dismissible show" role="alert">
-                            Se actualizó al paciente con éxito!
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar" style="color: black !important;">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    <?php } ?>
-                    <?php
-                    $id_encounter = null;
-                    $death_date = null;
-                    ?>
+                    <?php if ($id_encounter !== null): ?>
+                    <div class="alert alert-success alert-dismissible show" role="alert">
+                        <?php echo xlt('Patient discharged successfully'); ?>:
+                        <strong><?php echo text($nombre_paciente); ?></strong>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="<?php echo xla('Close'); ?>" style="color:black !important;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <?php endif; ?>
+                    <?php if ($update !== null): ?>
+                    <div class="alert alert-success alert-dismissible show" role="alert">
+                        <?php echo xlt('Patient updated successfully'); ?>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="<?php echo xla('Close'); ?>" style="color:black !important;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
-        
+
         <div class="row">
             <div class="col-sm-12">
                 <div id="dynamic">
                     <table border="0" cellpadding="0" cellspacing="0" class="display" id="inp_table" style="width:100%">
                         <thead>
                             <tr>
-                                <th class="head" style="width: 5%;">Nro Prontuario</th>
-                                <th class="head">Paciente</th>
-                                <th class="head">Ingreso</th>
-                                <th class="head">CI (RG Paciente)</th>
-                                <th class="head" style="width: 4%;">NRO Registro</th>
-                                <th class="head" style="width: 10%;">Servicio</th>
-                                <th class="head" style="width: 10%;">Sala</th>
-                                <th class="head" style="width: 5%;">Cama</th>
-                                <th class="head" style="width: 10%;">Acciones</th>
+                                <th class="head" style="width:5%;"><?php echo xlt('Record No.'); ?></th>
+                                <th class="head"><?php echo xlt('Patient'); ?></th>
+                                <th class="head"><?php echo xlt('Admission'); ?></th>
+                                <th class="head"><?php echo xlt('ID (Patient Record)'); ?></th>
+                                <th class="head" style="width:4%;"><?php echo xlt('Reg. No.'); ?></th>
+                                <th class="head" style="width:10%;"><?php echo xlt('Service'); ?></th>
+                                <th class="head" style="width:10%;"><?php echo xlt('Ward'); ?></th>
+                                <th class="head" style="width:5%;"><?php echo xlt('Bed'); ?></th>
+                                <th class="head" style="width:10%;"><?php echo xlt('Actions'); ?></th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php
-                            if (isset($inpatient)) {
-                                foreach ($inpatient as $index => $result) {
-                                    echo '<tr>' .
-                                        '<td class="btn-pacienteData btn-link" data-pid="' . attr($result['pid']) . '" data-encounter="' . attr($result['encounter']) . '">' . text($result['pid']) . '</td>' .
-                                        '<td>' . text($result['paciente']) . '</td>' .
-                                        '<td>' . date('d/m/Y', strtotime($result['date'])) . '</td>' .
-                                        '<td>' . text($result['pubpid']) . '</td>' .
-                                        '<td>' . text($result['nro_registro']) . '</td>' .
-                                        '<td>' . text(strtoupper($result['servicio'])) . '</td>' .
-                                        '<td>' . text(strtoupper($result['cuarto'])) . '</td>' .
-                                        '<td>' . text($result['cama']) . '</td>' .
-                                        '<td><div class="outer">' .
-                                        '<div class="inner"><button class="btn btn-info btn-editar btn-xs" type="button" data-id="' . attr($result['id']) . '">EDIT</button></div>' .
-                                        '<div class="inner"><button class="btn btn-default btn-alta btn-xs" type="button" id="' . attr($result['id']) . '" data-title="Dar de alta al paciente: ' . attr($result['paciente']) . '" data-paciente="' . attr($result['paciente']) . '">ALTA</button></div>' .
-                                        '<div class="inner"><button class="btn btn-danger btn-death btn-xs" type="button" data-id="' . attr($result['id']) . '" data-title="Registrar muerte del paciente: ' . attr($result['paciente']) . '" data-paciente="' . attr($result['paciente']) . '">OBITO</button></div>' .
-                                        '<div class="inner"><button class="btn btn-primary btn-Enferm btn-xs" type="button" data-id="' . attr($result['id']) . '" data-title="Opciones de Enfermeria: ' . attr($result['paciente']) . '" data-paciente="' . attr($result['paciente']) . '" data-pid="' . attr($result['pid']) . '" data-encounter="' . attr($result['encounter']) . '">Enfermeria</button></div>' .
-                                        '</div></td>' .
-                                        '</tr>';
-                                }
-                            }
-                            ?>
+                            <?php foreach ($inpatient as $result): ?>
+                            <tr>
+                                <td class="btn-pacienteData btn-link"
+                                    data-pid="<?php echo attr($result['pid']); ?>"
+                                    data-encounter="<?php echo attr($result['encounter']); ?>">
+                                    <?php echo text($result['pid']); ?>
+                                </td>
+                                <td><?php echo text($result['paciente']); ?></td>
+                                <td><?php echo text(date('d/m/Y', strtotime($result['date']))); ?></td>
+                                <td><?php echo text($result['pubpid']); ?></td>
+                                <td><?php echo text($result['nro_registro']); ?></td>
+                                <td><?php echo text(strtoupper($result['servicio'])); ?></td>
+                                <td><?php echo text(strtoupper($result['cuarto'])); ?></td>
+                                <td><?php echo text($result['cama']); ?></td>
+                                <td>
+                                    <div class="outer">
+                                        <div class="inner">
+                                            <button class="btn btn-info btn-editar btn-xs" type="button"
+                                                data-id="<?php echo attr($result['id']); ?>">
+                                                <?php echo xlt('Edit'); ?>
+                                            </button>
+                                        </div>
+                                        <div class="inner">
+                                            <button class="btn btn-default btn-alta btn-xs" type="button"
+                                                id="<?php echo attr($result['id']); ?>"
+                                                data-title="<?php echo attr(xlt('Discharge patient') . ': ' . $result['paciente']); ?>"
+                                                data-paciente="<?php echo attr($result['paciente']); ?>">
+                                                <?php echo xlt('Discharge'); ?>
+                                            </button>
+                                        </div>
+                                        <div class="inner">
+                                            <button class="btn btn-danger btn-death btn-xs" type="button"
+                                                data-id="<?php echo attr($result['id']); ?>"
+                                                data-title="<?php echo attr(xlt('Register patient death') . ': ' . $result['paciente']); ?>"
+                                                data-paciente="<?php echo attr($result['paciente']); ?>">
+                                                <?php echo xlt('Deceased'); ?>
+                                            </button>
+                                        </div>
+                                        <div class="inner">
+                                            <button class="btn btn-primary btn-Enferm btn-xs" type="button"
+                                                data-id="<?php echo attr($result['id']); ?>"
+                                                data-paciente="<?php echo attr($result['paciente']); ?>"
+                                                data-pid="<?php echo attr($result['pid']); ?>"
+                                                data-encounter="<?php echo attr($result['encounter']); ?>">
+                                                <?php echo xlt('Nursing'); ?>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
                         </tbody>
                         <tfoot>
                             <tr>
-                                <th class="head">Identificador</th>
-                                <th class="head">Paciente</th>
-                                <th class="head">Fecha de Ingreso</th>
-                                <th class="head">CI (RG Paciente)</th>
-                                <th class="head">NRO Prontuario</th>
-                                <th class="head">Servicio</th>
-                                <th class="head">Sala</th>
-                                <th class="head">Cama</th>
-                                <th class="head">Acciones</th>
+                                <th class="head"><?php echo xlt('Record No.'); ?></th>
+                                <th class="head"><?php echo xlt('Patient'); ?></th>
+                                <th class="head"><?php echo xlt('Admission Date'); ?></th>
+                                <th class="head"><?php echo xlt('ID (Patient Record)'); ?></th>
+                                <th class="head"><?php echo xlt('Reg. No.'); ?></th>
+                                <th class="head"><?php echo xlt('Service'); ?></th>
+                                <th class="head"><?php echo xlt('Ward'); ?></th>
+                                <th class="head"><?php echo xlt('Bed'); ?></th>
+                                <th class="head"><?php echo xlt('Actions'); ?></th>
                             </tr>
                         </tfoot>
                     </table>
@@ -403,22 +311,25 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
             </div>
         </div>
 
-        <!-- Modal ALTA/OBITO -->
+        <!-- Modal DISCHARGE/DECEASED -->
         <div class="modal" tabindex="-1" role="dialog" id="modal_alta">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="modal_title">Modal title</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true" style="color: black !important;"><i class="fa fa-times"></i></span>
+                        <h5 class="modal-title" id="modal_title"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="<?php echo xla('Close'); ?>">
+                            <span aria-hidden="true" style="color:black !important;"><i class="fa fa-times"></i></span>
                         </button>
                     </div>
                     <form method="get" name="form" action="lista_internados.php">
                         <div class="modal-body">
-                            <p id="body_alta">¿Está seguro que desea dar el alta al paciente: <b id="paciente_name"></b>?</p>
-                            <div class="row" id="body_death" style="display: none">
+                            <p id="body_alta">
+                                <?php echo xlt('Are you sure you want to discharge the patient'); ?>:
+                                <b id="paciente_name"></b>?
+                            </p>
+                            <div class="row" id="body_death" style="display:none;">
                                 <div class="col-md-6">
-                                    <label for="death_date">Registrar fecha de muerte</label>
+                                    <label for="death_date"><?php echo xlt('Register date of death'); ?></label>
                                     <input id="death_date" name="death_date" class="form-control" type="date" />
                                 </div>
                             </div>
@@ -426,101 +337,93 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                         <div class="modal-footer">
                             <input type="hidden" name="id_encounter" id="id_encounter" />
                             <input type="hidden" name="paciente" id="nombre_paciente" />
-                            <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Cancelar</button>
-                            <input type="submit" value="Confirmar" class="btn btn-success pull-right">
+                            <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">
+                                <?php echo xlt('Cancel'); ?>
+                            </button>
+                            <input type="submit" value="<?php echo xla('Confirm'); ?>" class="btn btn-success pull-right">
                         </div>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- Modal ENFERMERÍA MEJORADO -->
+        <!-- Modal NURSING -->
         <div class="modal fade" tabindex="-1" role="dialog" id="modal_Enf">
-            <div class="modal-dialog modal-lg" role="document" style="max-width: 850px;">
-                <div class="modal-content" style="border: none; border-radius: 15px; overflow: hidden;">
-                    <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 20px 30px;">
-                        <h4 class="modal-title" style="font-weight: 600; margin: 0;">
-                            <i class="fa fa-user-md"></i> Opciones de Enfermería
-                        </h4>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 0.9; font-size: 28px;">
-                            <span aria-hidden="true">&times;</span>
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fa fa-user-md"></i> <?php echo xlt('Nursing Options'); ?>
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="<?php echo xla('Close'); ?>">
+                            <span aria-hidden="true" style="color:black !important;"><i class="fa fa-times"></i></span>
                         </button>
                     </div>
-                    
-                    <div class="modal-body" style="padding: 30px 25px; background-color: #f8f9fa;">
-                        <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                            <p style="margin: 0; color: #555; font-size: 15px;">
-                                <strong style="color: #667eea;">Paciente:</strong> 
-                                <span id="paciente_nombre_enf" style="color: #333;"></span>
-                            </p>
-                        </div>
-
-                        <div class="row" style="margin: 0 -10px;">
-                            <!-- Botón Curaciones -->
-                            <div class="col-md-4 col-sm-6" style="padding: 10px;">
-                                <button class="btn-enf-card btn-enfRedired1" type="button">
-                                    <div class="enf-icon" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);">
+                    <div class="modal-body">
+                        <p class="enf-paciente-bar">
+                            <strong><?php echo xlt('Patient'); ?>:</strong>
+                            <span id="paciente_nombre_enf"></span>
+                        </p>
+                        <div class="row">
+                            <!-- Curaciones -->
+                            <div class="col-md-4 col-sm-6 enf-col">
+                                <button class="btn-enf-card btn-enfRedired" type="button" data-form="curaciones">
+                                    <div class="enf-icon enf-icon--green">
                                         <i class="fa fa-heartbeat fa-2x"></i>
                                     </div>
-                                    <div class="enf-label">Curaciones</div>
+                                    <div class="enf-label"><?php echo xlt('Wound Care'); ?></div>
                                 </button>
                             </div>
-                            
-                            <!-- Botón Aplicaciones -->
-                            <div class="col-md-4 col-sm-6" style="padding: 10px;">
-                                <button class="btn-enf-card btn-enfRedired2" type="button">
-                                    <div class="enf-icon" style="background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);">
+                            <!-- Aplicaciones -->
+                            <div class="col-md-4 col-sm-6 enf-col">
+                                <button class="btn-enf-card btn-enfRedired" type="button" data-form="aplicaciones">
+                                    <div class="enf-icon enf-icon--blue">
                                         <i class="fa fa-tint fa-2x"></i>
                                     </div>
-                                    <div class="enf-label">Aplicaciones</div>
+                                    <div class="enf-label"><?php echo xlt('Nursing Applications'); ?></div>
                                 </button>
                             </div>
-                            
-                            <!-- Botón Cuidados -->
-                            <div class="col-md-4 col-sm-6" style="padding: 10px;">
-                                <button class="btn-enf-card btn-enfRedired3" type="button">
-                                    <div class="enf-icon" style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);">
+                            <!-- Cuidados -->
+                            <div class="col-md-4 col-sm-6 enf-col">
+                                <button class="btn-enf-card btn-enfRedired" type="button" data-form="cuidados">
+                                    <div class="enf-icon enf-icon--red">
                                         <i class="fa fa-heart fa-2x"></i>
                                     </div>
-                                    <div class="enf-label">Cuidados</div>
+                                    <div class="enf-label"><?php echo xlt('Nursing Care Bundle'); ?></div>
                                 </button>
                             </div>
-                            
-                            <!-- Botón Evaluaciones -->
-                            <div class="col-md-4 col-sm-6" style="padding: 10px;">
-                                <button class="btn-enf-card btn-enfRedired4" type="button">
-                                    <div class="enf-icon" style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);">
+                            <!-- Evaluaciones -->
+                            <div class="col-md-4 col-sm-6 enf-col">
+                                <button class="btn-enf-card btn-enfRedired" type="button" data-form="evaluaciones">
+                                    <div class="enf-icon enf-icon--orange">
                                         <i class="fa fa-clipboard fa-2x"></i>
                                     </div>
-                                    <div class="enf-label">Evaluaciones</div>
+                                    <div class="enf-label"><?php echo xlt('Nursing Evaluation'); ?></div>
                                 </button>
                             </div>
-                            
-                            <!-- Botón Registro VM -->
-                            <div class="col-md-4 col-sm-6" style="padding: 10px;">
-                                <button class="btn-enf-card btn-enfRedired5" type="button">
-                                    <div class="enf-icon" style="background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);">
+                            <!-- Registro VM -->
+                            <div class="col-md-4 col-sm-6 enf-col">
+                                <button class="btn-enf-card btn-enfRedired" type="button" data-form="registro_vm">
+                                    <div class="enf-icon enf-icon--purple">
                                         <i class="fa fa-stethoscope fa-2x"></i>
                                     </div>
-                                    <div class="enf-label">Registro VM</div>
+                                    <div class="enf-label"><?php echo xlt('Ventilation Record'); ?></div>
                                 </button>
                             </div>
-                            
-                            <!-- Botón Próximamente -->
-                            <div class="col-md-4 col-sm-6" style="padding: 10px;">
-                                <button class="btn-enf-card" type="button" disabled style="opacity: 0.3; cursor: not-allowed;">
-                                    <div class="enf-icon" style="background: #ccc;">
+                            <!-- Próximamente -->
+                            <div class="col-md-4 col-sm-6 enf-col">
+                                <button class="btn-enf-card btn-enf-disabled" type="button" disabled>
+                                    <div class="enf-icon enf-icon--gray">
                                         <i class="fa fa-plus fa-2x"></i>
                                     </div>
-                                    <div class="enf-label">Próximamente</div>
+                                    <div class="enf-label"><?php echo xlt('Coming Soon'); ?></div>
                                 </button>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="modal-footer" style="background-color: #fff; border-top: 1px solid #dee2e6; padding: 15px 30px;">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal" style="padding: 10px 25px; border-radius: 6px;">
-                            <i class="fa fa-times"></i> Cerrar
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">
+                            <?php echo xlt('Close'); ?>
                         </button>
                     </div>
                 </div>
@@ -529,148 +432,85 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
 
     </div>
     <?php $oemr_ui->oeBelowContainerDiv(); ?>
-    
-    <script language="JavaScript" type="text/javascript">
+
+    <script type="text/javascript">
         var webroot_url = <?php echo js_escape($web_root); ?>;
-        var encounter;
-        var pid_paciente;
-        
+        var encounter_sel;
+        var pid_sel;
+
         var xl_strings_tabs_view_model = <?php echo json_encode(array(
-                                                'encounter_locked' => xla('This encounter is locked. No new forms can be added.'),
-                                                'must_select_patient'  => $GLOBALS['enable_group_therapy'] ? xla('You must first select or add a patient or therapy group.') : xla('You must first select or add a patient.'),
-                                                'must_select_encounter'    => xla('You must first select or create an encounter.'),
-                                                'new' => xla('New')
-                                            ));
-                                            ?>;
+            'encounter_locked'    => xla('This encounter is locked. No new forms can be added.'),
+            'must_select_patient' => $GLOBALS['enable_group_therapy']
+                ? xla('You must first select or add a patient or therapy group.')
+                : xla('You must first select or add a patient.'),
+            'must_select_encounter' => xla('You must first select or create an encounter.'),
+            'new' => xla('New')
+        )); ?>;
         var csrf_token_js = <?php echo js_escape(CsrfUtils::collectCsrfToken()); ?>;
-        
+
         $(function() {
-            // Botón ALTA
+
+            // DISCHARGE button
             $(document).on('click', '.btn-alta', function() {
-                let id_encounter = this.id;
-                let nombre = $(this).data('title');
+                var id_enc  = this.id;
+                var titulo  = $(this).data('title');
+                var pacient = $(this).data('paciente');
                 $('#body_alta').show();
                 $('#body_death').hide();
-                $('#modal_title').html("<b>" + nombre + '</b>');
-                $('#paciente_name').html("<b>" + $(this).data('paciente') + '</b>');
-                $('#id_encounter').val(id_encounter);
-                $('#nombre_paciente').val($(this).data('paciente'));
+                $('#death_date').removeAttr('required');
+                $('#modal_title').html('<b>' + titulo + '</b>');
+                $('#paciente_name').html('<b>' + pacient + '</b>');
+                $('#id_encounter').val(id_enc);
+                $('#nombre_paciente').val(pacient);
                 $('#modal_alta').modal('toggle');
             });
-            
-            // Botón ENFERMERÍA
-            $(document).on('click', '.btn-Enferm', function() {
-                encounter = $(this).data('encounter');
-                pid_paciente = $(this).data('pid');
-                let nombre_paciente = $(this).data('paciente');
-                
-                console.log('Abriendo modal enfermería...'); 
-                console.log('Encounter:', encounter, 'PID:', pid_paciente);
-                
-                $('#paciente_nombre_enf').text(nombre_paciente);
-                $('#modal_Enf').modal('show');
-            });
-            
-            // Botón ÓBITO
+
+            // DECEASED button
             $(document).on('click', '.btn-death', function() {
-                let id_encounter = $(this).data('id');
-                let nombre = $(this).data('title');
+                var id_enc  = $(this).data('id');
+                var titulo  = $(this).data('title');
+                var pacient = $(this).data('paciente');
                 $('#death_date').attr('required', true);
                 $('#body_alta').hide();
                 $('#body_death').show();
-                $('#modal_title').html("<b>" + nombre + '</b>');
-                $('#paciente_name').html("<b>" + $(this).data('paciente') + '</b>');
-                $('#id_encounter').val(id_encounter);
-                $('#nombre_paciente').val($(this).data('paciente'));
+                $('#modal_title').html('<b>' + titulo + '</b>');
+                $('#paciente_name').html('<b>' + pacient + '</b>');
+                $('#id_encounter').val(id_enc);
+                $('#nombre_paciente').val(pacient);
                 $('#modal_alta').modal('toggle');
             });
-            
-            // Botón EDITAR
+
+            // NURSING button — open modal
+            $(document).on('click', '.btn-Enferm', function() {
+                encounter_sel = $(this).data('encounter');
+                pid_sel       = $(this).data('pid');
+                $('#paciente_nombre_enf').text($(this).data('paciente'));
+                $('#modal_Enf').modal('show');
+            });
+
+            // EDIT button
             $(document).on('click', '.btn-editar', function() {
-                let id_encounter = $(this).data('id');
-                top.RTop.location = webroot_url + "/interface/tableros/editar_internado.php?id=" + id_encounter;
+                top.RTop.location = webroot_url + '/interface/tableros/editar_internado.php?id=' + $(this).data('id');
             });
 
-            // ========== BOTONES DEL MODAL DE ENFERMERÍA ==========
-            
-            // Botón 1: CURACIONES
-            $(document).on('click', '.btn-enfRedired1', function() {
-                console.log('Click en Curaciones, encounter:', encounter, 'pid:', pid_paciente);
-                if (!encounter || !pid_paciente) {
-                    alert('Error: No se pudo obtener los datos del paciente');
+            // NURSING form buttons — single handler via data-form attribute
+            $(document).on('click', '.btn-enfRedired', function() {
+                var form = $(this).data('form');
+                if (!encounter_sel || !pid_sel) {
+                    alert(<?php echo js_escape(xlt('Error: Could not retrieve patient data.')); ?>);
                     return;
                 }
-                
                 $('#modal_Enf').modal('hide');
-                
                 setTimeout(function() {
-                    top.RTop.location = webroot_url + "/interface/forms/curaciones/new.php?mode=new&id=0&pid=" + pid_paciente + "&encounter=" + encounter;
+                    top.RTop.location = webroot_url + '/interface/forms/' + form
+                        + '/new.php?mode=new&id=0&pid=' + pid_sel + '&encounter=' + encounter_sel;
                 }, 300);
             });
 
-            // Botón 2: APLICACIONES
-            $(document).on('click', '.btn-enfRedired2', function() {
-                console.log('Click en Aplicaciones, encounter:', encounter, 'pid:', pid_paciente);
-                if (!encounter || !pid_paciente) {
-                    alert('Error: No se pudo obtener los datos del paciente');
-                    return;
-                }
-                
-                $('#modal_Enf').modal('hide');
-                
-                setTimeout(function() {
-                    top.RTop.location = webroot_url + "/interface/forms/aplicaciones/new.php?mode=new&id=0&pid=" + pid_paciente + "&encounter=" + encounter;
-                }, 300);
-            });
-            // Botón 3: CUIDADOS
-            $(document).on('click', '.btn-enfRedired3', function() {
-                console.log('Click en Cuidados, encounter:', encounter, 'pid:', pid_paciente);
-                if (!encounter || !pid_paciente) {
-                    alert('Error: No se pudo obtener los datos del paciente');
-                    return;
-                }
-                
-                $('#modal_Enf').modal('hide');
-                
-                setTimeout(function() {
-                    top.RTop.location = webroot_url + "/interface/forms/cuidados/new.php?mode=new&id=0&pid=" + pid_paciente + "&encounter=" + encounter;
-                }, 300);
-            });
-
-           
-           // Botón: REGISTRO VM
-            $(document).on('click', '.btn-enfRedired4', function() {
-                console.log('Click en evaluaciones, encounter:', encounter, 'pid:', pid_paciente);
-                if (!encounter || !pid_paciente) {
-                    alert('Error: No se pudo obtener los datos del paciente');
-                    return;
-                }
-                
-                $('#modal_Enf').modal('hide');
-                
-                setTimeout(function() {
-                    top.RTop.location = webroot_url + "/interface/forms/evaluaciones/new.php?mode=new&id=0&pid=" + pid_paciente + "&encounter=" + encounter;
-                }, 300);
-            });
-             // Botón: REGISTRO VM
-            $(document).on('click', '.btn-enfRedired5', function() {
-                console.log('Click en Registro VM, encounter:', encounter, 'pid:', pid_paciente);
-                if (!encounter || !pid_paciente) {
-                    alert('Error: No se pudo obtener los datos del paciente');
-                    return;
-                }
-                
-                $('#modal_Enf').modal('hide');
-                
-                setTimeout(function() {
-                    top.RTop.location = webroot_url + "/interface/forms/registro_vm/new.php?mode=new&id=0&pid=" + pid_paciente + "&encounter=" + encounter;
-                }, 300);
-            });
-            // Click en datos del paciente
+            // Patient data link
             $(document).on('click', '.btn-pacienteData', function() {
-                let encounter_click = $(this).data('encounter');
-                let pid_click = $(this).data('pid');
-                top.RTop.location = webroot_url + "/interface/patient_file/encounter/encounter_top.php?set_encounter=" + encounter_click + "&pid=" + pid_click;
+                top.RTop.location = webroot_url + '/interface/patient_file/encounter/encounter_top.php'
+                    + '?set_encounter=' + $(this).data('encounter') + '&pid=' + $(this).data('pid');
             });
 
             // DataTable
@@ -678,27 +518,20 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
                 $('#inp_table thead tr').clone(true).appendTo('#inp_table thead');
                 $('#inp_table thead tr:eq(1) th').each(function(i) {
                     var title = $(this).text();
-                    if (title.trim() !== 'Acciones') {
-                        $(this).html('<input type="text" placeholder="Buscar ' + title + '" title="Ingrese aquí lo que desea buscar"/>');
+                    if (title.trim() !== <?php echo js_escape(xlt('Actions')); ?>) {
+                        $(this).html('<input type="text" placeholder="<?php echo xla('Search'); ?> ' + title + '" />');
                     } else {
                         $(this).html('');
                     }
-
                     $('input', this).on('keyup change', function() {
                         if (datatable.column(i).search() !== this.value) {
-                            datatable
-                                .column(i)
-                                .search(this.value)
-                                .draw();
+                            datatable.column(i).search(this.value).draw();
                         }
                     });
                 });
-                
+
                 const datatable = $('#inp_table').DataTable({
-                    order: [
-                        [6, "asc"],
-                        [7, "asc"],
-                    ],
+                    order: [[6, 'asc'], [7, 'asc']],
                     responsive: true,
                     orderCellsTop: true,
                     fixedHeader: true
@@ -706,8 +539,6 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
             });
         });
     </script>
-    <script>
-        document.addEventListener('touchstart', {});
-    </script>
+    <script>document.addEventListener('touchstart', {});</script>
 </body>
 </html>

@@ -1,216 +1,131 @@
 <?php
 /**
- * Formulario de Curaciones - save.php (CON EDICIÓN)
- * Ruta: interface/forms/curaciones/save.php
- * Soporta tanto INSERT (crear) como UPDATE (editar)
- * CORREGIDO: Mensaje de éxito aparece en AMBOS modos (crear y editar)
+ * Nursing Wound Care Form - save.php
+ * Handles INSERT (create) and UPDATE (edit) for the curaciones form.
+ *
+ * @package   OpenEMR
+ * @link      http://www.open-emr.org
+ * @author    OpenEMR Contributors
+ * @copyright Copyright (c) 2026 OpenEMR Contributors
+ * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
 require_once("../../globals.php");
 require_once("$srcdir/api.inc");
 require_once("$srcdir/forms.inc");
 
-// Validar que vengan los datos
+use OpenEMR\Common\Csrf\CsrfUtils;
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    die("Método no permitido");
+    die(xlt("Method not allowed"));
 }
 
-// Obtener datos del formulario
-$pid = (int)($_POST['pid'] ?? 0);
+// Verify CSRF token
+if (!CsrfUtils::verifyCsrfToken($_POST['csrf_token_form'])) {
+    CsrfUtils::csrfNotVerified();
+}
+
+$pid       = (int)($_POST['pid']       ?? 0);
 $encounter = (int)($_POST['encounter'] ?? 0);
-$id = isset($_POST['id']) ? (int)$_POST['id'] : null; // ← NUEVO: Detectar modo edición
+$id        = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 
 if (!$pid || !$encounter) {
-    die("Error: Faltan datos requeridos (PID o Encounter)");
+    die(xlt("Error: Missing required data (PID or Encounter)"));
 }
 
-// Obtener usuario actual
-$user = $_SESSION['authUser'] ?? 'admin';
-$groupname = $_SESSION['authProvider'] ?? 'Default';
+$user       = $_SESSION['authUser']       ?? 'admin';
+$groupname  = $_SESSION['authProvider']   ?? 'Default';
 $authorized = $_SESSION['userauthorized'] ?? 1;
 
-// Capturar datos del formulario
-$herida_operatoria = (int)($_POST['herida_operatoria'] ?? 0);
-$obs_herida_operatoria = $_POST['obs_herida_operatoria'] ?? '';
+// Sanitize input fields
+$herida_operatoria      = (int)($_POST['herida_operatoria']      ?? 0);
+$obs_herida_operatoria  = $_POST['obs_herida_operatoria']         ?? '';
+$traqueostomia          = (int)($_POST['traqueostomia']          ?? 0);
+$obs_traqueostomia      = $_POST['obs_traqueostomia']             ?? '';
+$ostomias               = (int)($_POST['ostomias']               ?? 0);
+$obs_ostomias           = $_POST['obs_ostomias']                  ?? '';
+$escaras                = (int)($_POST['escaras']                ?? 0);
+$obs_escaras            = $_POST['obs_escaras']                   ?? '';
+$via_venosa_central     = (int)($_POST['via_venosa_central']     ?? 0);
+$obs_via_venosa_central = $_POST['obs_via_venosa_central']        ?? '';
+$via_venosa             = (int)($_POST['via_venosa']             ?? 0);
+$obs_via_venosa         = $_POST['obs_via_venosa']                ?? '';
+$hora_operacion         = !empty($_POST['hora_operacion']) ? $_POST['hora_operacion'] : null;
 
-$traqueostomia = (int)($_POST['traqueostomia'] ?? 0);
-$obs_traqueostomia = $_POST['obs_traqueostomia'] ?? '';
+$is_edit = ($id > 0);
 
-$ostomias = (int)($_POST['ostomias'] ?? 0);
-$obs_ostomias = $_POST['obs_ostomias'] ?? '';
-
-$escaras = (int)($_POST['escaras'] ?? 0);
-$obs_escaras = $_POST['obs_escaras'] ?? '';
-
-$via_venosa_central = (int)($_POST['via_venosa_central'] ?? 0);
-$obs_via_venosa_central = $_POST['obs_via_venosa_central'] ?? '';
-
-$via_venosa = (int)($_POST['via_venosa'] ?? 0);
-$obs_via_venosa = $_POST['obs_via_venosa'] ?? '';
-
-$hora_operacion = $_POST['hora_operacion'] ?? null;
-
-// Determinar si es UPDATE o INSERT
-$modo_edicion = !empty($id);
-
-if ($modo_edicion) {
-    // ============================================
-    // MODO EDICIÓN: UPDATE
-    // ============================================
-    
-    // Verificar que el registro existe y pertenece al paciente
-    $check_sql = "SELECT id FROM form_curaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1";
-    $check_row = sqlQuery($check_sql, array($id, $pid, $encounter));
-    
-    if (!$check_row) {
-        die("Error: Registro no encontrado o no tiene permisos para editarlo.");
-    }
-    
-    // Preparar SQL UPDATE
-    $sql = "UPDATE form_curaciones SET
-        date = NOW(),
-        user = ?,
-        groupname = ?,
-        authorized = ?,
-        herida_operatoria = ?,
-        obs_herida_operatoria = ?,
-        traqueostomia = ?,
-        obs_traqueostomia = ?,
-        ostomias = ?,
-        obs_ostomias = ?,
-        escaras = ?,
-        obs_escaras = ?,
-        via_venosa_central = ?,
-        obs_via_venosa_central = ?,
-        via_venosa = ?,
-        obs_via_venosa = ?,
-        hora_operacion = ?
-    WHERE id = ? AND pid = ? AND encounter = ?";
-    
-    // Array de parámetros (19 valores)
-    $params = array(
-        $user,                      // 1
-        $groupname,                 // 2
-        $authorized,                // 3
-        $herida_operatoria,         // 4
-        $obs_herida_operatoria,     // 5
-        $traqueostomia,             // 6
-        $obs_traqueostomia,         // 7
-        $ostomias,                  // 8
-        $obs_ostomias,              // 9
-        $escaras,                   // 10
-        $obs_escaras,               // 11
-        $via_venosa_central,        // 12
-        $obs_via_venosa_central,    // 13
-        $via_venosa,                // 14
-        $obs_via_venosa,            // 15
-        $hora_operacion,            // 16
-        $id,                        // 17 WHERE
-        $pid,                       // 18 WHERE
-        $encounter                  // 19 WHERE
+if ($is_edit) {
+    // Verify the record belongs to this patient/encounter
+    $check = sqlQuery(
+        "SELECT id FROM form_curaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1",
+        array($id, $pid, $encounter)
     );
-    
-    // Ejecutar UPDATE
-    $result = sqlStatement($sql, $params);
-    
-    if ($result !== false) {
-        // ✅ IMPORTANTE: Usar MISMA variable de sesión que creación para que aparezca el mensaje
-        $_SESSION['curacion_guardada'] = true;
-        
-        // Redirigir a lista de internados
-        header("Location: " . $GLOBALS['webroot'] . "/interface/tableros/lista_internados.php");
-        exit;
-    } else {
-        die("Error al actualizar los datos");
+    if (!$check) {
+        die(xlt("Error: Record not found or insufficient permissions."));
     }
-    
+
+    $upd = sqlStatement(
+        "UPDATE form_curaciones SET
+            date = NOW(), user = ?, groupname = ?, authorized = ?,
+            herida_operatoria = ?, obs_herida_operatoria = ?,
+            traqueostomia = ?, obs_traqueostomia = ?,
+            ostomias = ?, obs_ostomias = ?,
+            escaras = ?, obs_escaras = ?,
+            via_venosa_central = ?, obs_via_venosa_central = ?,
+            via_venosa = ?, obs_via_venosa = ?,
+            hora_operacion = ?
+         WHERE id = ? AND pid = ? AND encounter = ?",
+        array(
+            $user, $groupname, $authorized,
+            $herida_operatoria, $obs_herida_operatoria,
+            $traqueostomia, $obs_traqueostomia,
+            $ostomias, $obs_ostomias,
+            $escaras, $obs_escaras,
+            $via_venosa_central, $obs_via_venosa_central,
+            $via_venosa, $obs_via_venosa,
+            $hora_operacion,
+            $id, $pid, $encounter,
+        )
+    );
+
+    if ($upd === false) {
+        die(xlt("Error: Could not update the record. Please try again."));
+    }
 } else {
-    // ============================================
-    // MODO CREACIÓN: INSERT
-    // ============================================
-    
-    // Preparar SQL INSERT
-    $sql = "INSERT INTO form_curaciones (
-        date,
-        pid,
-        encounter,
-        user,
-        groupname,
-        authorized,
-        activity,
-        herida_operatoria,
-        obs_herida_operatoria,
-        traqueostomia,
-        obs_traqueostomia,
-        ostomias,
-        obs_ostomias,
-        escaras,
-        obs_escaras,
-        via_venosa_central,
-        obs_via_venosa_central,
-        via_venosa,
-        obs_via_venosa,
-        hora_operacion
-    ) VALUES (
-        NOW(),
-        ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        1,
-        ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        ?
-    )";
-    
-    // Array de parámetros (18 valores)
-    $params = array(
-        $pid,                       // 1
-        $encounter,                 // 2
-        $user,                      // 3
-        $groupname,                 // 4
-        $authorized,                // 5
-        $herida_operatoria,         // 6
-        $obs_herida_operatoria,     // 7
-        $traqueostomia,             // 8
-        $obs_traqueostomia,         // 9
-        $ostomias,                  // 10
-        $obs_ostomias,              // 11
-        $escaras,                   // 12
-        $obs_escaras,               // 13
-        $via_venosa_central,        // 14
-        $obs_via_venosa_central,    // 15
-        $via_venosa,                // 16
-        $obs_via_venosa,            // 17
-        $hora_operacion             // 18
+    $newid = sqlInsert(
+        "INSERT INTO form_curaciones (
+            date, pid, encounter, user, groupname, authorized, activity,
+            herida_operatoria, obs_herida_operatoria,
+            traqueostomia, obs_traqueostomia,
+            ostomias, obs_ostomias,
+            escaras, obs_escaras,
+            via_venosa_central, obs_via_venosa_central,
+            via_venosa, obs_via_venosa,
+            hora_operacion
+         ) VALUES (
+            NOW(), ?, ?, ?, ?, ?, 1,
+            ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?
+         )",
+        array(
+            $pid, $encounter, $user, $groupname, $authorized,
+            $herida_operatoria, $obs_herida_operatoria,
+            $traqueostomia, $obs_traqueostomia,
+            $ostomias, $obs_ostomias,
+            $escaras, $obs_escaras,
+            $via_venosa_central, $obs_via_venosa_central,
+            $via_venosa, $obs_via_venosa,
+            $hora_operacion,
+        )
     );
-    
-    // Ejecutar INSERT
-    $newid = sqlInsert($sql, $params);
-    
-    if ($newid) {
-        // Agregar el formulario al encuentro
-        addForm($encounter, 'Curaciones', $newid, 'curaciones', $pid, $authorized);
-        
-        // ✅ IMPORTANTE: Usar MISMA variable de sesión que edición para consistencia
-        $_SESSION['curacion_guardada'] = true;
-        
-        // Redirigir a lista de internados
-        header("Location: " . $GLOBALS['webroot'] . "/interface/tableros/lista_internados.php");
-        exit;
-    } else {
-        die("Error al guardar los datos");
+
+    if (!$newid) {
+        die(xlt("Error: Could not save the record. Please try again."));
     }
+
+    addForm($encounter, 'Nursing Wound Care', $newid, 'curaciones', $pid, $authorized);
 }
+
+formHeader(xlt("Redirecting..."));
+formJump($GLOBALS['webroot'] . "/interface/tableros/lista_internados.php");
 ?>

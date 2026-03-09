@@ -1,82 +1,83 @@
 <?php
 /**
- * Formulario de Curaciones - new.php (CON EDICIÓN)
- * Ruta: interface/forms/curaciones/new.php
- * Soporta tanto CREAR como EDITAR registros
- * MODIFICADO: Auto-completa hora actual en modo creación
+ * Nursing Wound Care Form - new.php
+ * Wound care assessment form for inpatients.
+ *
+ * @package   OpenEMR
+ * @link      http://www.open-emr.org
+ * @author    OpenEMR Contributors
+ * @copyright Copyright (c) 2026 OpenEMR Contributors
+ * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
 require_once("../../globals.php");
 require_once("$srcdir/api.inc");
 
-// Obtener parámetros
-$pid = $_GET['pid'] ?? $_SESSION['pid'] ?? null;
-$encounter = $_GET['encounter'] ?? $_SESSION['encounter'] ?? null;
-$id = $_GET['id'] ?? null; // ← NUEVO: Detectar si es modo edición
+use OpenEMR\Common\Csrf\CsrfUtils;
 
-// Determinar si es modo CREAR o EDITAR
-$modo_edicion = !empty($id);
-$titulo = $modo_edicion ? "EDITAR CURACIONES" : "NUEVAS CURACIONES";
+// Get parameters
+$pid       = isset($_GET['pid'])       ? (int)$_GET['pid']       : (int)($_SESSION['pid'] ?? 0);
+$encounter = isset($_GET['encounter']) ? (int)$_GET['encounter'] : (int)($_SESSION['encounter'] ?? 0);
+$id        = isset($_GET['id'])        ? (int)$_GET['id']        : 0;
 
-// Variables para pre-llenar el formulario
-$herida_operatoria = 0;
-$obs_herida_operatoria = '';
-$traqueostomia = 0;
-$obs_traqueostomia = '';
-$ostomias = 0;
-$obs_ostomias = '';
-$escaras = 0;
-$obs_escaras = '';
-$via_venosa_central = 0;
+if (!$pid || !$encounter) {
+    die(xlt("Error: Missing required parameters (PID or Encounter)"));
+}
+
+$is_edit = ($id > 0);
+
+// Initialize field variables
+$herida_operatoria      = 0;
+$obs_herida_operatoria  = '';
+$traqueostomia          = 0;
+$obs_traqueostomia      = '';
+$ostomias               = 0;
+$obs_ostomias           = '';
+$escaras                = 0;
+$obs_escaras            = '';
+$via_venosa_central     = 0;
 $obs_via_venosa_central = '';
-$via_venosa = 0;
-$obs_via_venosa = '';
-$hora_operacion = '';
+$via_venosa             = 0;
+$obs_via_venosa         = '';
+$hora_operacion         = '';
 
-// Si es modo EDICIÓN, cargar datos existentes
-if ($modo_edicion) {
-    $sql = "SELECT * FROM form_curaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1";
-    $row = sqlQuery($sql, array($id, $pid, $encounter));
-    
+// Load existing data in edit mode
+if ($is_edit) {
+    $row = sqlQuery(
+        "SELECT * FROM form_curaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1",
+        array($id, $pid, $encounter)
+    );
     if ($row) {
-        // Cargar valores existentes
-        $herida_operatoria = (int)$row['herida_operatoria'];
-        $obs_herida_operatoria = $row['obs_herida_operatoria'] ?? '';
-        $traqueostomia = (int)$row['traqueostomia'];
-        $obs_traqueostomia = $row['obs_traqueostomia'] ?? '';
-        $ostomias = (int)$row['ostomias'];
-        $obs_ostomias = $row['obs_ostomias'] ?? '';
-        $escaras = (int)$row['escaras'];
-        $obs_escaras = $row['obs_escaras'] ?? '';
-        $via_venosa_central = (int)$row['via_venosa_central'];
-        $obs_via_venosa_central = $row['obs_via_venosa_central'] ?? '';
-        $via_venosa = (int)$row['via_venosa'];
-        $obs_via_venosa = $row['obs_via_venosa'] ?? '';
-        $hora_operacion = $row['hora_operacion'] ?? '';
+        $herida_operatoria      = (int)($row['herida_operatoria']      ?? 0);
+        $obs_herida_operatoria  = $row['obs_herida_operatoria']         ?? '';
+        $traqueostomia          = (int)($row['traqueostomia']          ?? 0);
+        $obs_traqueostomia      = $row['obs_traqueostomia']             ?? '';
+        $ostomias               = (int)($row['ostomias']               ?? 0);
+        $obs_ostomias           = $row['obs_ostomias']                  ?? '';
+        $escaras                = (int)($row['escaras']                ?? 0);
+        $obs_escaras            = $row['obs_escaras']                   ?? '';
+        $via_venosa_central     = (int)($row['via_venosa_central']     ?? 0);
+        $obs_via_venosa_central = $row['obs_via_venosa_central']        ?? '';
+        $via_venosa             = (int)($row['via_venosa']             ?? 0);
+        $obs_via_venosa         = $row['obs_via_venosa']                ?? '';
+        $hora_operacion         = $row['hora_operacion']                ?? '';
     } else {
-        // Registro no encontrado
-        die("Error: Registro no encontrado o no tiene permisos para editarlo.");
+        die(xlt("Error: Record not found or insufficient permissions."));
     }
 }
 
-// Validación básica
-if (!$pid || !$encounter) {
-    die("Error: Faltan parámetros requeridos (PID o Encounter)");
-}
+$page_title = $is_edit ? xlt('Edit Wound Care') : xlt('New Wound Care');
 ?>
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $titulo; ?></title>
+    <title><?php echo text($page_title); ?></title>
+    <link rel="stylesheet" href="<?php echo $css_header; ?>" type="text/css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        .curaciones-form * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -101,19 +102,10 @@ if (!$pid || !$encounter) {
             text-align: center;
         }
 
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 14px; opacity: 0.9; }
 
-        .header .subtitle {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        .form-content {
-            padding: 40px;
-        }
+        .form-content { padding: 40px; }
 
         .form-group {
             background: #ffffff;
@@ -128,9 +120,6 @@ if (!$pid || !$encounter) {
             color: #2c3e50;
             margin-bottom: 15px;
             font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         .radio-container {
@@ -146,13 +135,13 @@ if (!$pid || !$encounter) {
             font-size: 16px;
             color: #333;
             cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.3s;
         }
 
-        .radio-container input[type="radio"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
+        .radio-container label:hover { background-color: #f8f9fa; }
+        .radio-container input[type="radio"] { width: 18px; height: 18px; cursor: pointer; }
 
         .observaciones {
             width: 100%;
@@ -166,22 +155,10 @@ if (!$pid || !$encounter) {
             transition: border-color 0.3s;
         }
 
-        .observaciones:focus {
-            outline: none;
-            border-color: #3498db;
-        }
+        .observaciones:focus { outline: none; border-color: #3498db; }
 
-        .hora-grupo {
-            margin-top: 20px;
-        }
-
-        .hora-grupo label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-        }
-
+        .hora-grupo { margin-top: 20px; }
+        .hora-grupo label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
         .hora-grupo input[type="time"] {
             width: 100%;
             padding: 12px;
@@ -190,17 +167,9 @@ if (!$pid || !$encounter) {
             font-size: 16px;
             transition: border-color 0.3s;
         }
+        .hora-grupo input[type="time"]:focus { outline: none; border-color: #3498db; }
 
-        .hora-grupo input[type="time"]:focus {
-            outline: none;
-            border-color: #3498db;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
+        .form-actions { display: flex; gap: 15px; margin-top: 30px; }
 
         .btn {
             flex: 1;
@@ -216,28 +185,12 @@ if (!$pid || !$encounter) {
             text-align: center;
         }
 
-        .btn-primary {
-            background: #3498db;
-            color: white;
-        }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-primary:hover { background: #2980b9; transform: translateY(-2px); }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; transform: translateY(-2px); }
 
-        .btn-primary:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-        }
-
-        .modo-badge {
+        .mode-badge {
             display: inline-block;
             padding: 5px 15px;
             border-radius: 20px;
@@ -246,229 +199,98 @@ if (!$pid || !$encounter) {
             margin-left: 10px;
         }
 
-        .modo-crear {
-            background: #28a745;
-            color: white;
-        }
-
-        .modo-editar {
-            background: #ffc107;
-            color: #000;
-        }
+        .mode-create { background: #28a745; color: white; }
+        .mode-edit   { background: #ffc107; color: #000; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>
-                <?php echo $titulo; ?>
-                <span class="modo-badge <?php echo $modo_edicion ? 'modo-editar' : 'modo-crear'; ?>">
-                    <?php echo $modo_edicion ? '✏️ MODO EDICIÓN' : '➕ MODO CREACIÓN'; ?>
-                </span>
-            </h1>
-            <div class="subtitle">
-                Encounter: <?php echo htmlspecialchars($encounter); ?>
-            </div>
-        </div>
-
-        <div class="form-content">
-            <form method="POST" action="save.php" id="formCuraciones">
-                <!-- Campos ocultos -->
-                <input type="hidden" name="pid" value="<?php echo htmlspecialchars($pid); ?>">
-                <input type="hidden" name="encounter" value="<?php echo htmlspecialchars($encounter); ?>">
-                <?php if ($modo_edicion): ?>
-                <!-- Campo ID para indicar que es una edición -->
-                <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
-                <?php endif; ?>
-
-                <!-- HERIDA OPERATORIA -->
-                <div class="form-group">
-                    <h3>🩹 Herida Operatoria</h3>
-                    <div class="radio-container">
-                        <label>
-                            <input type="radio" 
-                                   name="herida_operatoria" 
-                                   value="1"
-                                   <?php echo $herida_operatoria ? 'checked' : ''; ?>>
-                            Sí
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="herida_operatoria" 
-                                   value="0"
-                                   <?php echo !$herida_operatoria ? 'checked' : ''; ?>>
-                            No
-                        </label>
-                    </div>
-                    <textarea name="obs_herida_operatoria" 
-                              class="observaciones" 
-                              placeholder="Observaciones sobre herida operatoria..."><?php echo htmlspecialchars($obs_herida_operatoria); ?></textarea>
-                </div>
-
-                <!-- TRAQUEOSTOMÍA -->
-                <div class="form-group">
-                    <h3>🫁 Traqueostomía</h3>
-                    <div class="radio-container">
-                        <label>
-                            <input type="radio" 
-                                   name="traqueostomia" 
-                                   value="1"
-                                   <?php echo $traqueostomia ? 'checked' : ''; ?>>
-                            Sí
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="traqueostomia" 
-                                   value="0"
-                                   <?php echo !$traqueostomia ? 'checked' : ''; ?>>
-                            No
-                        </label>
-                    </div>
-                    <textarea name="obs_traqueostomia" 
-                              class="observaciones" 
-                              placeholder="Observaciones sobre traqueostomía..."><?php echo htmlspecialchars($obs_traqueostomia); ?></textarea>
-                </div>
-
-                <!-- OSTOMÍAS -->
-                <div class="form-group">
-                    <h3>🔍 Ostomías</h3>
-                    <div class="radio-container">
-                        <label>
-                            <input type="radio" 
-                                   name="ostomias" 
-                                   value="1"
-                                   <?php echo $ostomias ? 'checked' : ''; ?>>
-                            Sí
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="ostomias" 
-                                   value="0"
-                                   <?php echo !$ostomias ? 'checked' : ''; ?>>
-                            No
-                        </label>
-                    </div>
-                    <textarea name="obs_ostomias" 
-                              class="observaciones" 
-                              placeholder="Observaciones sobre ostomías..."><?php echo htmlspecialchars($obs_ostomias); ?></textarea>
-                </div>
-
-                <!-- ESCARAS -->
-                <div class="form-group">
-                    <h3>🩺 Escaras</h3>
-                    <div class="radio-container">
-                        <label>
-                            <input type="radio" 
-                                   name="escaras" 
-                                   value="1"
-                                   <?php echo $escaras ? 'checked' : ''; ?>>
-                            Sí
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="escaras" 
-                                   value="0"
-                                   <?php echo !$escaras ? 'checked' : ''; ?>>
-                            No
-                        </label>
-                    </div>
-                    <textarea name="obs_escaras" 
-                              class="observaciones" 
-                              placeholder="Observaciones sobre escaras..."><?php echo htmlspecialchars($obs_escaras); ?></textarea>
-                </div>
-
-                <!-- VÍA VENOSA CENTRAL -->
-                <div class="form-group">
-                    <h3>🩸 Vía Venosa Central</h3>
-                    <div class="radio-container">
-                        <label>
-                            <input type="radio" 
-                                   name="via_venosa_central" 
-                                   value="1"
-                                   <?php echo $via_venosa_central ? 'checked' : ''; ?>>
-                            Sí
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="via_venosa_central" 
-                                   value="0"
-                                   <?php echo !$via_venosa_central ? 'checked' : ''; ?>>
-                            No
-                        </label>
-                    </div>
-                    <textarea name="obs_via_venosa_central" 
-                              class="observaciones" 
-                              placeholder="Observaciones sobre vía venosa central..."><?php echo htmlspecialchars($obs_via_venosa_central); ?></textarea>
-                </div>
-
-                <!-- VÍA VENOSA -->
-                <div class="form-group">
-                    <h3>💉 Vía Venosa</h3>
-                    <div class="radio-container">
-                        <label>
-                            <input type="radio" 
-                                   name="via_venosa" 
-                                   value="1"
-                                   <?php echo $via_venosa ? 'checked' : ''; ?>>
-                            Sí
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="via_venosa" 
-                                   value="0"
-                                   <?php echo !$via_venosa ? 'checked' : ''; ?>>
-                            No
-                        </label>
-                    </div>
-                    <textarea name="obs_via_venosa" 
-                              class="observaciones" 
-                              placeholder="Observaciones sobre vía venosa..."><?php echo htmlspecialchars($obs_via_venosa); ?></textarea>
-                </div>
-
-                <!-- HORA DE REGISTRO -->
-                <div class="form-group">
-                    <div class="hora-grupo">
-                        <label for="hora_operacion">⏰ Hora de Registro:</label>
-                        <input type="time" 
-                               name="hora_operacion" 
-                               id="hora_operacion" 
-                               value="<?php echo htmlspecialchars($hora_operacion); ?>">
-                    </div>
-                </div>
-
-                <!-- BOTONES -->
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <?php echo $modo_edicion ? '💾 GUARDAR CAMBIOS' : '💾 GUARDAR'; ?>
-                    </button>
-                    <a href="<?php echo $GLOBALS['webroot']; ?>/interface/tableros/lista_internados.php" 
-                       class="btn btn-secondary">
-                        ❌ CANCELAR
-                    </a>
-                </div>
-            </form>
+<div class="curaciones-form container">
+    <div class="header">
+        <h1>
+            <?php echo text($page_title); ?>
+            <span class="mode-badge <?php echo attr($is_edit ? 'mode-edit' : 'mode-create'); ?>">
+                <?php echo $is_edit ? xlt('Edit Mode') : xlt('Create Mode'); ?>
+            </span>
+        </h1>
+        <div class="subtitle">
+            <?php echo xlt('Encounter'); ?>: <?php echo text($encounter); ?>
         </div>
     </div>
 
-    <script>
-        // Auto-completar hora actual solo en modo CREACIÓN
-        document.addEventListener('DOMContentLoaded', function() {
-            const modoEdicion = <?php echo $modo_edicion ? 'true' : 'false'; ?>;
-            const horaInput = document.getElementById('hora_operacion');
-            
-            if (!modoEdicion && horaInput.value === '') {
-                // Solo en modo CREACIÓN y si el campo está vacío
-                const ahora = new Date();
-                const horas = String(ahora.getHours()).padStart(2, '0');
-                const minutos = String(ahora.getMinutes()).padStart(2, '0');
-                horaInput.value = horas + ':' + minutos;
-            }
-        });
+    <div class="form-content">
+        <form method="POST" action="save.php" id="formCuraciones" onsubmit="top.restoreSession();">
+            <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>">
+            <input type="hidden" name="pid"       value="<?php echo attr($pid); ?>">
+            <input type="hidden" name="encounter" value="<?php echo attr($encounter); ?>">
+            <?php if ($is_edit): ?>
+            <input type="hidden" name="id" value="<?php echo attr($id); ?>">
+            <?php endif; ?>
 
-        // Validación simple del formulario
-        document.getElementById('formCuraciones').addEventListener('submit', function(e) {
-            console.log('Formulario enviado');
-        });
-    </script>
+            <?php
+            $fields = [
+                'herida_operatoria'  => ['label' => xlt('Surgical Wound'),       'val' => $herida_operatoria,      'obs' => $obs_herida_operatoria],
+                'traqueostomia'      => ['label' => xlt('Tracheostomy'),          'val' => $traqueostomia,          'obs' => $obs_traqueostomia],
+                'ostomias'           => ['label' => xlt('Ostomies'),              'val' => $ostomias,               'obs' => $obs_ostomias],
+                'escaras'            => ['label' => xlt('Pressure Sores'),        'val' => $escaras,                'obs' => $obs_escaras],
+                'via_venosa_central' => ['label' => xlt('Central Venous Line'),   'val' => $via_venosa_central,     'obs' => $obs_via_venosa_central],
+                'via_venosa'         => ['label' => xlt('Peripheral IV Line'),    'val' => $via_venosa,             'obs' => $obs_via_venosa],
+            ];
+            foreach ($fields as $name => $meta):
+            ?>
+            <div class="form-group">
+                <h3><?php echo text($meta['label']); ?></h3>
+                <div class="radio-container">
+                    <label>
+                        <input type="radio" name="<?php echo attr($name); ?>" value="1"
+                               <?php echo ($meta['val'] == 1) ? 'checked' : ''; ?>>
+                        <?php echo xlt('Yes'); ?>
+                    </label>
+                    <label>
+                        <input type="radio" name="<?php echo attr($name); ?>" value="0"
+                               <?php echo ($meta['val'] == 0) ? 'checked' : ''; ?>>
+                        <?php echo xlt('No'); ?>
+                    </label>
+                </div>
+                <textarea name="<?php echo attr('obs_' . $name); ?>" class="observaciones"
+                          placeholder="<?php echo attr(xlt('Observations...')); ?>"><?php echo text($meta['obs']); ?></textarea>
+            </div>
+            <?php endforeach; ?>
+
+            <!-- CARE TIME -->
+            <div class="form-group">
+                <div class="hora-grupo">
+                    <label for="hora_operacion"><?php echo xlt('Care Time'); ?>:</label>
+                    <input type="time" name="hora_operacion" id="hora_operacion"
+                           value="<?php echo attr($hora_operacion); ?>">
+                </div>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <?php echo $is_edit ? xlt('Save Changes') : xlt('Save'); ?>
+                </button>
+                <a href="<?php echo attr($GLOBALS['webroot'] . '/interface/tableros/lista_internados.php'); ?>"
+                   class="btn btn-secondary">
+                    <?php echo xlt('Cancel'); ?>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var isEdit    = <?php echo ($is_edit ? 'true' : 'false'); ?>;
+        var horaInput = document.getElementById('hora_operacion');
+
+        if (!isEdit && horaInput.value === '') {
+            var now = new Date();
+            horaInput.value =
+                String(now.getHours()).padStart(2, '0') + ':' +
+                String(now.getMinutes()).padStart(2, '0');
+        }
+    });
+</script>
 </body>
 </html>

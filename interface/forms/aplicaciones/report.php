@@ -1,256 +1,285 @@
 <?php
 /**
- * Formulario de Aplicaciones - report.php
- * Ruta: interface/forms/aplicaciones/report.php
+ * Nursing Applications Form - report.php
+ * Displays the application record embedded in the encounter summary.
+ *
+ * @package   OpenEMR
+ * @link      http://www.open-emr.org
+ * @author    OpenEMR Contributors
+ * @copyright Copyright (c) 2026 OpenEMR Contributors
+ * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-include_once("../../globals.php");
+require_once("../../globals.php");
 
-function aplicaciones_report($pid, $encounter, $cols, $id) {
-    $count = 0;
-    
-    // Obtener datos del formulario
-    $sql = "SELECT * FROM form_aplicaciones WHERE id = ? AND pid = ?";
-    $result = sqlQuery($sql, array($id, $pid));
-    
-    if (!$result) {
-        echo "<p>No se encontraron datos para este registro.</p>";
+function aplicaciones_report($pid, $encounter, $cols, $id)
+{
+    $row = sqlQuery(
+        "SELECT * FROM form_aplicaciones WHERE id = ? AND pid = ?",
+        array($id, $pid)
+    );
+
+    if (!$row) {
+        echo "<p style='color:#c0392b;padding:10px;'>" . xlt("No data found for this record.") . "</p>";
         return;
     }
-    
-    // Array de aplicaciones
-    $aplicaciones = array(
-        'medicamentos' => 'MEDICAMENTOS',
-        'sueros' => 'SUEROS',
-        'vacunas' => 'VACUNAS',
-        'expansiones' => 'EXPANSIONES',
-        'sangre' => 'SANGRE'
-    );
+
+    $items = [
+        'medicamentos'  => xlt('Medications'),
+        'sueros'        => xlt('Saline Solutions'),
+        'vacunas'       => xlt('Vaccines'),
+        'expansiones'   => xlt('Plasma Expanders'),
+        'sangre'        => xlt('Blood and Blood Products'),
+    ];
+
+    $hora = !empty($row['hora_registro'])
+        ? date('H:i', strtotime($row['hora_registro']))
+        : xlt('Not specified');
+
+    $fecha = !empty($row['date'])
+        ? date('d/m/Y H:i', strtotime($row['date']))
+        : '-';
+
+    $total_activos = 0;
+    foreach (array_keys($items) as $campo) {
+        if ((int)($row[$campo] ?? 0) === 1) {
+            $total_activos++;
+        }
+    }
+    $total_items = count($items);
     ?>
-    
+
     <style>
-        /* Forzar ajuste del contenedor padre de OpenEMR */
-        #divid_2, .tab {
-            max-width: none !important;
-            width: 100% !important;
-            overflow: visible !important;
+        .rep-apl * { box-sizing: border-box; }
+        .rep-apl {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #222;
+            padding: 10px 0;
         }
-        
-        .reporte-aplicaciones * { box-sizing: border-box; }
-        .reporte-aplicaciones { 
-            font-family: Arial, sans-serif; 
-            max-width: 100%;
-            overflow-x: auto;
-            padding: 10px;
+
+        .rep-apl .main-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 5px 5px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
         }
-        .reporte-aplicaciones h3 {
-            color: #2196F3;
-            font-size: 20px;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #2196F3;
+        .rep-apl .main-header .title {
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .reporte-aplicaciones .btn-reporte { 
-            padding: 10px 20px; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 13px; 
-            margin-bottom: 15px;
-            background-color: #2196F3;
-            color: white;
-            transition: all 0.3s;
+        .rep-apl .main-header .counter {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: 10px;
+            font-weight: bold;
         }
-        .reporte-aplicaciones .btn-reporte:hover { 
-            background-color: #1976D2;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
-        }
-        
-        /* Información del paciente */
-        .reporte-aplicaciones .info-paciente {
-            background-color: #e3f2fd;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #2196F3;
-        }
-        .reporte-aplicaciones .info-paciente strong {
-            color: #1976D2;
-            font-size: 14px;
-        }
-        .reporte-aplicaciones .info-paciente p {
-            margin: 5px 0;
+        .rep-apl .main-header .counter span {
             font-size: 13px;
-            color: #333;
+            color: #2ecc71;
         }
-        
-        .reporte-aplicaciones table { 
-            width: 100%; 
+
+        .rep-apl .meta-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            background: #f0f4f8;
+            border: 1px solid #d0d8e4;
+            border-top: none;
+            padding: 8px 14px;
+            margin-bottom: 12px;
+            font-size: 11px;
+            color: #555;
+            border-radius: 0 0 4px 4px;
+        }
+        .rep-apl .meta-bar span strong { color: #2c3e50; }
+
+        .rep-apl table {
+            width: 100%;
             border-collapse: collapse;
-            table-layout: fixed;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border-radius: 8px;
+            border: 1px solid #dde3ea;
+            border-radius: 4px;
             overflow: hidden;
-            margin-bottom: 20px;
         }
-        .reporte-aplicaciones table th { 
-            background-color: #2196F3; 
-            color: white; 
-            padding: 12px; 
-            text-align: left; 
-            font-weight: bold; 
-            font-size: 13px;
-            word-wrap: break-word;
-        }
-        .reporte-aplicaciones table td { 
-            padding: 10px; 
-            border: 1px solid #e0e0e0; 
-            font-size: 12px;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            background-color: white;
-        }
-        .reporte-aplicaciones .item-nombre { 
+        .rep-apl table thead th {
+            background: #34495e;
+            color: #fff;
+            padding: 9px 12px;
+            font-size: 10px;
             font-weight: bold;
-            color: #333;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-right: 1px solid rgba(255,255,255,0.1);
         }
-        .reporte-aplicaciones .si { 
-            background-color: #d4edda; 
-            color: #155724; 
-            font-weight: bold; 
-            text-align: center; 
+        .rep-apl table thead th:last-child { border-right: none; }
+
+        .rep-apl table tbody tr.row-si td { background: #f0faf4; }
+        .rep-apl table tbody tr.row-no  td { background: #fff; }
+        .rep-apl table tbody tr:hover td  { background: #eaf2ff !important; }
+
+        .rep-apl table tbody td {
+            padding: 9px 12px;
+            border-bottom: 1px solid #e4e9ef;
+            border-right: 1px solid #e4e9ef;
+            font-size: 11px;
+            vertical-align: top;
         }
-        .reporte-aplicaciones .no { 
-            background-color: #f8d7da; 
-            color: #721c24; 
-            font-weight: bold; 
-            text-align: center; 
+        .rep-apl table tbody td:last-child { border-right: none; }
+
+        .rep-apl .td-nombre {
+            font-weight: 600;
+            color: #2c3e50;
+            width: 30%;
         }
-        
-        /* Resumen */
-        .reporte-aplicaciones .resumen-box {
-            background-color: #fff3cd;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #ffc107;
-            margin-bottom: 20px;
-        }
-        .reporte-aplicaciones .resumen-box strong {
-            color: #856404;
-            font-size: 14px;
-            display: block;
-            margin-bottom: 10px;
-        }
-        .reporte-aplicaciones .resumen-item {
+        .rep-apl .td-nombre.activo { color: #1a7a41; }
+        .rep-apl .td-estado { width: 12%; text-align: center; }
+        .rep-apl .td-obs    { color: #555; }
+
+        .rep-apl .badge-si {
             display: inline-block;
-            background-color: #28a745;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 15px;
-            margin: 3px;
-            font-size: 12px;
+            background: #27ae60;
+            color: #fff;
+            font-size: 10px;
             font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 3px;
+            letter-spacing: 0.3px;
         }
-        
-        .reporte-aplicaciones .info-box { 
-            margin-top: 20px; 
-            padding: 15px; 
-            background-color: #e3f2fd; 
-            border-left: 4px solid #2196F3;
-            border-radius: 5px;
-            font-size: 13px;
-            color: #333;
+        .rep-apl .badge-no {
+            display: inline-block;
+            background: #bdc3c7;
+            color: #fff;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 3px;
         }
-        .reporte-aplicaciones .info-box strong {
-            color: #1976D2;
-            font-size: 14px;
-            display: block;
-            margin-bottom: 8px;
+
+        .rep-apl .obs-vacia {
+            color: #bbb;
+            font-style: italic;
+            font-size: 10px;
         }
-        .reporte-aplicaciones .info-box p {
-            margin: 5px 0;
+
+        .rep-apl .summary-bar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-top: 10px;
+            padding: 9px 14px;
+            background: #f8f9fa;
+            border: 1px solid #dde3ea;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #555;
         }
-        
+        .rep-apl .summary-bar .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
+            font-size: 11px;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .rep-apl .summary-bar .pill-activos {
+            background: #d5f5e3;
+            color: #1a7a41;
+            border: 1px solid #a9dfbf;
+        }
+        .rep-apl .summary-bar .pill-inactivos {
+            background: #f2f3f4;
+            color: #7f8c8d;
+            border: 1px solid #d5d8dc;
+        }
+        .rep-apl .summary-bar .num { font-size: 15px; }
+
         @media print {
-            .reporte-aplicaciones .btn-reporte { display: none; }
-            .reporte-aplicaciones { padding: 0; }
-            .reporte-aplicaciones table {
-                box-shadow: none;
-            }
+            .rep-apl .main-header { background: #000 !important; -webkit-print-color-adjust: exact; }
+            .rep-apl table thead th { background: #333 !important; -webkit-print-color-adjust: exact; }
         }
     </style>
-    
-    <div class="reporte-aplicaciones">
-        <h3>REPORTE DE APLICACIONES</h3>
-        
-        <!-- INFORMACIÓN DEL PACIENTE -->
-        <?php
-        $sql_paciente = "SELECT CONCAT(fname, ' ', lname) as nombre_completo, pubpid FROM patient_data WHERE pid = ?";
-        $paciente = sqlQuery($sql_paciente, array($pid));
-        ?>
-        <div class="info-paciente">
-            <strong>Información del Paciente:</strong>
-            <p><strong>Nombre:</strong> <?php echo htmlspecialchars($paciente['nombre_completo'] ?? 'No disponible'); ?></p>
-            <p><strong>CI/RG:</strong> <?php echo htmlspecialchars($paciente['pubpid'] ?? 'No disponible'); ?></p>
-            <p><strong>Encounter:</strong> <?php echo htmlspecialchars($encounter); ?></p>
+
+    <div class="rep-apl">
+
+        <!-- HEADER -->
+        <div class="main-header">
+            <div class="title"><?php echo xlt('Application Record'); ?></div>
+            <div class="counter">
+                <?php echo xlt('Active items'); ?>:
+                <span><?php echo (int)$total_activos; ?></span> / <?php echo (int)$total_items; ?>
+            </div>
         </div>
-        
-        <!-- RESUMEN DE APLICACIONES REALIZADAS -->
-        <?php
-        $aplicaciones_realizadas = array();
-        foreach ($aplicaciones as $campo => $titulo) {
-            if (($result[$campo] ?? 0) == 1) {
-                $aplicaciones_realizadas[] = $titulo;
-            }
-        }
-        ?>
-        <div class="resumen-box">
-            <strong>Resumen de Aplicaciones Realizadas:</strong>
-            <?php if (!empty($aplicaciones_realizadas)): ?>
-                <?php foreach ($aplicaciones_realizadas as $app): ?>
-                    <span class="resumen-item">✓ <?php echo $app; ?></span>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <p style="color: #856404; margin-top: 5px;">No se realizaron aplicaciones en este registro.</p>
+
+        <!-- META BAR -->
+        <div class="meta-bar">
+            <span><strong><?php echo xlt('Record Time'); ?>:</strong> <?php echo text($hora); ?></span>
+            <span><strong><?php echo xlt('Recorded'); ?>:</strong> <?php echo text($fecha); ?></span>
+            <?php if (!empty($row['user'])): ?>
+            <span><strong><?php echo xlt('User'); ?>:</strong> <?php echo text($row['user']); ?></span>
             <?php endif; ?>
         </div>
-        
-        <!-- TABLA DETALLADA -->
+
+        <!-- TABLE -->
         <table>
-            <tr>
-                <th width="40%">Item</th>
-                <th width="15%">Estado</th>
-                <th width="45%">Observación</th>
-            </tr>
-            <?php
-            foreach ($aplicaciones as $campo => $titulo) {
-                $valor = $result[$campo] ?? 0;
-                $observacion = $result['obs_' . $campo] ?? '';
-                $estado_clase = $valor == 1 ? 'si' : 'no';
-                $estado_texto = $valor == 1 ? 'SÍ' : 'NO';
-                ?>
+            <thead>
                 <tr>
-                    <td class="item-nombre"><?php echo $titulo; ?></td>
-                    <td class="<?php echo $estado_clase; ?>"><?php echo $estado_texto; ?></td>
-                    <td><?php echo !empty($observacion) ? htmlspecialchars($observacion) : '-'; ?></td>
+                    <th class="td-nombre"><?php echo xlt('Item'); ?></th>
+                    <th class="td-estado"><?php echo xlt('Status'); ?></th>
+                    <th class="td-obs"><?php echo xlt('Observations'); ?></th>
                 </tr>
-                <?php
-            }
+            </thead>
+            <tbody>
+            <?php foreach ($items as $campo => $label):
+                $valor  = (int)($row[$campo] ?? 0);
+                $obs    = trim($row['obs_' . $campo] ?? '');
+                $rowCls = $valor ? 'row-si' : 'row-no';
+                $tdCls  = $valor ? 'td-nombre activo' : 'td-nombre';
             ?>
+                <tr class="<?php echo $rowCls; ?>">
+                    <td class="<?php echo $tdCls; ?>"><?php echo text($label); ?></td>
+                    <td class="td-estado">
+                        <?php if ($valor): ?>
+                            <span class="badge-si"><?php echo xlt('Yes'); ?></span>
+                        <?php else: ?>
+                            <span class="badge-no"><?php echo xlt('No'); ?></span>
+                        <?php endif; ?>
+                    </td>
+                    <td class="td-obs">
+                        <?php if ($obs !== ''): ?>
+                            <?php echo nl2br(text($obs)); ?>
+                        <?php else: ?>
+                            <span class="obs-vacia"><?php echo xlt('No observations recorded'); ?></span>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
         </table>
-        
-        <!-- INFORMACIÓN DEL REGISTRO -->
-        <div class="info-box">
-            <strong>Información del Registro:</strong>
-            <p><strong>Hora de Aplicación:</strong> <?php echo $result['hora_registro'] ? date('H:i', strtotime($result['hora_registro'])) : 'No especificada'; ?></p>
-            <p><strong>Fecha de Registro:</strong> <?php echo date('d/m/Y', strtotime($result['date'])); ?></p>
-            <p><strong>Usuario:</strong> <?php echo htmlspecialchars($result['user'] ?? 'No especificado'); ?></p>
-            
+
+        <!-- SUMMARY -->
+        <div class="summary-bar">
+            <span><?php echo xlt('Summary'); ?>:</span>
+            <span class="pill pill-activos">
+                <span class="num"><?php echo (int)$total_activos; ?></span>
+                <?php echo xlt('active'); ?>
+            </span>
+            <span class="pill pill-inactivos">
+                <span class="num"><?php echo (int)($total_items - $total_activos); ?></span>
+                <?php echo xlt('inactive'); ?>
+            </span>
         </div>
+
     </div>
-    
     <?php
 }
 ?>

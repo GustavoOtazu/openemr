@@ -1,88 +1,89 @@
 <?php
 /**
- * Formulario de Evaluaciones - new.php (CON EDICIÓN)
- * Ruta: interface/forms/evaluaciones/new.php
- * Soporta tanto CREAR como EDITAR registros
- * MODIFICADO: Auto-completa hora actual en modo creación
+ * Nursing Evaluations Form - new.php
+ * Neurological assessment form for inpatients (Glasgow Scale, consciousness, pupils, etc.)
+ *
+ * @package   OpenEMR
+ * @link      http://www.open-emr.org
+ * @author    OpenEMR Contributors
+ * @copyright Copyright (c) 2026 OpenEMR Contributors
+ * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
 require_once("../../globals.php");
 require_once("$srcdir/api.inc");
 
-// Obtener parámetros
-$pid = $_GET['pid'] ?? $_SESSION['pid'] ?? null;
-$encounter = $_GET['encounter'] ?? $_SESSION['encounter'] ?? null;
-$id = $_GET['id'] ?? null; // ← NUEVO: Detectar si es modo edición
+use OpenEMR\Common\Csrf\CsrfUtils;
 
-// Determinar si es modo CREAR o EDITAR
-$modo_edicion = !empty($id);
-$titulo = $modo_edicion ? "EDITAR EVALUACIONES" : "NUEVAS EVALUACIONES";
+// Get parameters
+$pid       = isset($_GET['pid'])       ? (int)$_GET['pid']       : (int)($_SESSION['pid'] ?? 0);
+$encounter = isset($_GET['encounter']) ? (int)$_GET['encounter'] : (int)($_SESSION['encounter'] ?? 0);
+$id        = isset($_GET['id'])        ? (int)$_GET['id']        : 0;
 
-// Variables para pre-llenar el formulario
-$conciencia = '';
-$obs_conciencia = '';
-$tono = '';
-$obs_tono = '';
-$pupilas = '';
-$obs_pupilas = '';
-$mucosas = '';
-$obs_mucosas = '';
-$glasgow_ojos = '';
-$obs_glasgow_ojos = '';
-$glasgow_motora = '';
+if (!$pid || !$encounter) {
+    die(xlt("Error: Missing required parameters (PID or Encounter)"));
+}
+
+$is_edit = ($id > 0);
+
+// Initialize field variables
+$conciencia        = '';
+$obs_conciencia    = '';
+$tono              = '';
+$obs_tono          = '';
+$pupilas           = '';
+$obs_pupilas       = '';
+$mucosas           = '';
+$obs_mucosas       = '';
+$glasgow_ojos      = '';
+$obs_glasgow_ojos  = '';
+$glasgow_motora    = '';
 $obs_glasgow_motora = '';
-$glasgow_verbal = '';
+$glasgow_verbal    = '';
 $obs_glasgow_verbal = '';
-$glasgow_total = 0;
-$hora_evaluacion = '';
+$glasgow_total     = 0;
+$hora_evaluacion   = '';
 
-// Si es modo EDICIÓN, cargar datos existentes
-if ($modo_edicion) {
-    $sql = "SELECT * FROM form_evaluaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1";
-    $row = sqlQuery($sql, array($id, $pid, $encounter));
-    
+// Load existing data in edit mode
+if ($is_edit) {
+    $row = sqlQuery(
+        "SELECT * FROM form_evaluaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1",
+        array($id, $pid, $encounter)
+    );
     if ($row) {
-        // Cargar valores existentes
-        $conciencia = $row['conciencia'] ?? '';
-        $obs_conciencia = $row['obs_conciencia'] ?? '';
-        $tono = $row['tono'] ?? '';
-        $obs_tono = $row['obs_tono'] ?? '';
-        $pupilas = $row['pupilas'] ?? '';
-        $obs_pupilas = $row['obs_pupilas'] ?? '';
-        $mucosas = $row['mucosas'] ?? '';
-        $obs_mucosas = $row['obs_mucosas'] ?? '';
-        $glasgow_ojos = $row['glasgow_ojos'] ?? '';
-        $obs_glasgow_ojos = $row['obs_glasgow_ojos'] ?? '';
-        $glasgow_motora = $row['glasgow_motora'] ?? '';
+        $conciencia         = $row['conciencia']         ?? '';
+        $obs_conciencia     = $row['obs_conciencia']     ?? '';
+        $tono               = $row['tono']               ?? '';
+        $obs_tono           = $row['obs_tono']           ?? '';
+        $pupilas            = $row['pupilas']            ?? '';
+        $obs_pupilas        = $row['obs_pupilas']        ?? '';
+        $mucosas            = $row['mucosas']            ?? '';
+        $obs_mucosas        = $row['obs_mucosas']        ?? '';
+        $glasgow_ojos       = $row['glasgow_ojos']       ?? '';
+        $obs_glasgow_ojos   = $row['obs_glasgow_ojos']   ?? '';
+        $glasgow_motora     = $row['glasgow_motora']     ?? '';
         $obs_glasgow_motora = $row['obs_glasgow_motora'] ?? '';
-        $glasgow_verbal = $row['glasgow_verbal'] ?? '';
+        $glasgow_verbal     = $row['glasgow_verbal']     ?? '';
         $obs_glasgow_verbal = $row['obs_glasgow_verbal'] ?? '';
-        $glasgow_total = (int)($row['glasgow_total'] ?? 0);
-        $hora_evaluacion = $row['hora_evaluacion'] ?? '';
+        $glasgow_total      = (int)($row['glasgow_total'] ?? 0);
+        $hora_evaluacion    = $row['hora_evaluacion']    ?? '';
     } else {
-        // Registro no encontrado
-        die("Error: Registro no encontrado o no tiene permisos para editarlo.");
+        die(xlt("Error: Record not found or insufficient permissions."));
     }
 }
 
-// Validación básica
-if (!$pid || !$encounter) {
-    die("Error: Faltan parámetros requeridos (PID o Encounter)");
-}
+$page_title = $is_edit ? xlt('Edit Nursing Evaluation') : xlt('New Nursing Evaluation');
 ?>
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $titulo; ?></title>
+    <title><?php echo text($page_title); ?></title>
+    <link rel="stylesheet" href="<?php echo $css_header; ?>" type="text/css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        .evaluaciones-form * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -107,19 +108,10 @@ if (!$pid || !$encounter) {
             text-align: center;
         }
 
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 14px; opacity: 0.9; }
 
-        .header .subtitle {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        .form-content {
-            padding: 40px;
-        }
+        .form-content { padding: 40px; }
 
         .form-group {
             background: #ffffff;
@@ -139,9 +131,6 @@ if (!$pid || !$encounter) {
             color: #2c3e50;
             margin-bottom: 15px;
             font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         .form-group h4 {
@@ -172,15 +161,8 @@ if (!$pid || !$encounter) {
             transition: background-color 0.3s;
         }
 
-        .radio-container label:hover {
-            background-color: #f8f9fa;
-        }
-
-        .radio-container input[type="radio"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
+        .radio-container label:hover { background-color: #f8f9fa; }
+        .radio-container input[type="radio"] { width: 18px; height: 18px; cursor: pointer; }
 
         .observaciones {
             width: 100%;
@@ -194,22 +176,10 @@ if (!$pid || !$encounter) {
             transition: border-color 0.3s;
         }
 
-        .observaciones:focus {
-            outline: none;
-            border-color: #3498db;
-        }
+        .observaciones:focus { outline: none; border-color: #3498db; }
 
-        .hora-grupo {
-            margin-top: 20px;
-        }
-
-        .hora-grupo label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-        }
-
+        .hora-grupo { margin-top: 20px; }
+        .hora-grupo label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
         .hora-grupo input[type="time"] {
             width: 100%;
             padding: 12px;
@@ -218,17 +188,9 @@ if (!$pid || !$encounter) {
             font-size: 16px;
             transition: border-color 0.3s;
         }
+        .hora-grupo input[type="time"]:focus { outline: none; border-color: #3498db; }
 
-        .hora-grupo input[type="time"]:focus {
-            outline: none;
-            border-color: #3498db;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
+        .form-actions { display: flex; gap: 15px; margin-top: 30px; }
 
         .btn {
             flex: 1;
@@ -244,28 +206,12 @@ if (!$pid || !$encounter) {
             text-align: center;
         }
 
-        .btn-primary {
-            background: #3498db;
-            color: white;
-        }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-primary:hover { background: #2980b9; transform: translateY(-2px); }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; transform: translateY(-2px); }
 
-        .btn-primary:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-        }
-
-        .modo-badge {
+        .mode-badge {
             display: inline-block;
             padding: 5px 15px;
             border-radius: 20px;
@@ -274,15 +220,8 @@ if (!$pid || !$encounter) {
             margin-left: 10px;
         }
 
-        .modo-crear {
-            background: #28a745;
-            color: white;
-        }
-
-        .modo-editar {
-            background: #ffc107;
-            color: #000;
-        }
+        .mode-create { background: #28a745; color: white; }
+        .mode-edit   { background: #ffc107; color: #000; }
 
         .glasgow-info {
             background: #e8f4f8;
@@ -292,416 +231,258 @@ if (!$pid || !$encounter) {
             margin-top: 20px;
         }
 
-        .glasgow-info h5 {
-            color: #0c5460;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        .glasgow-info p {
-            color: #0c5460;
-            margin: 5px 0;
-            font-size: 14px;
-        }
+        .glasgow-info h5 { color: #0c5460; margin-bottom: 10px; font-size: 16px; }
+        .glasgow-info p  { color: #0c5460; margin: 5px 0; font-size: 14px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>
-                <?php echo $titulo; ?>
-                <span class="modo-badge <?php echo $modo_edicion ? 'modo-editar' : 'modo-crear'; ?>">
-                    <?php echo $modo_edicion ? '✏️ MODO EDICIÓN' : '➕ MODO CREACIÓN'; ?>
-                </span>
-            </h1>
-            <div class="subtitle">
-                Encounter: <?php echo htmlspecialchars($encounter); ?>
-            </div>
-        </div>
-
-        <div class="form-content">
-            <form method="POST" action="save.php" id="formEvaluaciones">
-                <!-- Campos ocultos -->
-                <input type="hidden" name="pid" value="<?php echo htmlspecialchars($pid); ?>">
-                <input type="hidden" name="encounter" value="<?php echo htmlspecialchars($encounter); ?>">
-                <?php if ($modo_edicion): ?>
-                <!-- Campo ID para indicar que es una edición -->
-                <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
-                <?php endif; ?>
-
-                <!-- CONCIENCIA -->
-                <div class="form-group">
-                    <h3>🧠 Conciencia</h3>
-                    <div class="radio-container">
-                        <label>
-                            <input type="radio" 
-                                   name="conciencia" 
-                                   value="VIGIL"
-                                   <?php echo $conciencia == 'VIGIL' ? 'checked' : ''; ?>>
-                            VIGIL
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="conciencia" 
-                                   value="SOMNOLIENTO"
-                                   <?php echo $conciencia == 'SOMNOLIENTO' ? 'checked' : ''; ?>>
-                            SOMNOLIENTO
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="conciencia" 
-                                   value="ESTUPOROSO"
-                                   <?php echo $conciencia == 'ESTUPOROSO' ? 'checked' : ''; ?>>
-                            ESTUPOROSO
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="conciencia" 
-                                   value="COMATOSO"
-                                   <?php echo $conciencia == 'COMATOSO' ? 'checked' : ''; ?>>
-                            COMATOSO
-                        </label>
-                    </div>
-                    <textarea name="obs_conciencia" 
-                              class="observaciones" 
-                              placeholder="Observaciones sobre conciencia..."><?php echo htmlspecialchars($obs_conciencia); ?></textarea>
-                </div>
-
-                <!-- TONO -->
-                <div class="form-group">
-                    <h3>💪 Tono</h3>
-                    <div class="radio-container">
-                        <label>
-                            <input type="radio" 
-                                   name="tono" 
-                                   value="NORMAL"
-                                   <?php echo $tono == 'NORMAL' ? 'checked' : ''; ?>>
-                            NORMAL
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="tono" 
-                                   value="FLACIDO"
-                                   <?php echo $tono == 'FLACIDO' ? 'checked' : ''; ?>>
-                            FLACIDO
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="tono" 
-                                   value="ESPASTICO"
-                                   <?php echo $tono == 'ESPASTICO' ? 'checked' : ''; ?>>
-                            ESPASTICO
-                        </label>
-                    </div>
-                    <textarea name="obs_tono" 
-                              class="observaciones" 
-                              placeholder="Observaciones sobre tono..."><?php echo htmlspecialchars($obs_tono); ?></textarea>
-                </div>
-
-                <!-- PUPILAS -->
-                <div class="form-group">
-                    <h3>👁️ Pupilas</h3>
-                    <div class="radio-container">
-                        <label>
-                            <input type="radio" 
-                                   name="pupilas" 
-                                   value="NORMAL"
-                                   <?php echo $pupilas == 'NORMAL' ? 'checked' : ''; ?>>
-                            NORMAL
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="pupilas" 
-                                   value="MIDRIASIS"
-                                   <?php echo $pupilas == 'MIDRIASIS' ? 'checked' : ''; ?>>
-                            MIDRIASIS
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="pupilas" 
-                                   value="MIOSIS"
-                                   <?php echo $pupilas == 'MIOSIS' ? 'checked' : ''; ?>>
-                            MIOSIS
-                        </label>
-                    </div>
-                    <textarea name="obs_pupilas" 
-                              class="observaciones" 
-                              placeholder="Observaciones sobre pupilas..."><?php echo htmlspecialchars($obs_pupilas); ?></textarea>
-                </div>
-
-                <!-- MUCOSAS -->
-                <div class="form-group">
-                    <h3>👄 Mucosas</h3>
-                    <div class="radio-container">
-                        <label>
-                            <input type="radio" 
-                                   name="mucosas" 
-                                   value="SECA"
-                                   <?php echo $mucosas == 'SECA' ? 'checked' : ''; ?>>
-                            SECA
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="mucosas" 
-                                   value="HUMEDA"
-                                   <?php echo $mucosas == 'HUMEDA' ? 'checked' : ''; ?>>
-                            HUMEDA
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="mucosas" 
-                                   value="PALIDA"
-                                   <?php echo $mucosas == 'PALIDA' ? 'checked' : ''; ?>>
-                            PALIDA
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="mucosas" 
-                                   value="ICTERICA"
-                                   <?php echo $mucosas == 'ICTERICA' ? 'checked' : ''; ?>>
-                            ICTERICA
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="mucosas" 
-                                   value="CIANOSIS"
-                                   <?php echo $mucosas == 'CIANOSIS' ? 'checked' : ''; ?>>
-                            CIANOSIS
-                        </label>
-                    </div>
-                    <textarea name="obs_mucosas" 
-                              class="observaciones" 
-                              placeholder="Observaciones sobre mucosas..."><?php echo htmlspecialchars($obs_mucosas); ?></textarea>
-                </div>
-
-                <!-- ESCALA DE GLASGOW -->
-                <div class="form-group glasgow-section">
-                    <h3>🧠 Escala de Glasgow</h3>
-                    
-                    <h4>👁️ Ojos Abiertos</h4>
-                    <div class="radio-container">
-                        <label>
-                            <input type="radio" 
-                                   name="glasgow_ojos" 
-                                   value="ESPONTANEAMENTE"
-                                   <?php echo $glasgow_ojos == 'ESPONTANEAMENTE' ? 'checked' : ''; ?>>
-                            ESPONTANEAMENTE (4)
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="glasgow_ojos" 
-                                   value="A ESTIMULOS AUDITIVOS"
-                                   <?php echo $glasgow_ojos == 'A ESTIMULOS AUDITIVOS' ? 'checked' : ''; ?>>
-                            A ESTIMULOS AUDITIVOS (3)
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="glasgow_ojos" 
-                                   value="AL DOLOR"
-                                   <?php echo $glasgow_ojos == 'AL DOLOR' ? 'checked' : ''; ?>>
-                            AL DOLOR (2)
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="glasgow_ojos" 
-                                   value="SIN RESPUESTA"
-                                   <?php echo $glasgow_ojos == 'SIN RESPUESTA' ? 'checked' : ''; ?>>
-                            SIN RESPUESTA (1)
-                        </label>
-                    </div>
-                    <textarea name="obs_glasgow_ojos" 
-                              class="observaciones" 
-                              placeholder="Observaciones sobre respuesta ocular..."><?php echo htmlspecialchars($obs_glasgow_ojos); ?></textarea>
-
-                    <h4>🤝 Respuesta Motora</h4>
-                    <div class="radio-container">
-                        <label>
-                            <input type="radio" 
-                                   name="glasgow_motora" 
-                                   value="OBEDECE ORDENES"
-                                   <?php echo $glasgow_motora == 'OBEDECE ORDENES' ? 'checked' : ''; ?>>
-                            OBEDECE ORDENES (6)
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="glasgow_motora" 
-                                   value="LOCALIZA DOLOR"
-                                   <?php echo $glasgow_motora == 'LOCALIZA DOLOR' ? 'checked' : ''; ?>>
-                            LOCALIZA DOLOR (5)
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="glasgow_motora" 
-                                   value="FLEXION DE DEFENSA"
-                                   <?php echo $glasgow_motora == 'FLEXION DE DEFENSA' ? 'checked' : ''; ?>>
-                            FLEXION DE DEFENSA (4)
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="glasgow_motora" 
-                                   value="FLEXION ANORMAL"
-                                   <?php echo $glasgow_motora == 'FLEXION ANORMAL' ? 'checked' : ''; ?>>
-                            FLEXION ANORMAL (3)
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="glasgow_motora" 
-                                   value="EXTENSION ANORMAL"
-                                   <?php echo $glasgow_motora == 'EXTENSION ANORMAL' ? 'checked' : ''; ?>>
-                            EXTENSION ANORMAL (2)
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="glasgow_motora" 
-                                   value="NINGUNA"
-                                   <?php echo $glasgow_motora == 'NINGUNA' ? 'checked' : ''; ?>>
-                            NINGUNA (1)
-                        </label>
-                    </div>
-                    <textarea name="obs_glasgow_motora" 
-                              class="observaciones" 
-                              placeholder="Observaciones sobre respuesta motora..."><?php echo htmlspecialchars($obs_glasgow_motora); ?></textarea>
-
-                    <h4>🗣️ Respuesta Verbal</h4>
-                    <div class="radio-container">
-                        <label>
-                            <input type="radio" 
-                                   name="glasgow_verbal" 
-                                   value="ORIENTADO Y CONVERSA"
-                                   <?php echo $glasgow_verbal == 'ORIENTADO Y CONVERSA' ? 'checked' : ''; ?>>
-                            ORIENTADO Y CONVERSA (5)
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="glasgow_verbal" 
-                                   value="DESORIENTADO Y CONVERSA"
-                                   <?php echo $glasgow_verbal == 'DESORIENTADO Y CONVERSA' ? 'checked' : ''; ?>>
-                            DESORIENTADO Y CONVERSA (4)
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="glasgow_verbal" 
-                                   value="LENGUAJE INADECUADO"
-                                   <?php echo $glasgow_verbal == 'LENGUAJE INADECUADO' ? 'checked' : ''; ?>>
-                            LENGUAJE INADECUADO (3)
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="glasgow_verbal" 
-                                   value="SONIDOS INCOMPRENSIBLES"
-                                   <?php echo $glasgow_verbal == 'SONIDOS INCOMPRENSIBLES' ? 'checked' : ''; ?>>
-                            SONIDOS INCOMPRENSIBLES (2)
-                        </label>
-                        <label>
-                            <input type="radio" 
-                                   name="glasgow_verbal" 
-                                   value="NINGUNA"
-                                   <?php echo $glasgow_verbal == 'NINGUNA' ? 'checked' : ''; ?>>
-                            NINGUNA (1)
-                        </label>
-                    </div>
-                    <textarea name="obs_glasgow_verbal" 
-                              class="observaciones" 
-                              placeholder="Observaciones sobre respuesta verbal..."><?php echo htmlspecialchars($obs_glasgow_verbal); ?></textarea>
-
-                    <!-- INFORMACIÓN DE GLASGOW -->
-                    <div class="glasgow-info">
-                        <h5>🔢 Puntaje Total de Glasgow: <span id="glasgowTotal"><?php echo $glasgow_total ?: '0'; ?></span>/15</h5>
-                        <p><strong>13-15:</strong> Lesión leve</p>
-                        <p><strong>9-12:</strong> Lesión moderada</p>
-                        <p><strong>3-8:</strong> Lesión severa</p>
-                    </div>
-                </div>
-
-                <!-- HORA DE EVALUACIÓN -->
-                <div class="form-group">
-                    <div class="hora-grupo">
-                        <label for="hora_evaluacion">⏰ Hora de Evaluación:</label>
-                        <input type="time" 
-                               name="hora_evaluacion" 
-                               id="hora_evaluacion" 
-                               value="<?php echo htmlspecialchars($hora_evaluacion); ?>">
-                    </div>
-                </div>
-
-                <!-- BOTONES -->
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <?php echo $modo_edicion ? '💾 GUARDAR CAMBIOS' : '💾 GUARDAR'; ?>
-                    </button>
-                    <a href="<?php echo $GLOBALS['webroot']; ?>/interface/tableros/lista_internados.php" 
-                       class="btn btn-secondary">
-                        ❌ CANCELAR
-                    </a>
-                </div>
-            </form>
+<div class="evaluaciones-form container">
+    <div class="header">
+        <h1>
+            <?php echo text($page_title); ?>
+            <span class="mode-badge <?php echo attr($is_edit ? 'mode-edit' : 'mode-create'); ?>">
+                <?php echo $is_edit ? xlt('Edit Mode') : xlt('Create Mode'); ?>
+            </span>
+        </h1>
+        <div class="subtitle">
+            <?php echo xlt('Encounter'); ?>: <?php echo text($encounter); ?>
         </div>
     </div>
 
-    <script>
-        // Auto-completar hora actual solo en modo CREACIÓN
-        document.addEventListener('DOMContentLoaded', function() {
-            const modoEdicion = <?php echo $modo_edicion ? 'true' : 'false'; ?>;
-            const horaInput = document.getElementById('hora_evaluacion');
-            
-            if (!modoEdicion && horaInput.value === '') {
-                // Solo en modo CREACIÓN y si el campo está vacío
-                const ahora = new Date();
-                const horas = String(ahora.getHours()).padStart(2, '0');
-                const minutos = String(ahora.getMinutes()).padStart(2, '0');
-                horaInput.value = horas + ':' + minutos;
-            }
+    <div class="form-content">
+        <form method="POST" action="save.php" id="formEvaluaciones" onsubmit="top.restoreSession();">
+            <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>">
+            <input type="hidden" name="pid"       value="<?php echo attr($pid); ?>">
+            <input type="hidden" name="encounter" value="<?php echo attr($encounter); ?>">
+            <?php if ($is_edit): ?>
+            <input type="hidden" name="id" value="<?php echo attr($id); ?>">
+            <?php endif; ?>
 
-            // Calcular Glasgow en tiempo real
-            calcularGlasgow();
-            
-            // Escuchar cambios en los radio buttons de Glasgow
-            document.querySelectorAll('input[name^="glasgow_"]').forEach(function(radio) {
-                radio.addEventListener('change', calcularGlasgow);
-            });
-        });
+            <!-- CONSCIOUSNESS -->
+            <div class="form-group">
+                <h3><?php echo xlt('Consciousness'); ?></h3>
+                <div class="radio-container">
+                    <?php
+                    $consciousness_options = ['VIGIL', 'SOMNOLIENTO', 'ESTUPOROSO', 'COMATOSO'];
+                    foreach ($consciousness_options as $opt):
+                    ?>
+                    <label>
+                        <input type="radio" name="conciencia" value="<?php echo attr($opt); ?>"
+                               <?php echo ($conciencia === $opt) ? 'checked' : ''; ?>>
+                        <?php echo xlt($opt); ?>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
+                <textarea name="obs_conciencia" class="observaciones"
+                          placeholder="<?php echo attr(xlt('Observations about consciousness...')); ?>"><?php echo text($obs_conciencia); ?></textarea>
+            </div>
 
-        function calcularGlasgow() {
-            const puntajes = {
-                glasgow_ojos: {
-                    'ESPONTANEAMENTE': 4,
-                    'A ESTIMULOS AUDITIVOS': 3,
-                    'AL DOLOR': 2,
-                    'SIN RESPUESTA': 1
-                },
-                glasgow_motora: {
-                    'OBEDECE ORDENES': 6,
-                    'LOCALIZA DOLOR': 5,
-                    'FLEXION DE DEFENSA': 4,
-                    'FLEXION ANORMAL': 3,
-                    'EXTENSION ANORMAL': 2,
-                    'NINGUNA': 1
-                },
-                glasgow_verbal: {
-                    'ORIENTADO Y CONVERSA': 5,
-                    'DESORIENTADO Y CONVERSA': 4,
-                    'LENGUAJE INADECUADO': 3,
-                    'SONIDOS INCOMPRENSIBLES': 2,
-                    'NINGUNA': 1
-                }
-            };
+            <!-- MUSCLE TONE -->
+            <div class="form-group">
+                <h3><?php echo xlt('Muscle Tone'); ?></h3>
+                <div class="radio-container">
+                    <?php
+                    $tone_options = ['NORMAL', 'FLACIDO', 'ESPASTICO'];
+                    foreach ($tone_options as $opt):
+                    ?>
+                    <label>
+                        <input type="radio" name="tono" value="<?php echo attr($opt); ?>"
+                               <?php echo ($tono === $opt) ? 'checked' : ''; ?>>
+                        <?php echo xlt($opt); ?>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
+                <textarea name="obs_tono" class="observaciones"
+                          placeholder="<?php echo attr(xlt('Observations about muscle tone...')); ?>"><?php echo text($obs_tono); ?></textarea>
+            </div>
 
-            let total = 0;
+            <!-- PUPILS -->
+            <div class="form-group">
+                <h3><?php echo xlt('Pupils'); ?></h3>
+                <div class="radio-container">
+                    <?php
+                    $pupil_options = ['NORMAL', 'MIDRIASIS', 'MIOSIS'];
+                    foreach ($pupil_options as $opt):
+                    ?>
+                    <label>
+                        <input type="radio" name="pupilas" value="<?php echo attr($opt); ?>"
+                               <?php echo ($pupilas === $opt) ? 'checked' : ''; ?>>
+                        <?php echo xlt($opt); ?>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
+                <textarea name="obs_pupilas" class="observaciones"
+                          placeholder="<?php echo attr(xlt('Observations about pupils...')); ?>"><?php echo text($obs_pupilas); ?></textarea>
+            </div>
 
-            Object.keys(puntajes).forEach(function(categoria) {
-                const radio = document.querySelector('input[name="' + categoria + '"]:checked');
-                if (radio) {
-                    total += puntajes[categoria][radio.value] || 0;
-                }
-            });
+            <!-- MUCOUS MEMBRANES -->
+            <div class="form-group">
+                <h3><?php echo xlt('Mucous Membranes'); ?></h3>
+                <div class="radio-container">
+                    <?php
+                    $mucosa_options = ['SECA', 'HUMEDA', 'PALIDA', 'ICTERICA', 'CIANOSIS'];
+                    foreach ($mucosa_options as $opt):
+                    ?>
+                    <label>
+                        <input type="radio" name="mucosas" value="<?php echo attr($opt); ?>"
+                               <?php echo ($mucosas === $opt) ? 'checked' : ''; ?>>
+                        <?php echo xlt($opt); ?>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
+                <textarea name="obs_mucosas" class="observaciones"
+                          placeholder="<?php echo attr(xlt('Observations about mucous membranes...')); ?>"><?php echo text($obs_mucosas); ?></textarea>
+            </div>
 
-            document.getElementById('glasgowTotal').textContent = total;
+            <!-- GLASGOW COMA SCALE -->
+            <div class="form-group glasgow-section">
+                <h3><?php echo xlt('Glasgow Coma Scale'); ?></h3>
+
+                <h4><?php echo xlt('Eye Opening'); ?></h4>
+                <div class="radio-container">
+                    <?php
+                    $eye_options = [
+                        'ESPONTANEAMENTE'       => xlt('Spontaneously') . ' (4)',
+                        'A ESTIMULOS AUDITIVOS' => xlt('To auditory stimuli') . ' (3)',
+                        'AL DOLOR'              => xlt('To pain') . ' (2)',
+                        'SIN RESPUESTA'         => xlt('No response') . ' (1)',
+                    ];
+                    foreach ($eye_options as $val => $label):
+                    ?>
+                    <label>
+                        <input type="radio" name="glasgow_ojos" value="<?php echo attr($val); ?>"
+                               <?php echo ($glasgow_ojos === $val) ? 'checked' : ''; ?>>
+                        <?php echo text($label); ?>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
+                <textarea name="obs_glasgow_ojos" class="observaciones"
+                          placeholder="<?php echo attr(xlt('Observations about eye opening...')); ?>"><?php echo text($obs_glasgow_ojos); ?></textarea>
+
+                <h4><?php echo xlt('Motor Response'); ?></h4>
+                <div class="radio-container">
+                    <?php
+                    $motor_options = [
+                        'OBEDECE ORDENES'    => xlt('Obeys commands') . ' (6)',
+                        'LOCALIZA DOLOR'     => xlt('Localizes pain') . ' (5)',
+                        'FLEXION DE DEFENSA' => xlt('Withdrawal') . ' (4)',
+                        'FLEXION ANORMAL'    => xlt('Abnormal flexion') . ' (3)',
+                        'EXTENSION ANORMAL'  => xlt('Abnormal extension') . ' (2)',
+                        'NINGUNA'            => xlt('No response') . ' (1)',
+                    ];
+                    foreach ($motor_options as $val => $label):
+                    ?>
+                    <label>
+                        <input type="radio" name="glasgow_motora" value="<?php echo attr($val); ?>"
+                               <?php echo ($glasgow_motora === $val) ? 'checked' : ''; ?>>
+                        <?php echo text($label); ?>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
+                <textarea name="obs_glasgow_motora" class="observaciones"
+                          placeholder="<?php echo attr(xlt('Observations about motor response...')); ?>"><?php echo text($obs_glasgow_motora); ?></textarea>
+
+                <h4><?php echo xlt('Verbal Response'); ?></h4>
+                <div class="radio-container">
+                    <?php
+                    $verbal_options = [
+                        'ORIENTADO Y CONVERSA'    => xlt('Oriented and conversing') . ' (5)',
+                        'DESORIENTADO Y CONVERSA' => xlt('Disoriented and conversing') . ' (4)',
+                        'LENGUAJE INADECUADO'     => xlt('Inappropriate words') . ' (3)',
+                        'SONIDOS INCOMPRENSIBLES' => xlt('Incomprehensible sounds') . ' (2)',
+                        'NINGUNA'                 => xlt('No response') . ' (1)',
+                    ];
+                    foreach ($verbal_options as $val => $label):
+                    ?>
+                    <label>
+                        <input type="radio" name="glasgow_verbal" value="<?php echo attr($val); ?>"
+                               <?php echo ($glasgow_verbal === $val) ? 'checked' : ''; ?>>
+                        <?php echo text($label); ?>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
+                <textarea name="obs_glasgow_verbal" class="observaciones"
+                          placeholder="<?php echo attr(xlt('Observations about verbal response...')); ?>"><?php echo text($obs_glasgow_verbal); ?></textarea>
+
+                <div class="glasgow-info">
+                    <h5><?php echo xlt('Glasgow Total Score'); ?>: <span id="glasgowTotal"><?php echo text($glasgow_total ?: '0'); ?></span>/15</h5>
+                    <p><strong>13-15:</strong> <?php echo xlt('Mild injury'); ?></p>
+                    <p><strong>9-12:</strong>  <?php echo xlt('Moderate injury'); ?></p>
+                    <p><strong>3-8:</strong>   <?php echo xlt('Severe injury'); ?></p>
+                </div>
+            </div>
+
+            <!-- EVALUATION TIME -->
+            <div class="form-group">
+                <div class="hora-grupo">
+                    <label for="hora_evaluacion"><?php echo xlt('Evaluation Time'); ?>:</label>
+                    <input type="time" name="hora_evaluacion" id="hora_evaluacion"
+                           value="<?php echo attr($hora_evaluacion); ?>">
+                </div>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <?php echo $is_edit ? xlt('Save Changes') : xlt('Save'); ?>
+                </button>
+                <a href="<?php echo attr($GLOBALS['webroot'] . '/interface/tableros/lista_internados.php'); ?>"
+                   class="btn btn-secondary">
+                    <?php echo xlt('Cancel'); ?>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var isEdit      = <?php echo ($is_edit ? 'true' : 'false'); ?>;
+        var horaInput   = document.getElementById('hora_evaluacion');
+
+        // Auto-fill current time only in create mode
+        if (!isEdit && horaInput.value === '') {
+            var now = new Date();
+            horaInput.value =
+                String(now.getHours()).padStart(2, '0') + ':' +
+                String(now.getMinutes()).padStart(2, '0');
         }
 
-        // Validación simple del formulario
-        document.getElementById('formEvaluaciones').addEventListener('submit', function(e) {
-            console.log('Formulario enviado');
+        calcularGlasgow();
+
+        document.querySelectorAll('input[name^="glasgow_"]').forEach(function (radio) {
+            radio.addEventListener('change', calcularGlasgow);
         });
-    </script>
+    });
+
+    function calcularGlasgow() {
+        var scores = {
+            glasgow_ojos: {
+                'ESPONTANEAMENTE': 4, 'A ESTIMULOS AUDITIVOS': 3,
+                'AL DOLOR': 2, 'SIN RESPUESTA': 1
+            },
+            glasgow_motora: {
+                'OBEDECE ORDENES': 6, 'LOCALIZA DOLOR': 5,
+                'FLEXION DE DEFENSA': 4, 'FLEXION ANORMAL': 3,
+                'EXTENSION ANORMAL': 2, 'NINGUNA': 1
+            },
+            glasgow_verbal: {
+                'ORIENTADO Y CONVERSA': 5, 'DESORIENTADO Y CONVERSA': 4,
+                'LENGUAJE INADECUADO': 3, 'SONIDOS INCOMPRENSIBLES': 2,
+                'NINGUNA': 1
+            }
+        };
+
+        var total = 0;
+        Object.keys(scores).forEach(function (field) {
+            var checked = document.querySelector('input[name="' + field + '"]:checked');
+            if (checked) {
+                total += scores[field][checked.value] || 0;
+            }
+        });
+
+        document.getElementById('glasgowTotal').textContent = total;
+    }
+</script>
 </body>
 </html>

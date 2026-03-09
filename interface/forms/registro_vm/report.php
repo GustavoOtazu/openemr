@@ -1,139 +1,283 @@
 <?php
 /**
- * Formulario de Registro VM - report.php
- * Ruta: interface/forms/registro_vm/report.php
+ * Mechanical Ventilation Record Form - report.php
+ * Displays the ventilation record embedded in the encounter summary.
+ *
+ * @package   OpenEMR
+ * @link      http://www.open-emr.org
+ * @author    OpenEMR Contributors
+ * @copyright Copyright (c) 2026 OpenEMR Contributors
+ * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-include_once("../../globals.php");
+require_once("../../globals.php");
 
-function registro_vm_report($pid, $encounter, $cols, $id) {
-    $count = 0;
-    
-    // Obtener datos del formulario
-    $sql = "SELECT * FROM form_registro_vm WHERE id = ? AND pid = ?";
-    $result = sqlQuery($sql, array($id, $pid));
-    
-    if (!$result) {
-        echo "<div style='padding: 20px; color: red;'>No se encontraron datos del Registro VM.</div>";
+function registro_vm_report($pid, $encounter, $cols, $id)
+{
+    $row = sqlQuery(
+        "SELECT * FROM form_registro_vm WHERE id = ? AND pid = ?",
+        array($id, $pid)
+    );
+
+    if (!$row) {
+        echo "<p style='color:#c0392b;padding:10px;'>" . xlt("No data found for this record.") . "</p>";
         return;
     }
-    
-    // Definir items
-    $items = array(
-        'presion' => 'PRESION',
-        'volumen' => 'VOLUMEN',
-        'simv' => 'SIMV',
-        'psv' => 'PSV',
-        'otros' => 'OTROS',
-        'frecuencia_respiratoria' => 'FRECUENCIA RESPIRATORIA',
-        'p_inspiratorio' => 'P.INSPIRATORIO/T.INSPIRATORIO',
-        'p_media' => 'P.MEDIA/PEEP',
-        'p_max' => 'P.MAX/P.PLATEAU',
-        'chst' => 'CHST/CDIN',
-        'disparo' => 'DISPARO POR F/P',
-        'fvt' => 'F/VT',
-        'vol_tidal' => 'VOL.TIDAL/FLUJO',
-        'vm_programado' => 'VM PROGRAMADO / MEDIDO',
-        'petco2' => 'PETCO2',
-        'vdvt' => 'VD/VT',
-        'ko2' => 'Ko2'
-    );
+
+    $bool_items = [
+        'presion'                 => xlt('Pressure'),
+        'volumen'                 => xlt('Volume'),
+        'simv'                    => 'SIMV',
+        'psv'                     => 'PSV',
+        'otros'                   => xlt('Other'),
+        'frecuencia_respiratoria' => xlt('Respiratory Rate'),
+        'p_inspiratorio'          => xlt('P.Inspiratory / T.Inspiratory'),
+        'p_media'                 => xlt('P.Mean / PEEP'),
+        'p_max'                   => xlt('P.Max / P.Plateau'),
+        'chst'                    => 'CHST / CDIN',
+        'disparo'                 => xlt('Trigger F/P'),
+        'fvt'                     => 'F / VT',
+        'vol_tidal'               => xlt('Tidal Volume / Flow'),
+        'vm_programado'           => xlt('Programmed/Measured MV'),
+        'petco2'                  => 'PETCO2',
+        'vdvt'                    => 'VD / VT',
+        'ko2'                     => 'KO2',
+    ];
+
+    $modo_labels = [
+        'ESPONTANEA'           => xlt('Spontaneous'),
+        'VENTILACION MECANICA' => xlt('Mechanical Ventilation'),
+    ];
+    $modo_display = $modo_labels[$row['modo_ventilacion'] ?? ''] ?? ($row['modo_ventilacion'] ?? xlt('Not specified'));
+
+    $hora = !empty($row['hora_registro'])
+        ? date('H:i', strtotime($row['hora_registro']))
+        : xlt('Not specified');
+
+    $fecha = !empty($row['date'])
+        ? date('d/m/Y H:i', strtotime($row['date']))
+        : '-';
+
+    $total_activos = 0;
+    foreach (array_keys($bool_items) as $campo) {
+        if ((int)($row[$campo] ?? 0) === 1) {
+            $total_activos++;
+        }
+    }
+    $total_items = count($bool_items);
     ?>
-    
+
     <style>
-        .reporte-vm { padding: 20px; font-family: Arial, sans-serif; }
-        .reporte-vm .btn-imprimir { 
-            background-color: #007bff; 
-            color: white; 
-            padding: 10px 20px; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            margin-bottom: 15px; 
+        .rep-vm * { box-sizing: border-box; }
+        .rep-vm {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #222;
+            padding: 10px 0;
         }
-        .reporte-vm .btn-imprimir:hover { background-color: #0056b3; }
-        .reporte-vm table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .reporte-vm table th { 
-            background-color: #007bff; 
-            color: white; 
-            padding: 12px; 
-            text-align: left; 
-            font-weight: bold; 
+
+        .rep-vm .main-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 5px 5px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
         }
-        .reporte-vm table td { 
-            padding: 10px; 
-            border: 1px solid #ddd; 
+        .rep-vm .main-header .title {
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .reporte-vm .item-principal { font-weight: bold; }
-        .reporte-vm .si { 
-            background-color: #d4edda; 
-            color: #155724; 
-            font-weight: bold; 
-            text-align: center; 
+        .rep-vm .main-header .counter {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: 10px;
+            font-weight: bold;
         }
-        .reporte-vm .no { 
-            background-color: #f8d7da; 
-            color: #721c24; 
-            font-weight: bold; 
-            text-align: center; 
+        .rep-vm .main-header .counter span {
+            font-size: 13px;
+            color: #2ecc71;
         }
-        .reporte-vm .modo-section {
-            margin: 15px 0;
-            padding: 15px;
-            background-color: #e7f3ff;
-            border-left: 4px solid #007bff;
+
+        .rep-vm .meta-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            background: #f0f4f8;
+            border: 1px solid #d0d8e4;
+            border-top: none;
+            padding: 8px 14px;
+            margin-bottom: 12px;
+            font-size: 11px;
+            color: #555;
+            border-radius: 0 0 4px 4px;
         }
-        .reporte-vm .info-adicional {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #e7f3ff;
-            border-left: 4px solid #007bff;
+        .rep-vm .meta-bar span strong { color: #2c3e50; }
+
+        .rep-vm .modo-bar {
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            border-left: 4px solid #1976d2;
+            padding: 8px 14px;
+            margin-bottom: 12px;
+            font-size: 11px;
+            border-radius: 3px;
         }
-        
+        .rep-vm .modo-bar strong { color: #1976d2; font-size: 13px; }
+
+        .rep-vm table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #dde3ea;
+            overflow: hidden;
+        }
+        .rep-vm table thead th {
+            background: #34495e;
+            color: #fff;
+            padding: 9px 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        .rep-vm table thead th:last-child { border-right: none; }
+
+        .rep-vm table tbody tr.row-si td { background: #f0faf4; }
+        .rep-vm table tbody tr.row-no  td { background: #fff; }
+        .rep-vm table tbody tr:hover td  { background: #eaf2ff !important; }
+
+        .rep-vm table tbody td {
+            padding: 9px 12px;
+            border-bottom: 1px solid #e4e9ef;
+            border-right: 1px solid #e4e9ef;
+            font-size: 11px;
+            vertical-align: top;
+        }
+        .rep-vm table tbody td:last-child { border-right: none; }
+
+        .rep-vm .td-nombre { font-weight: 600; color: #2c3e50; width: 30%; }
+        .rep-vm .td-nombre.activo { color: #1a7a41; }
+        .rep-vm .td-estado { width: 12%; text-align: center; }
+        .rep-vm .td-obs    { color: #555; }
+
+        .rep-vm .badge-si {
+            display: inline-block; background: #27ae60; color: #fff;
+            font-size: 10px; font-weight: bold; padding: 4px 12px; border-radius: 3px;
+        }
+        .rep-vm .badge-no {
+            display: inline-block; background: #bdc3c7; color: #fff;
+            font-size: 10px; font-weight: bold; padding: 4px 12px; border-radius: 3px;
+        }
+
+        .rep-vm .obs-vacia { color: #bbb; font-style: italic; font-size: 10px; }
+
+        .rep-vm .summary-bar {
+            display: flex; align-items: center; gap: 14px; margin-top: 10px;
+            padding: 9px 14px; background: #f8f9fa; border: 1px solid #dde3ea;
+            border-radius: 4px; font-size: 11px; color: #555;
+        }
+        .rep-vm .summary-bar .pill {
+            display: inline-flex; align-items: center; gap: 5px; font-weight: bold;
+            font-size: 11px; padding: 4px 12px; border-radius: 20px;
+        }
+        .rep-vm .summary-bar .pill-activos  { background: #d5f5e3; color: #1a7a41; border: 1px solid #a9dfbf; }
+        .rep-vm .summary-bar .pill-inactivos { background: #f2f3f4; color: #7f8c8d; border: 1px solid #d5d8dc; }
+        .rep-vm .summary-bar .num { font-size: 15px; }
+
         @media print {
-            .reporte-vm .btn-imprimir { display: none; }
+            .rep-vm .main-header { background: #000 !important; -webkit-print-color-adjust: exact; }
+            .rep-vm table thead th { background: #333 !important; -webkit-print-color-adjust: exact; }
         }
     </style>
-    
-    <div class="reporte-vm">
-        
-        <div class="modo-section">
-            <strong>MODO DE VENTILACION:</strong> 
-            <span style="font-size: 16px; color: #007bff; font-weight: bold;">
-                <?php echo strtoupper($result['modo_ventilacion']); ?>
+
+    <div class="rep-vm">
+
+        <!-- HEADER -->
+        <div class="main-header">
+            <div class="title"><?php echo xlt('Ventilation Record'); ?></div>
+            <div class="counter">
+                <?php echo xlt('Active parameters'); ?>:
+                <span><?php echo (int)$total_activos; ?></span> / <?php echo (int)$total_items; ?>
+            </div>
+        </div>
+
+        <!-- META BAR -->
+        <div class="meta-bar">
+            <span><strong><?php echo xlt('Record Time'); ?>:</strong> <?php echo text($hora); ?></span>
+            <span><strong><?php echo xlt('Recorded'); ?>:</strong> <?php echo text($fecha); ?></span>
+            <?php if (!empty($row['user'])): ?>
+            <span><strong><?php echo xlt('User'); ?>:</strong> <?php echo text($row['user']); ?></span>
+            <?php endif; ?>
+        </div>
+
+        <!-- VENTILATION MODE -->
+        <div class="modo-bar">
+            <?php echo xlt('Ventilation Mode'); ?>:
+            <strong><?php echo text($modo_display); ?></strong>
+            <?php if (!empty($row['obs_modo'])): ?>
+            &mdash; <span style="color:#555;font-size:11px;"><?php echo text($row['obs_modo']); ?></span>
+            <?php endif; ?>
+        </div>
+
+        <!-- TABLE -->
+        <table>
+            <thead>
+                <tr>
+                    <th class="td-nombre"><?php echo xlt('Parameter'); ?></th>
+                    <th class="td-estado"><?php echo xlt('Status'); ?></th>
+                    <th class="td-obs"><?php echo xlt('Observations'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($bool_items as $campo => $label):
+                $valor  = (int)($row[$campo] ?? 0);
+                $obs    = trim($row['obs_' . $campo] ?? '');
+                $rowCls = $valor ? 'row-si' : 'row-no';
+                $tdCls  = $valor ? 'td-nombre activo' : 'td-nombre';
+            ?>
+                <tr class="<?php echo $rowCls; ?>">
+                    <td class="<?php echo $tdCls; ?>"><?php echo text($label); ?></td>
+                    <td class="td-estado">
+                        <?php if ($valor): ?>
+                            <span class="badge-si"><?php echo xlt('Yes'); ?></span>
+                        <?php else: ?>
+                            <span class="badge-no"><?php echo xlt('No'); ?></span>
+                        <?php endif; ?>
+                    </td>
+                    <td class="td-obs">
+                        <?php if ($obs !== ''): ?>
+                            <?php echo nl2br(text($obs)); ?>
+                        <?php else: ?>
+                            <span class="obs-vacia"><?php echo xlt('No observations recorded'); ?></span>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+
+        <!-- SUMMARY -->
+        <div class="summary-bar">
+            <span><?php echo xlt('Summary'); ?>:</span>
+            <span class="pill pill-activos">
+                <span class="num"><?php echo (int)$total_activos; ?></span>
+                <?php echo xlt('active'); ?>
+            </span>
+            <span class="pill pill-inactivos">
+                <span class="num"><?php echo (int)($total_items - $total_activos); ?></span>
+                <?php echo xlt('inactive'); ?>
             </span>
         </div>
-        
-        <table>
-            <tr>
-                <th width="40%">Item</th>
-                <th width="20%">Estado</th>
-                <th width="40%">Observación</th>
-            </tr>
-            <?php
-            foreach ($items as $campo => $titulo) {
-                $valor = (int)$result[$campo];
-                $observacion = $result['obs_' . $campo] ?? '-';
-                $estado_class = $valor == 1 ? 'si' : 'no';
-                $estado_texto = $valor == 1 ? 'SÍ' : 'NO';
-                
-                echo '<tr>';
-                echo '<td class="item-principal">' . $titulo . '</td>';
-                echo '<td class="' . $estado_class . '">' . $estado_texto . '</td>';
-                echo '<td>' . ($observacion ?: '-') . '</td>';
-                echo '</tr>';
-            }
-            ?>
-        </table>
-        
-        <div class="info-adicional">
-            <strong>Información del Registro:</strong><br>
-            Hora de Registro: <?php echo date('H:i', strtotime($result['hora_registro'])); ?><br>
-            Registrado: <?php echo date('d/m/Y H:i', strtotime($result['date'])); ?>
-        </div>
+
     </div>
-    
     <?php
 }
 ?>

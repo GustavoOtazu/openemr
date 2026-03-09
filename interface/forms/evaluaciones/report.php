@@ -1,187 +1,290 @@
 <?php
 /**
- * Formulario de Evaluaciones - report.php
- * Ruta: interface/forms/evaluaciones/report.php
+ * Nursing Evaluations Form - report.php
+ * Renders a summary of the evaluation for the OpenEMR encounter report view.
+ *
+ * @package   OpenEMR
+ * @link      http://www.open-emr.org
+ * @author    OpenEMR Contributors
+ * @copyright Copyright (c) 2026 OpenEMR Contributors
+ * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-function evaluaciones_report($pid, $encounter, $cols, $id) {
-    $count = 0;
-    
-    // Obtener datos del formulario
-    $sql = "SELECT * FROM form_evaluaciones WHERE id = ? AND pid = ? LIMIT 1";
-    $result = sqlQuery($sql, array($id, $pid));
-    
+function evaluaciones_report($pid, $encounter, $cols, $id)
+{
+    $result = sqlQuery(
+        "SELECT * FROM form_evaluaciones WHERE id = ? AND pid = ? LIMIT 1",
+        array($id, $pid)
+    );
+
     if (!$result) {
-        echo "<div style='padding: 20px; color: red;'>No se encontraron datos</div>";
+        echo "<div style='padding:10px;color:#c0392b;'>" . xlt("No data found") . "</div>";
         return;
     }
-    
+
+    $score = (int)($result['glasgow_total'] ?? 0);
+    if ($score >= 13) {
+        $level_text  = xlt('Mild');
+        $level_color = '#27ae60';
+        $level_bg    = '#eafaf1';
+        $level_border= '#27ae60';
+    } elseif ($score >= 9) {
+        $level_text  = xlt('Moderate');
+        $level_color = '#e67e22';
+        $level_bg    = '#fef5e7';
+        $level_border= '#e67e22';
+    } else {
+        $level_text  = xlt('Severe');
+        $level_color = '#e74c3c';
+        $level_bg    = '#fdedec';
+        $level_border= '#e74c3c';
+    }
+
+    $hora  = text($result['hora_evaluacion'] ?? '-');
+    $fecha = text(!empty($result['date']) ? date('d/m/Y H:i', strtotime($result['date'])) : '-');
+    $user  = text($result['user'] ?? '-');
     ?>
+
     <style>
-        .reporte-evaluaciones * { margin: 0; padding: 0; box-sizing: border-box; }
-        .reporte-evaluaciones { font-family: Arial, sans-serif; padding: 20px; background-color: white; }
-        .reporte-evaluaciones .btn { 
-            padding: 10px 20px; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 12px; 
-            margin-bottom: 15px; 
+        .rpt-eval * { box-sizing: border-box; }
+        .rpt-eval {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #222;
+            padding: 10px 0;
         }
-        .reporte-evaluaciones .btn-imprimir { 
-            background-color: #007bff; 
-            color: white; 
+
+        /* Barra de metadatos */
+        .rpt-eval .meta-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            background: #f0f4f8;
+            border: 1px solid #d0d8e4;
+            border-radius: 4px;
+            padding: 8px 14px;
+            margin-bottom: 14px;
+            font-size: 11px;
+            color: #555;
         }
-        .reporte-evaluaciones .btn-imprimir:hover { 
-            background-color: #0056b3; 
-        }
-        .reporte-evaluaciones table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 15px;
-        }
-        .reporte-evaluaciones table th { 
-            background-color: #007bff; 
-            color: white; 
-            padding: 12px; 
-            text-align: left; 
-            font-weight: bold; 
-            font-size: 12px; 
-        }
-        .reporte-evaluaciones table td { 
-            padding: 10px; 
-            border: 1px solid #ddd; 
-            font-size: 11px; 
-        }
-        .reporte-evaluaciones .item-principal {
+        .rpt-eval .meta-bar span strong { color: #2c3e50; }
+
+        /* Cabecera de sección */
+        .rpt-eval .sec-header {
+            font-size: 11px;
             font-weight: bold;
-            background-color: #f8f9fa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 7px 12px;
+            border-radius: 4px 4px 0 0;
+            margin-top: 14px;
+            color: #fff;
         }
-        .reporte-evaluaciones .item-glasgow {
-            background-color: #fff3cd;
+        .rpt-eval .sec-header.blue  { background: #2c3e50; }
+        .rpt-eval .sec-header.red   { background: #c0392b; }
+
+        /* Tabla */
+        .rpt-eval table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 4px;
+        }
+        .rpt-eval table thead th {
+            background: #34495e;
+            color: #fff;
+            padding: 8px 12px;
+            font-size: 11px;
             font-weight: bold;
-            color: #856404;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .reporte-evaluaciones .subitem {
-            padding-left: 30px;
+        .rpt-eval table tbody tr:nth-child(even) td { background: #f7f9fb; }
+        .rpt-eval table tbody tr:hover td { background: #eaf2ff; }
+        .rpt-eval table tbody td {
+            padding: 9px 12px;
+            border-bottom: 1px solid #e4e9ef;
+            font-size: 12px;
+            vertical-align: top;
+        }
+        .rpt-eval .td-item  { font-weight: 600; color: #2c3e50; width: 30%; }
+        .rpt-eval .td-val   { width: 22%; }
+        .rpt-eval .td-obs   { color: #444; }
+        .rpt-eval .td-sub   { padding-left: 24px; color: #555; font-style: italic; }
+
+        /* Badge valor */
+        .rpt-eval .val-badge {
+            display: inline-block;
+            background: #2980b9;
+            color: #fff;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 3px;
+        }
+
+        /* Texto vacío */
+        .rpt-eval .obs-vacia {
+            color: #bbb;
             font-style: italic;
-            color: #666;
+            font-size: 11px;
         }
-        .reporte-evaluaciones .seleccionado {
-            background-color: #d4edda;
-            color: #155724;
+
+        /* Card Glasgow total */
+        .rpt-eval .glasgow-card {
+            margin-top: 14px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 2px solid;
+        }
+        .rpt-eval .glasgow-card-header {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 7px 14px;
+            color: #fff;
+        }
+        .rpt-eval .glasgow-card-body {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 14px 18px;
+        }
+        .rpt-eval .glasgow-big {
+            font-size: 40px;
+            font-weight: bold;
+            line-height: 1;
+        }
+        .rpt-eval .glasgow-big small {
+            font-size: 16px;
+            font-weight: normal;
+            color: #aaa;
+        }
+        .rpt-eval .glasgow-label {
+            font-size: 16px;
             font-weight: bold;
         }
-        .reporte-evaluaciones .info-adicional {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #e7f3ff;
-            border-left: 4px solid #007bff;
-        }
-        .reporte-evaluaciones .glasgow-score {
-            margin-top: 15px;
-            padding: 15px;
-            background-color: #fff3cd;
-            border-left: 4px solid #ffc107;
-            font-size: 14px;
-        }
-        .reporte-evaluaciones .glasgow-score strong {
-            font-size: 18px;
-            color: #856404;
+        .rpt-eval .glasgow-legend {
+            margin-left: auto;
+            font-size: 10px;
+            color: #888;
+            line-height: 1.7;
+            text-align: right;
         }
 
         @media print {
-            .reporte-evaluaciones body { background-color: white; }
-            .reporte-evaluaciones .btn { display: none; }
+            .rpt-eval .sec-header.blue { background: #000 !important; -webkit-print-color-adjust: exact; }
+            .rpt-eval .sec-header.red  { background: #555 !important; -webkit-print-color-adjust: exact; }
         }
     </style>
 
-    <div class="reporte-evaluaciones">
+    <div class="rpt-eval">
 
+        <!-- META BAR -->
+        <div class="meta-bar">
+            <span><strong><?php echo xlt('Evaluation Time'); ?>:</strong> <?php echo $hora; ?></span>
+            <span><strong><?php echo xlt('Recorded'); ?>:</strong> <?php echo $fecha; ?></span>
+            <span><strong><?php echo xlt('User'); ?>:</strong> <?php echo $user; ?></span>
+        </div>
+
+        <!-- SECCIÓN: VALORACIONES BÁSICAS -->
+        <div class="sec-header blue"><?php echo xlt('Basic Assessments'); ?></div>
         <table>
-            <tr>
-                <th width="40%">Item</th>
-                <th width="30%">Respuesta</th>
-                <th width="30%">Observación</th>
-            </tr>
-            
-            <!-- CONCIENCIA -->
-            <tr>
-                <td class="item-principal"> CONCIENCIA</td>
-                <td><?php echo htmlspecialchars($result['conciencia'] ?? '-'); ?></td>
-                <td><?php echo htmlspecialchars($result['obs_conciencia'] ?? '-'); ?></td>
-            </tr>
-            
-            <!-- TONO -->
-            <tr>
-                <td class="item-principal"> TONO</td>
-                <td><?php echo htmlspecialchars($result['tono'] ?? '-'); ?></td>
-                <td><?php echo htmlspecialchars($result['obs_tono'] ?? '-'); ?></td>
-            </tr>
-            
-            <!-- PUPILAS -->
-            <tr>
-                <td class="item-principal"> PUPILAS</td>
-                <td><?php echo htmlspecialchars($result['pupilas'] ?? '-'); ?></td>
-                <td><?php echo htmlspecialchars($result['obs_pupilas'] ?? '-'); ?></td>
-            </tr>
-            
-            <!-- MUCOSAS -->
-            <tr>
-                <td class="item-principal"> MUCOSAS</td>
-                <td><?php echo htmlspecialchars($result['mucosas'] ?? '-'); ?></td>
-                <td><?php echo htmlspecialchars($result['obs_mucosas'] ?? '-'); ?></td>
-            </tr>
-            
-            <!-- ESCALA DE GLASGOW -->
-            <tr>
-                <td colspan="3" class="item-glasgow">ESCALA DE GLASGOW</td>
-            </tr>
-            
-            <!-- OJOS ABIERTOS -->
-            <tr>
-                <td class="subitem">└─ OJOS ABIERTOS</td>
-                <td class="seleccionado"><?php echo htmlspecialchars($result['glasgow_ojos'] ?? '-'); ?></td>
-                <td><?php echo htmlspecialchars($result['obs_glasgow_ojos'] ?? '-'); ?></td>
-            </tr>
-            
-            <!-- RESPUESTA MOTORA -->
-            <tr>
-                <td class="subitem">└─ RESPUESTA MOTORA</td>
-                <td class="seleccionado"><?php echo htmlspecialchars($result['glasgow_motora'] ?? '-'); ?></td>
-                <td><?php echo htmlspecialchars($result['obs_glasgow_motora'] ?? '-'); ?></td>
-            </tr>
-            
-            <!-- RESPUESTA VERBAL -->
-            <tr>
-                <td class="subitem">└─ RESPUESTA VERBAL</td>
-                <td class="seleccionado"><?php echo htmlspecialchars($result['glasgow_verbal'] ?? '-'); ?></td>
-                <td><?php echo htmlspecialchars($result['obs_glasgow_verbal'] ?? '-'); ?></td>
-            </tr>
+            <thead>
+                <tr>
+                    <th class="td-item"><?php echo xlt('Item'); ?></th>
+                    <th class="td-val"><?php echo xlt('Response'); ?></th>
+                    <th class="td-obs"><?php echo xlt('Observations'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php
+            $basic = [
+                'conciencia' => ['label' => xlt('Consciousness'), 'obs' => 'obs_conciencia'],
+                'tono'       => ['label' => xlt('Muscle Tone'),   'obs' => 'obs_tono'],
+                'pupilas'    => ['label' => xlt('Pupils'),        'obs' => 'obs_pupilas'],
+                'mucosas'    => ['label' => xlt('Mucous Membranes'), 'obs' => 'obs_mucosas'],
+            ];
+            foreach ($basic as $field => $meta):
+                $val = trim($result[$field] ?? '');
+                $obs = trim($result[$meta['obs']] ?? '');
+            ?>
+                <tr>
+                    <td class="td-item"><?php echo text($meta['label']); ?></td>
+                    <td class="td-val">
+                        <?php if ($val !== '' && $val !== '-'): ?>
+                            <span class="val-badge"><?php echo text($val); ?></span>
+                        <?php else: ?>
+                            <span class="obs-vacia">—</span>
+                        <?php endif; ?>
+                    </td>
+                    <td class="td-obs">
+                        <?php echo $obs !== '' ? nl2br(text($obs)) : '<span class="obs-vacia">' . xlt('No observations recorded') . '</span>'; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
         </table>
 
-        <!-- PUNTAJE TOTAL GLASGOW -->
-        <div class="glasgow-score">
-            <strong>Puntaje Total Glasgow: <?php echo $result['glasgow_total'] ?? 0; ?>/15</strong>
+        <!-- SECCIÓN: ESCALA DE GLASGOW -->
+        <div class="sec-header red"><?php echo xlt('Glasgow Coma Scale'); ?></div>
+        <table>
+            <thead>
+                <tr>
+                    <th class="td-item"><?php echo xlt('Component'); ?></th>
+                    <th class="td-val"><?php echo xlt('Score'); ?></th>
+                    <th class="td-obs"><?php echo xlt('Observations'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
             <?php
-            $puntaje = $result['glasgow_total'] ?? 0;
-            if ($puntaje >= 13) {
-                echo " - <span style='color: green;'>Leve</span>";
-            } elseif ($puntaje >= 9) {
-                echo " - <span style='color: orange;'>Moderado</span>";
-            } else {
-                echo " - <span style='color: red;'>Severo</span>";
-            }
+            $glasgow_fields = [
+                'glasgow_ojos'   => ['label' => xlt('Eye Opening'),     'obs' => 'obs_glasgow_ojos'],
+                'glasgow_motora' => ['label' => xlt('Motor Response'),  'obs' => 'obs_glasgow_motora'],
+                'glasgow_verbal' => ['label' => xlt('Verbal Response'), 'obs' => 'obs_glasgow_verbal'],
+            ];
+            foreach ($glasgow_fields as $field => $meta):
+                $val = trim($result[$field] ?? '');
+                $obs = trim($result[$meta['obs']] ?? '');
             ?>
+                <tr>
+                    <td class="td-item td-sub"><?php echo text($meta['label']); ?></td>
+                    <td class="td-val">
+                        <?php if ($val !== '' && $val !== '-'): ?>
+                            <span class="val-badge"><?php echo text($val); ?></span>
+                        <?php else: ?>
+                            <span class="obs-vacia">—</span>
+                        <?php endif; ?>
+                    </td>
+                    <td class="td-obs">
+                        <?php echo $obs !== '' ? nl2br(text($obs)) : '<span class="obs-vacia">' . xlt('No observations recorded') . '</span>'; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+
+        <!-- CARD: PUNTAJE TOTAL GLASGOW -->
+        <div class="glasgow-card" style="border-color:<?php echo attr($level_border); ?>">
+            <div class="glasgow-card-header" style="background:<?php echo attr($level_color); ?>">
+                <?php echo xlt('Glasgow Coma Scale — Total Score'); ?>
+            </div>
+            <div class="glasgow-card-body" style="background:<?php echo attr($level_bg); ?>">
+                <div class="glasgow-big" style="color:<?php echo attr($level_color); ?>">
+                    <?php echo text($score); ?><small>/15</small>
+                </div>
+                <div class="glasgow-label" style="color:<?php echo attr($level_color); ?>">
+                    <?php echo text($level_text); ?>
+                </div>
+                <div class="glasgow-legend">
+                    13–15: <?php echo xlt('Mild'); ?><br>
+                    9–12: <?php echo xlt('Moderate'); ?><br>
+                    3–8: <?php echo xlt('Severe'); ?>
+                </div>
+            </div>
         </div>
 
-        <!-- INFORMACIÓN ADICIONAL -->
-        <div class="info-adicional">
-            <strong>Información del Registro:</strong><br>
-            Hora de Evaluación: <?php echo htmlspecialchars($result['hora_evaluacion'] ?? '-'); ?><br>
-            Registrado: <?php echo date('d/m/Y H:i', strtotime($result['date'])); ?>
-        </div>
     </div>
     <?php
 }
