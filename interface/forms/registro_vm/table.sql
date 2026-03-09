@@ -400,3 +400,22 @@ INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
   SELECT c.`cons_id`, 18, 'Nenhum registro de ventilação encontrado'   FROM `lang_constants` c WHERE c.`constant_name` = 'No ventilation records found';
 INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
   SELECT c.`cons_id`, 23, 'Nessun record di ventilazione trovato'      FROM `lang_constants` c WHERE c.`constant_name` = 'No ventilation records found';
+
+-- New Ventilation Record
+INSERT IGNORE INTO `lang_constants` (`constant_name`) VALUES ('New Ventilation Record');
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 3,  'Nuevo Registro de Ventilación'       FROM `lang_constants` c WHERE c.`constant_name` = 'New Ventilation Record';
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 4,  'Nuevo Registro de Ventilación'       FROM `lang_constants` c WHERE c.`constant_name` = 'New Ventilation Record';
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 5,  'Neues Beatmungsprotokoll'            FROM `lang_constants` c WHERE c.`constant_name` = 'New Ventilation Record';
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 8,  'Nouveau dossier de ventilation'      FROM `lang_constants` c WHERE c.`constant_name` = 'New Ventilation Record';
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 9,  'Nouveau dossier de ventilation'      FROM `lang_constants` c WHERE c.`constant_name` = 'New Ventilation Record';
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 17, 'Novo Registo de Ventilação'          FROM `lang_constants` c WHERE c.`constant_name` = 'New Ventilation Record';
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 18, 'Novo Registro de Ventilação'         FROM `lang_constants` c WHERE c.`constant_name` = 'New Ventilation Record';
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 23, 'Nuovo registro di ventilazione'      FROM `lang_constants` c WHERE c.`constant_name` = 'New Ventilation Record';
