@@ -38,12 +38,21 @@ if ($death_date) {
     );
 }
 
+// Resolve inpatient category ID by name (portable across installations)
+define('NURSING_INPATIENT_CATEGORY', 'Inpatient');
+$catRow = sqlQuery(
+    "SELECT pc_catid FROM openemr_postcalendar_categories WHERE pc_catname = ? LIMIT 1",
+    [NURSING_INPATIENT_CATEGORY]
+);
+$inpatient_catid = $catRow ? (int)$catRow['pc_catid'] : 0;
+
 $res = sqlStatement(
     "SELECT f.*, CONCAT(p.fname, ' ', p.lname) AS paciente,
             p.pubpid AS pubpid, f.nro_registro AS nro_registro, f.encounter AS encounter
      FROM form_encounter AS f
      JOIN patient_data AS p ON p.pid = f.pid
-     WHERE f.pc_catid = 16 AND f.out_date IS NULL"
+     WHERE f.pc_catid = ? AND f.out_date IS NULL",
+    [$inpatient_catid]
 );
 $inpatient = [];
 for ($iter = 0; $row = sqlFetchArray($res); $iter++) {

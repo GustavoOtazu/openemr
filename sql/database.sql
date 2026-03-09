@@ -10603,6 +10603,18 @@ CREATE TABLE `configuracion_signos_vitales_parametros` (
 alter TABLE `form_encounter` ADD COLUMN nro_registro varchar(40) default NULL AFTER pid;
 
 -- ============================================================
+-- Nursing Module: Inpatient appointment category
+-- ============================================================
+INSERT IGNORE INTO `openemr_postcalendar_categories`
+    (`pc_catname`, `pc_catcolor`, `pc_catdesc`, `pc_duration`, `pc_recurrtype`,
+     `pc_enddate`, `pc_recurrspec`, `pc_recurrfreq`, `pc_dailylimit`, `pc_cattype`,
+     `pc_active`, `pc_seq`)
+VALUES
+    ('Inpatient', '#FF6347', 'Inpatient hospitalization encounter', 2400, 0,
+     '0000-00-00', 'a:5:{s:17:"event_repeat_freq";s:1:"1";s:22:"event_repeat_freq_type";s:1:"0";s:19:"event_repeat_on_num";s:1:"1";s:19:"event_repeat_on_day";s:1:"0";s:20:"event_repeat_on_freq";s:1:"0";}',
+     0, 0, 0, 1, 16);
+
+-- ============================================================
 -- Nursing Module Tables
 -- ============================================================
 
