@@ -1,0 +1,15 @@
+parameters:
+    level: 0
+    paths:
+        - interface/forms/curaciones
+        - interface/forms/aplicaciones
+        - interface/forms/cuidados
+        - interface/forms/evaluaciones
+        - interface/forms/registro_vm
+        - interface/tableros/lista_internados.php
+    ignoreErrors:
+        - '#Function (sqlQuery|sqlStatement|sqlInsert|sqlFetchArray|sqlNumRows|sqlLastInsertId) not found#'
+        - '#Function (addForm|formHeader|formJump|generate_id) not found#'
+    excludePaths:
+        - '*.sql'
+        - '*.md'
