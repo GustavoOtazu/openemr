@@ -281,3 +281,22 @@ INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
   SELECT c.`cons_id`, 18, 'Nenhum registro de pacote de cuidados encontrado' FROM `lang_constants` c WHERE c.`constant_name` = 'No care bundle records found';
 INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
   SELECT c.`cons_id`, 23, 'Nessun record pacchetto di cure trovato' FROM `lang_constants` c WHERE c.`constant_name` = 'No care bundle records found';
+
+-- New Care Bundle
+INSERT IGNORE INTO `lang_constants` (`constant_name`) VALUES ('New Care Bundle');
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 3,  'Nuevo Paquete de Cuidados'    FROM `lang_constants` c WHERE c.`constant_name` = 'New Care Bundle';
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 4,  'Nuevo Paquete de Cuidados'    FROM `lang_constants` c WHERE c.`constant_name` = 'New Care Bundle';
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 5,  'Neues Pflegepaket'            FROM `lang_constants` c WHERE c.`constant_name` = 'New Care Bundle';
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 8,  'Nouvel ensemble de soins'     FROM `lang_constants` c WHERE c.`constant_name` = 'New Care Bundle';
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 9,  'Nouvel ensemble de soins'     FROM `lang_constants` c WHERE c.`constant_name` = 'New Care Bundle';
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 17, 'Novo Pacote de Cuidados'      FROM `lang_constants` c WHERE c.`constant_name` = 'New Care Bundle';
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 18, 'Novo Pacote de Cuidados'      FROM `lang_constants` c WHERE c.`constant_name` = 'New Care Bundle';
+INSERT IGNORE INTO `lang_definitions` (`cons_id`, `lang_id`, `definition`)
+  SELECT c.`cons_id`, 23, 'Nuovo pacchetto di cura'      FROM `lang_constants` c WHERE c.`constant_name` = 'New Care Bundle';
