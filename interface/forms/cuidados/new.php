@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Nursing Care Bundle Form - new.php
  * Care bundle record for ventilated inpatients.
@@ -12,20 +13,16 @@
 
 require_once("../../globals.php");
 require_once("$srcdir/api.inc");
-
 use OpenEMR\Common\Csrf\CsrfUtils;
-
 // Get parameters
 $pid       = isset($_GET['pid'])       ? (int)$_GET['pid']       : (int)($_SESSION['pid'] ?? 0);
 $encounter = isset($_GET['encounter']) ? (int)$_GET['encounter'] : (int)($_SESSION['encounter'] ?? 0);
 $id        = isset($_GET['id'])        ? (int)$_GET['id']        : 0;
-
 if (!$pid || !$encounter) {
     die(xlt("Error: Missing required parameters (PID or Encounter)"));
 }
 
 $is_edit = ($id > 0);
-
 // Initialize field variables
 $posicion_paciente        = '';
 $obs_posicion_paciente    = '';
@@ -40,13 +37,9 @@ $obs_suspension_sedacion  = '';
 $medicion_cuff            = 0;
 $obs_medicion_cuff        = '';
 $hora_cuidado             = '';
-
 // Load existing data in edit mode
 if ($is_edit) {
-    $row = sqlQuery(
-        "SELECT * FROM form_cuidados WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1",
-        array($id, $pid, $encounter)
-    );
+    $row = sqlQuery("SELECT * FROM form_cuidados WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1", array($id, $pid, $encounter));
     if ($row) {
         $posicion_paciente        = $row['posicion_paciente']        ?? '';
         $obs_posicion_paciente    = $row['obs_posicion_paciente']    ?? '';
@@ -68,7 +61,6 @@ if ($is_edit) {
 
 // Patient position options
 $posicion_options = ['DLI', 'DLD', 'DS', 'DV', 'CABECERA 30°'];
-
 $page_title = $is_edit ? xlt('Edit Care Bundle') : xlt('New Care Bundle');
 ?>
 
@@ -236,22 +228,26 @@ $page_title = $is_edit ? xlt('Edit Care Bundle') : xlt('New Care Bundle');
             <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>">
             <input type="hidden" name="pid"       value="<?php echo attr($pid); ?>">
             <input type="hidden" name="encounter" value="<?php echo attr($encounter); ?>">
-            <?php if ($is_edit): ?>
+            <?php if ($is_edit) :
+                ?>
             <input type="hidden" name="id" value="<?php echo attr($id); ?>">
-            <?php endif; ?>
+                <?php
+            endif; ?>
 
             <!-- PATIENT POSITION (multi-option) -->
             <div class="form-group-posicion">
                 <h3><?php echo xlt('Patient Position'); ?></h3>
                 <div class="radio-container">
-                    <?php foreach ($posicion_options as $opt): ?>
+                    <?php foreach ($posicion_options as $opt) :
+                        ?>
                     <label>
                         <input type="radio" name="posicion_paciente"
                                value="<?php echo attr($opt); ?>"
                                <?php echo ($posicion_paciente === $opt) ? 'checked' : ''; ?>>
                         <?php echo text($opt); ?>
                     </label>
-                    <?php endforeach; ?>
+                        <?php
+                    endforeach; ?>
                 </div>
                 <textarea name="obs_posicion_paciente" class="observaciones"
                           placeholder="<?php echo attr(xlt('Observations...')); ?>"><?php echo text($obs_posicion_paciente); ?></textarea>
@@ -265,8 +261,8 @@ $page_title = $is_edit ? xlt('Edit Care Bundle') : xlt('New Care Bundle');
                 'suspension_sedacion'  => ['label' => xlt('Daily Sedation Suspension and Extubation Evaluation'),     'val' => $suspension_sedacion,      'obs' => $obs_suspension_sedacion],
                 'medicion_cuff'        => ['label' => xlt('Cuff Pressure Measurement'),                               'val' => $medicion_cuff,            'obs' => $obs_medicion_cuff],
             ];
-            foreach ($bool_fields as $name => $meta):
-            ?>
+            foreach ($bool_fields as $name => $meta) :
+                ?>
             <div class="form-group">
                 <h3><?php echo text($meta['label']); ?></h3>
                 <div class="radio-container">
@@ -284,7 +280,8 @@ $page_title = $is_edit ? xlt('Edit Care Bundle') : xlt('New Care Bundle');
                 <textarea name="<?php echo attr('obs_' . $name); ?>" class="observaciones"
                           placeholder="<?php echo attr(xlt('Observations...')); ?>"><?php echo text($meta['obs']); ?></textarea>
             </div>
-            <?php endforeach; ?>
+                <?php
+            endforeach; ?>
 
             <!-- CARE TIME -->
             <div class="form-group">

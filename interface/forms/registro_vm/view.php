@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Mechanical Ventilation Record Form - view.php
  * Displays ventilation records for a patient encounter, with PDF export.
@@ -11,22 +12,16 @@
  */
 
 require_once("../../globals.php");
-
 $pid       = isset($_GET['pid'])       ? (int)$_GET['pid']       : (int)($_SESSION['pid'] ?? 0);
 $encounter = isset($_GET['encounter']) ? (int)$_GET['encounter'] : (int)($_SESSION['encounter'] ?? 0);
 $id        = isset($_GET['id'])        ? (int)$_GET['id']        : 0;
-
 if (!$pid || !$encounter) {
     echo "<div style='padding:20px;color:red;'>" . xlt("Could not retrieve PID or Encounter.") . "</div>";
     exit;
 }
 
 // Get patient info
-$paciente = sqlQuery(
-    "SELECT CONCAT(fname, ' ', lname) AS full_name, pubpid, DOB FROM patient_data WHERE pid = ?",
-    array($pid)
-);
-
+$paciente = sqlQuery("SELECT CONCAT(fname, ' ', lname) AS full_name, pubpid, DOB FROM patient_data WHERE pid = ?", array($pid));
 // Calculate age
 $age = '';
 if (!empty($paciente['DOB'])) {
@@ -35,15 +30,9 @@ if (!empty($paciente['DOB'])) {
 }
 
 if ($id > 0) {
-    $result = sqlStatement(
-        "SELECT * FROM form_registro_vm WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1",
-        array($id, $pid, $encounter)
-    );
+    $result = sqlStatement("SELECT * FROM form_registro_vm WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1", array($id, $pid, $encounter));
 } else {
-    $result = sqlStatement(
-        "SELECT * FROM form_registro_vm WHERE pid = ? AND encounter = ? ORDER BY date DESC",
-        array($pid, $encounter)
-    );
+    $result = sqlStatement("SELECT * FROM form_registro_vm WHERE pid = ? AND encounter = ? ORDER BY date DESC", array($pid, $encounter));
 }
 
 // Ventilation mode display map
@@ -51,7 +40,6 @@ $modo_labels = [
     'ESPONTANEA'           => xlt('Spontaneous'),
     'VENTILACION MECANICA' => xlt('Mechanical Ventilation'),
 ];
-
 $bool_fields = [
     'presion'                 => xlt('Pressure'),
     'volumen'                 => xlt('Volume'),
@@ -223,12 +211,14 @@ $bool_fields = [
                 <strong><?php echo xlt('ID'); ?>:</strong>
                 <span><?php echo text($paciente['pubpid'] ?? xlt('Not available')); ?></span>
             </div>
-            <?php if (!empty($age)): ?>
+            <?php if (!empty($age)) :
+                ?>
             <div class="info-item">
                 <strong><?php echo xlt('Age'); ?>:</strong>
                 <span><?php echo text($age); ?></span>
             </div>
-            <?php endif; ?>
+                <?php
+            endif; ?>
         </div>
     </div>
 
@@ -237,9 +227,9 @@ $bool_fields = [
         echo "<div class='no-registros'><h3>" . xlt('No ventilation records found') . "</h3></div>";
     }
 
-    while ($row = sqlFetchArray($result)):
+    while ($row = sqlFetchArray($result)) :
         $modo_display = $modo_labels[$row['modo_ventilacion'] ?? ''] ?? text($row['modo_ventilacion'] ?? xlt('Not specified'));
-    ?>
+        ?>
 
     <div class="registro-card">
         <div class="registro-header">
@@ -276,16 +266,18 @@ $bool_fields = [
         <div class="modo-block">
             <div class="modo-label"><?php echo xlt('Ventilation Mode'); ?></div>
             <div class="modo-valor"><?php echo $modo_display; ?></div>
-            <?php if (!empty($row['obs_modo'])): ?>
+            <?php if (!empty($row['obs_modo'])) :
+                ?>
             <div style="margin-top:8px;font-size:13px;color:#495057;"><?php echo nl2br(text($row['obs_modo'])); ?></div>
-            <?php endif; ?>
+                <?php
+            endif; ?>
         </div>
 
-        <?php foreach ($bool_fields as $campo => $label):
+        <?php foreach ($bool_fields as $campo => $label) :
             $val = (int)($row[$campo] ?? 0);
             $obs = $row['obs_' . $campo] ?? '';
             $cls = $val ? 'si' : 'no';
-        ?>
+            ?>
         <div class="vm-detalle">
             <div class="vm-header <?php echo $cls; ?>">
                 <div class="vm-nombre"><?php echo text($label); ?></div>
@@ -298,11 +290,13 @@ $bool_fields = [
                 <p><?php echo !empty($obs) ? nl2br(text($obs)) : xlt('No observations recorded'); ?></p>
             </div>
         </div>
-        <?php endforeach; ?>
+            <?php
+        endforeach; ?>
 
     </div>
 
-    <?php endwhile; ?>
+        <?php
+    endwhile; ?>
 </div>
 
 </body>

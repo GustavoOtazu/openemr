@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Nursing Evaluations Form - save.php
  * Handles INSERT (create) and UPDATE (edit) for the evaluaciones form.
@@ -13,9 +14,7 @@
 require_once("../../globals.php");
 require_once("$srcdir/api.inc");
 require_once("$srcdir/forms.inc");
-
 use OpenEMR\Common\Csrf\CsrfUtils;
-
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     die(xlt("Method not allowed"));
 }
@@ -28,7 +27,6 @@ if (!CsrfUtils::verifyCsrfToken($_POST['csrf_token_form'])) {
 $pid       = (int)($_POST['pid']       ?? 0);
 $encounter = (int)($_POST['encounter'] ?? 0);
 $id        = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-
 if (!$pid || !$encounter) {
     die(xlt("Error: Missing required data (PID or Encounter)"));
 }
@@ -36,7 +34,6 @@ if (!$pid || !$encounter) {
 $user       = $_SESSION['authUser']       ?? 'admin';
 $groupname  = $_SESSION['authProvider']   ?? 'Default';
 $authorized = $_SESSION['userauthorized'] ?? 1;
-
 // Sanitize input fields
 $conciencia         = $_POST['conciencia']         ?? '';
 $obs_conciencia     = $_POST['obs_conciencia']     ?? '';
@@ -53,10 +50,8 @@ $obs_glasgow_motora = $_POST['obs_glasgow_motora'] ?? '';
 $glasgow_verbal     = $_POST['glasgow_verbal']     ?? '';
 $obs_glasgow_verbal = $_POST['obs_glasgow_verbal'] ?? '';
 $hora_evaluacion    = !empty($_POST['hora_evaluacion']) ? $_POST['hora_evaluacion'] : null;
-
 // Calculate Glasgow score server-side
 $glasgow_total = 0;
-
 $scores_ojos = [
     'ESPONTANEAMENTE' => 4, 'A ESTIMULOS AUDITIVOS' => 3,
     'AL DOLOR' => 2, 'SIN RESPUESTA' => 1,
@@ -71,25 +66,18 @@ $scores_verbal = [
     'LENGUAJE INADECUADO' => 3, 'SONIDOS INCOMPRENSIBLES' => 2,
     'NINGUNA' => 1,
 ];
-
 $glasgow_total += $scores_ojos[$glasgow_ojos]     ?? 0;
 $glasgow_total += $scores_motora[$glasgow_motora] ?? 0;
 $glasgow_total += $scores_verbal[$glasgow_verbal] ?? 0;
-
 $is_edit = ($id > 0);
-
 if ($is_edit) {
-    // Verify the record belongs to this patient/encounter
-    $check = sqlQuery(
-        "SELECT id FROM form_evaluaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1",
-        array($id, $pid, $encounter)
-    );
+// Verify the record belongs to this patient/encounter
+    $check = sqlQuery("SELECT id FROM form_evaluaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1", array($id, $pid, $encounter));
     if (!$check) {
         die(xlt("Error: Record not found or insufficient permissions."));
     }
 
-    $upd = sqlStatement(
-        "UPDATE form_evaluaciones SET
+    $upd = sqlStatement("UPDATE form_evaluaciones SET
             date = NOW(), user = ?, groupname = ?, authorized = ?,
             conciencia = ?, obs_conciencia = ?,
             tono = ?, obs_tono = ?,
@@ -99,8 +87,7 @@ if ($is_edit) {
             glasgow_motora = ?, obs_glasgow_motora = ?,
             glasgow_verbal = ?, obs_glasgow_verbal = ?,
             glasgow_total = ?, hora_evaluacion = ?
-         WHERE id = ? AND pid = ? AND encounter = ?",
-        array(
+         WHERE id = ? AND pid = ? AND encounter = ?", array(
             $user, $groupname, $authorized,
             $conciencia, $obs_conciencia,
             $tono, $obs_tono,
@@ -111,15 +98,12 @@ if ($is_edit) {
             $glasgow_verbal, $obs_glasgow_verbal,
             $glasgow_total, $hora_evaluacion,
             $id, $pid, $encounter,
-        )
-    );
-
+        ));
     if ($upd === false) {
         die(xlt("Error: Could not update the record. Please try again."));
     }
 } else {
-    $newid = sqlInsert(
-        "INSERT INTO form_evaluaciones (
+    $newid = sqlInsert("INSERT INTO form_evaluaciones (
             date, pid, encounter, user, groupname, authorized, activity,
             conciencia, obs_conciencia,
             tono, obs_tono,
@@ -133,8 +117,7 @@ if ($is_edit) {
             NOW(), ?, ?, ?, ?, ?, 1,
             ?, ?, ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?, ?, ?, ?, ?
-         )",
-        array(
+         )", array(
             $pid, $encounter, $user, $groupname, $authorized,
             $conciencia, $obs_conciencia,
             $tono, $obs_tono,
@@ -144,9 +127,7 @@ if ($is_edit) {
             $glasgow_motora, $obs_glasgow_motora,
             $glasgow_verbal, $obs_glasgow_verbal,
             $glasgow_total, $hora_evaluacion,
-        )
-    );
-
+        ));
     if (!$newid) {
         die(xlt("Error: Could not save the record. Please try again."));
     }
@@ -156,4 +137,3 @@ if ($is_edit) {
 
 formHeader(xlt("Redirecting..."));
 formJump($GLOBALS['webroot'] . "/interface/tableros/lista_internados.php");
-?>

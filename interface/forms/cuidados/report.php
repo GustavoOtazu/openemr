@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Nursing Care Bundle Form - report.php
  * Displays the care bundle record embedded in the encounter summary.
@@ -11,14 +12,9 @@
  */
 
 require_once("../../globals.php");
-
 function cuidados_report($pid, $encounter, $cols, $id)
 {
-    $row = sqlQuery(
-        "SELECT * FROM form_cuidados WHERE id = ? AND pid = ?",
-        array($id, $pid)
-    );
-
+    $row = sqlQuery("SELECT * FROM form_cuidados WHERE id = ? AND pid = ?", array($id, $pid));
     if (!$row) {
         echo "<p style='color:#c0392b;padding:10px;'>" . xlt("No data found for this record.") . "</p>";
         return;
@@ -31,15 +27,12 @@ function cuidados_report($pid, $encounter, $cols, $id)
         'suspension_sedacion'  => xlt('Daily Sedation Suspension and Extubation Evaluation'),
         'medicion_cuff'        => xlt('Cuff Pressure Measurement'),
     ];
-
     $hora = !empty($row['hora_cuidado'])
         ? date('H:i', strtotime($row['hora_cuidado']))
         : xlt('Not specified');
-
     $fecha = !empty($row['date'])
         ? date('d/m/Y H:i', strtotime($row['date']))
         : '-';
-
     $total_activos = 0;
     foreach (array_keys($bool_items) as $campo) {
         if ((int)($row[$campo] ?? 0) === 1) {
@@ -234,18 +227,22 @@ function cuidados_report($pid, $encounter, $cols, $id)
         <div class="meta-bar">
             <span><strong><?php echo xlt('Care Time'); ?>:</strong> <?php echo text($hora); ?></span>
             <span><strong><?php echo xlt('Recorded'); ?>:</strong> <?php echo text($fecha); ?></span>
-            <?php if (!empty($row['user'])): ?>
+            <?php if (!empty($row['user'])) :
+                ?>
             <span><strong><?php echo xlt('User'); ?>:</strong> <?php echo text($row['user']); ?></span>
-            <?php endif; ?>
+                <?php
+            endif; ?>
         </div>
 
         <!-- PATIENT POSITION -->
         <div class="posicion-bar">
             <?php echo xlt('Patient Position'); ?>:
             <strong><?php echo !empty($row['posicion_paciente']) ? text($row['posicion_paciente']) : xlt('Not specified'); ?></strong>
-            <?php if (!empty($row['obs_posicion_paciente'])): ?>
+            <?php if (!empty($row['obs_posicion_paciente'])) :
+                ?>
             &mdash; <span style="color:#555;font-size:11px;"><?php echo text($row['obs_posicion_paciente']); ?></span>
-            <?php endif; ?>
+                <?php
+            endif; ?>
         </div>
 
         <!-- TABLE -->
@@ -258,30 +255,39 @@ function cuidados_report($pid, $encounter, $cols, $id)
                 </tr>
             </thead>
             <tbody>
-            <?php foreach ($bool_items as $campo => $label):
+            <?php foreach ($bool_items as $campo => $label) :
                 $valor  = (int)($row[$campo] ?? 0);
                 $obs    = trim($row['obs_' . $campo] ?? '');
                 $rowCls = $valor ? 'row-si' : 'row-no';
                 $tdCls  = $valor ? 'td-nombre activo' : 'td-nombre';
-            ?>
+                ?>
                 <tr class="<?php echo $rowCls; ?>">
                     <td class="<?php echo $tdCls; ?>"><?php echo text($label); ?></td>
                     <td class="td-estado">
-                        <?php if ($valor): ?>
+                        <?php if ($valor) :
+                            ?>
                             <span class="badge-si"><?php echo xlt('Yes'); ?></span>
-                        <?php else: ?>
+                            <?php
+                        else :
+                            ?>
                             <span class="badge-no"><?php echo xlt('No'); ?></span>
-                        <?php endif; ?>
+                            <?php
+                        endif; ?>
                     </td>
                     <td class="td-obs">
-                        <?php if ($obs !== ''): ?>
+                        <?php if ($obs !== '') :
+                            ?>
                             <?php echo nl2br(text($obs)); ?>
-                        <?php else: ?>
+                            <?php
+                        else :
+                            ?>
                             <span class="obs-vacia"><?php echo xlt('No observations recorded'); ?></span>
-                        <?php endif; ?>
+                            <?php
+                        endif; ?>
                     </td>
                 </tr>
-            <?php endforeach; ?>
+                <?php
+            endforeach; ?>
             </tbody>
         </table>
 

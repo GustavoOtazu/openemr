@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Mechanical Ventilation Record Form - report.php
  * Displays the ventilation record embedded in the encounter summary.
@@ -11,14 +12,9 @@
  */
 
 require_once("../../globals.php");
-
 function registro_vm_report($pid, $encounter, $cols, $id)
 {
-    $row = sqlQuery(
-        "SELECT * FROM form_registro_vm WHERE id = ? AND pid = ?",
-        array($id, $pid)
-    );
-
+    $row = sqlQuery("SELECT * FROM form_registro_vm WHERE id = ? AND pid = ?", array($id, $pid));
     if (!$row) {
         echo "<p style='color:#c0392b;padding:10px;'>" . xlt("No data found for this record.") . "</p>";
         return;
@@ -43,21 +39,17 @@ function registro_vm_report($pid, $encounter, $cols, $id)
         'vdvt'                    => 'VD / VT',
         'ko2'                     => 'KO2',
     ];
-
     $modo_labels = [
         'ESPONTANEA'           => xlt('Spontaneous'),
         'VENTILACION MECANICA' => xlt('Mechanical Ventilation'),
     ];
     $modo_display = $modo_labels[$row['modo_ventilacion'] ?? ''] ?? ($row['modo_ventilacion'] ?? xlt('Not specified'));
-
     $hora = !empty($row['hora_registro'])
         ? date('H:i', strtotime($row['hora_registro']))
         : xlt('Not specified');
-
     $fecha = !empty($row['date'])
         ? date('d/m/Y H:i', strtotime($row['date']))
         : '-';
-
     $total_activos = 0;
     foreach (array_keys($bool_items) as $campo) {
         if ((int)($row[$campo] ?? 0) === 1) {
@@ -213,18 +205,22 @@ function registro_vm_report($pid, $encounter, $cols, $id)
         <div class="meta-bar">
             <span><strong><?php echo xlt('Record Time'); ?>:</strong> <?php echo text($hora); ?></span>
             <span><strong><?php echo xlt('Recorded'); ?>:</strong> <?php echo text($fecha); ?></span>
-            <?php if (!empty($row['user'])): ?>
+            <?php if (!empty($row['user'])) :
+                ?>
             <span><strong><?php echo xlt('User'); ?>:</strong> <?php echo text($row['user']); ?></span>
-            <?php endif; ?>
+                <?php
+            endif; ?>
         </div>
 
         <!-- VENTILATION MODE -->
         <div class="modo-bar">
             <?php echo xlt('Ventilation Mode'); ?>:
             <strong><?php echo text($modo_display); ?></strong>
-            <?php if (!empty($row['obs_modo'])): ?>
+            <?php if (!empty($row['obs_modo'])) :
+                ?>
             &mdash; <span style="color:#555;font-size:11px;"><?php echo text($row['obs_modo']); ?></span>
-            <?php endif; ?>
+                <?php
+            endif; ?>
         </div>
 
         <!-- TABLE -->
@@ -237,30 +233,39 @@ function registro_vm_report($pid, $encounter, $cols, $id)
                 </tr>
             </thead>
             <tbody>
-            <?php foreach ($bool_items as $campo => $label):
+            <?php foreach ($bool_items as $campo => $label) :
                 $valor  = (int)($row[$campo] ?? 0);
                 $obs    = trim($row['obs_' . $campo] ?? '');
                 $rowCls = $valor ? 'row-si' : 'row-no';
                 $tdCls  = $valor ? 'td-nombre activo' : 'td-nombre';
-            ?>
+                ?>
                 <tr class="<?php echo $rowCls; ?>">
                     <td class="<?php echo $tdCls; ?>"><?php echo text($label); ?></td>
                     <td class="td-estado">
-                        <?php if ($valor): ?>
+                        <?php if ($valor) :
+                            ?>
                             <span class="badge-si"><?php echo xlt('Yes'); ?></span>
-                        <?php else: ?>
+                            <?php
+                        else :
+                            ?>
                             <span class="badge-no"><?php echo xlt('No'); ?></span>
-                        <?php endif; ?>
+                            <?php
+                        endif; ?>
                     </td>
                     <td class="td-obs">
-                        <?php if ($obs !== ''): ?>
+                        <?php if ($obs !== '') :
+                            ?>
                             <?php echo nl2br(text($obs)); ?>
-                        <?php else: ?>
+                            <?php
+                        else :
+                            ?>
                             <span class="obs-vacia"><?php echo xlt('No observations recorded'); ?></span>
-                        <?php endif; ?>
+                            <?php
+                        endif; ?>
                     </td>
                 </tr>
-            <?php endforeach; ?>
+                <?php
+            endforeach; ?>
             </tbody>
         </table>
 

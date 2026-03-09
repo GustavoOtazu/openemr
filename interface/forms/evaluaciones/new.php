@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Nursing Evaluations Form - new.php
  * Neurological assessment form for inpatients (Glasgow Scale, consciousness, pupils, etc.)
@@ -12,20 +13,16 @@
 
 require_once("../../globals.php");
 require_once("$srcdir/api.inc");
-
 use OpenEMR\Common\Csrf\CsrfUtils;
-
 // Get parameters
 $pid       = isset($_GET['pid'])       ? (int)$_GET['pid']       : (int)($_SESSION['pid'] ?? 0);
 $encounter = isset($_GET['encounter']) ? (int)$_GET['encounter'] : (int)($_SESSION['encounter'] ?? 0);
 $id        = isset($_GET['id'])        ? (int)$_GET['id']        : 0;
-
 if (!$pid || !$encounter) {
     die(xlt("Error: Missing required parameters (PID or Encounter)"));
 }
 
 $is_edit = ($id > 0);
-
 // Initialize field variables
 $conciencia        = '';
 $obs_conciencia    = '';
@@ -43,13 +40,9 @@ $glasgow_verbal    = '';
 $obs_glasgow_verbal = '';
 $glasgow_total     = 0;
 $hora_evaluacion   = '';
-
 // Load existing data in edit mode
 if ($is_edit) {
-    $row = sqlQuery(
-        "SELECT * FROM form_evaluaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1",
-        array($id, $pid, $encounter)
-    );
+    $row = sqlQuery("SELECT * FROM form_evaluaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1", array($id, $pid, $encounter));
     if ($row) {
         $conciencia         = $row['conciencia']         ?? '';
         $obs_conciencia     = $row['obs_conciencia']     ?? '';
@@ -254,9 +247,11 @@ $page_title = $is_edit ? xlt('Edit Nursing Evaluation') : xlt('New Nursing Evalu
             <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>">
             <input type="hidden" name="pid"       value="<?php echo attr($pid); ?>">
             <input type="hidden" name="encounter" value="<?php echo attr($encounter); ?>">
-            <?php if ($is_edit): ?>
+            <?php if ($is_edit) :
+                ?>
             <input type="hidden" name="id" value="<?php echo attr($id); ?>">
-            <?php endif; ?>
+                <?php
+            endif; ?>
 
             <!-- CONSCIOUSNESS -->
             <div class="form-group">
@@ -264,14 +259,15 @@ $page_title = $is_edit ? xlt('Edit Nursing Evaluation') : xlt('New Nursing Evalu
                 <div class="radio-container">
                     <?php
                     $consciousness_options = ['VIGIL', 'SOMNOLIENTO', 'ESTUPOROSO', 'COMATOSO'];
-                    foreach ($consciousness_options as $opt):
-                    ?>
+                    foreach ($consciousness_options as $opt) :
+                        ?>
                     <label>
                         <input type="radio" name="conciencia" value="<?php echo attr($opt); ?>"
                                <?php echo ($conciencia === $opt) ? 'checked' : ''; ?>>
                         <?php echo xlt($opt); ?>
                     </label>
-                    <?php endforeach; ?>
+                        <?php
+                    endforeach; ?>
                 </div>
                 <textarea name="obs_conciencia" class="observaciones"
                           placeholder="<?php echo attr(xlt('Observations about consciousness...')); ?>"><?php echo text($obs_conciencia); ?></textarea>
@@ -283,14 +279,15 @@ $page_title = $is_edit ? xlt('Edit Nursing Evaluation') : xlt('New Nursing Evalu
                 <div class="radio-container">
                     <?php
                     $tone_options = ['NORMAL', 'FLACIDO', 'ESPASTICO'];
-                    foreach ($tone_options as $opt):
-                    ?>
+                    foreach ($tone_options as $opt) :
+                        ?>
                     <label>
                         <input type="radio" name="tono" value="<?php echo attr($opt); ?>"
                                <?php echo ($tono === $opt) ? 'checked' : ''; ?>>
                         <?php echo xlt($opt); ?>
                     </label>
-                    <?php endforeach; ?>
+                        <?php
+                    endforeach; ?>
                 </div>
                 <textarea name="obs_tono" class="observaciones"
                           placeholder="<?php echo attr(xlt('Observations about muscle tone...')); ?>"><?php echo text($obs_tono); ?></textarea>
@@ -302,14 +299,15 @@ $page_title = $is_edit ? xlt('Edit Nursing Evaluation') : xlt('New Nursing Evalu
                 <div class="radio-container">
                     <?php
                     $pupil_options = ['NORMAL', 'MIDRIASIS', 'MIOSIS'];
-                    foreach ($pupil_options as $opt):
-                    ?>
+                    foreach ($pupil_options as $opt) :
+                        ?>
                     <label>
                         <input type="radio" name="pupilas" value="<?php echo attr($opt); ?>"
                                <?php echo ($pupilas === $opt) ? 'checked' : ''; ?>>
                         <?php echo xlt($opt); ?>
                     </label>
-                    <?php endforeach; ?>
+                        <?php
+                    endforeach; ?>
                 </div>
                 <textarea name="obs_pupilas" class="observaciones"
                           placeholder="<?php echo attr(xlt('Observations about pupils...')); ?>"><?php echo text($obs_pupilas); ?></textarea>
@@ -321,14 +319,15 @@ $page_title = $is_edit ? xlt('Edit Nursing Evaluation') : xlt('New Nursing Evalu
                 <div class="radio-container">
                     <?php
                     $mucosa_options = ['SECA', 'HUMEDA', 'PALIDA', 'ICTERICA', 'CIANOSIS'];
-                    foreach ($mucosa_options as $opt):
-                    ?>
+                    foreach ($mucosa_options as $opt) :
+                        ?>
                     <label>
                         <input type="radio" name="mucosas" value="<?php echo attr($opt); ?>"
                                <?php echo ($mucosas === $opt) ? 'checked' : ''; ?>>
                         <?php echo xlt($opt); ?>
                     </label>
-                    <?php endforeach; ?>
+                        <?php
+                    endforeach; ?>
                 </div>
                 <textarea name="obs_mucosas" class="observaciones"
                           placeholder="<?php echo attr(xlt('Observations about mucous membranes...')); ?>"><?php echo text($obs_mucosas); ?></textarea>
@@ -347,14 +346,15 @@ $page_title = $is_edit ? xlt('Edit Nursing Evaluation') : xlt('New Nursing Evalu
                         'AL DOLOR'              => xlt('To pain') . ' (2)',
                         'SIN RESPUESTA'         => xlt('No response') . ' (1)',
                     ];
-                    foreach ($eye_options as $val => $label):
-                    ?>
+                    foreach ($eye_options as $val => $label) :
+                        ?>
                     <label>
                         <input type="radio" name="glasgow_ojos" value="<?php echo attr($val); ?>"
                                <?php echo ($glasgow_ojos === $val) ? 'checked' : ''; ?>>
                         <?php echo text($label); ?>
                     </label>
-                    <?php endforeach; ?>
+                        <?php
+                    endforeach; ?>
                 </div>
                 <textarea name="obs_glasgow_ojos" class="observaciones"
                           placeholder="<?php echo attr(xlt('Observations about eye opening...')); ?>"><?php echo text($obs_glasgow_ojos); ?></textarea>
@@ -370,14 +370,15 @@ $page_title = $is_edit ? xlt('Edit Nursing Evaluation') : xlt('New Nursing Evalu
                         'EXTENSION ANORMAL'  => xlt('Abnormal extension') . ' (2)',
                         'NINGUNA'            => xlt('No response') . ' (1)',
                     ];
-                    foreach ($motor_options as $val => $label):
-                    ?>
+                    foreach ($motor_options as $val => $label) :
+                        ?>
                     <label>
                         <input type="radio" name="glasgow_motora" value="<?php echo attr($val); ?>"
                                <?php echo ($glasgow_motora === $val) ? 'checked' : ''; ?>>
                         <?php echo text($label); ?>
                     </label>
-                    <?php endforeach; ?>
+                        <?php
+                    endforeach; ?>
                 </div>
                 <textarea name="obs_glasgow_motora" class="observaciones"
                           placeholder="<?php echo attr(xlt('Observations about motor response...')); ?>"><?php echo text($obs_glasgow_motora); ?></textarea>
@@ -392,14 +393,15 @@ $page_title = $is_edit ? xlt('Edit Nursing Evaluation') : xlt('New Nursing Evalu
                         'SONIDOS INCOMPRENSIBLES' => xlt('Incomprehensible sounds') . ' (2)',
                         'NINGUNA'                 => xlt('No response') . ' (1)',
                     ];
-                    foreach ($verbal_options as $val => $label):
-                    ?>
+                    foreach ($verbal_options as $val => $label) :
+                        ?>
                     <label>
                         <input type="radio" name="glasgow_verbal" value="<?php echo attr($val); ?>"
                                <?php echo ($glasgow_verbal === $val) ? 'checked' : ''; ?>>
                         <?php echo text($label); ?>
                     </label>
-                    <?php endforeach; ?>
+                        <?php
+                    endforeach; ?>
                 </div>
                 <textarea name="obs_glasgow_verbal" class="observaciones"
                           placeholder="<?php echo attr(xlt('Observations about verbal response...')); ?>"><?php echo text($obs_glasgow_verbal); ?></textarea>

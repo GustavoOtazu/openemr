@@ -202,7 +202,7 @@ $nursing_forms = [
                 <div class="page-header clearfix">
                     <h2><?php echo xlt('Inpatient List'); ?></h2>
                     <br />
-                    <?php if ($id_encounter !== null): ?>
+                    <?php if ($id_encounter !== null) : ?>
                     <div class="alert alert-success alert-dismissible show" role="alert">
                         <?php echo xlt('Patient discharged successfully'); ?>:
                         <strong><?php echo text($nombre_paciente); ?></strong>
@@ -211,7 +211,7 @@ $nursing_forms = [
                         </button>
                     </div>
                     <?php endif; ?>
-                    <?php if ($update !== null): ?>
+                    <?php if ($update !== null) : ?>
                     <div class="alert alert-success alert-dismissible show" role="alert">
                         <?php echo xlt('Patient updated successfully'); ?>
                         <button type="button" class="close" data-dismiss="alert" aria-label="<?php echo xla('Close'); ?>" style="color:black !important;">
@@ -241,7 +241,7 @@ $nursing_forms = [
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($inpatient as $result): ?>
+                            <?php foreach ($inpatient as $result) : ?>
                             <tr>
                                 <td class="btn-pacienteData btn-link"
                                     data-pid="<?php echo attr($result['pid']); ?>"

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Nursing Applications Form - view.php
  * Displays application records for a patient encounter, with PDF export.
@@ -11,22 +12,16 @@
  */
 
 require_once("../../globals.php");
-
 $pid       = isset($_GET['pid'])       ? (int)$_GET['pid']       : (int)($_SESSION['pid'] ?? 0);
 $encounter = isset($_GET['encounter']) ? (int)$_GET['encounter'] : (int)($_SESSION['encounter'] ?? 0);
 $id        = isset($_GET['id'])        ? (int)$_GET['id']        : 0;
-
 if (!$pid || !$encounter) {
     echo "<div style='padding:20px;color:red;'>" . xlt("Could not retrieve PID or Encounter.") . "</div>";
     exit;
 }
 
 // Get patient info
-$paciente = sqlQuery(
-    "SELECT CONCAT(fname, ' ', lname) AS full_name, pubpid, DOB FROM patient_data WHERE pid = ?",
-    array($pid)
-);
-
+$paciente = sqlQuery("SELECT CONCAT(fname, ' ', lname) AS full_name, pubpid, DOB FROM patient_data WHERE pid = ?", array($pid));
 // Calculate age
 $age = '';
 if (!empty($paciente['DOB'])) {
@@ -35,15 +30,9 @@ if (!empty($paciente['DOB'])) {
 }
 
 if ($id > 0) {
-    $result = sqlStatement(
-        "SELECT * FROM form_aplicaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1",
-        array($id, $pid, $encounter)
-    );
+    $result = sqlStatement("SELECT * FROM form_aplicaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1", array($id, $pid, $encounter));
 } else {
-    $result = sqlStatement(
-        "SELECT * FROM form_aplicaciones WHERE pid = ? AND encounter = ? ORDER BY date DESC",
-        array($pid, $encounter)
-    );
+    $result = sqlStatement("SELECT * FROM form_aplicaciones WHERE pid = ? AND encounter = ? ORDER BY date DESC", array($pid, $encounter));
 }
 ?>
 
@@ -185,12 +174,14 @@ if ($id > 0) {
                 <strong><?php echo xlt('ID'); ?>:</strong>
                 <span><?php echo text($paciente['pubpid'] ?? xlt('Not available')); ?></span>
             </div>
-            <?php if (!empty($age)): ?>
+            <?php if (!empty($age)) :
+                ?>
             <div class="info-item">
                 <strong><?php echo xlt('Age'); ?>:</strong>
                 <span><?php echo text($age); ?></span>
             </div>
-            <?php endif; ?>
+                <?php
+            endif; ?>
         </div>
     </div>
 
@@ -207,8 +198,8 @@ if ($id > 0) {
         'sangre'        => xlt('Blood and Blood Products'),
     ];
 
-    while ($row = sqlFetchArray($result)):
-    ?>
+    while ($row = sqlFetchArray($result)) :
+        ?>
 
     <div class="registro-card">
         <div class="registro-header">
@@ -241,11 +232,11 @@ if ($id > 0) {
 
         <div class="seccion-titulo"><?php echo xlt('Application Detail'); ?></div>
 
-        <?php foreach ($fields as $campo => $label):
+        <?php foreach ($fields as $campo => $label) :
             $val = (int)($row[$campo] ?? 0);
             $obs = $row['obs_' . $campo] ?? '';
             $cls = $val ? 'si' : 'no';
-        ?>
+            ?>
         <div class="aplicacion-detalle">
             <div class="aplicacion-header <?php echo $cls; ?>">
                 <div class="aplicacion-nombre"><?php echo text($label); ?></div>
@@ -258,11 +249,13 @@ if ($id > 0) {
                 <p><?php echo !empty($obs) ? nl2br(text($obs)) : xlt('No observations recorded'); ?></p>
             </div>
         </div>
-        <?php endforeach; ?>
+            <?php
+        endforeach; ?>
 
     </div>
 
-    <?php endwhile; ?>
+        <?php
+    endwhile; ?>
 </div>
 
 </body>

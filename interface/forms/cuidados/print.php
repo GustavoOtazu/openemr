@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Nursing Care Bundle Form - print.php
  * Generates a PDF report using mPDF for a single care bundle record.
@@ -11,33 +12,22 @@
  */
 
 require_once("../../globals.php");
-
 use Mpdf\Mpdf;
-
 $pid       = isset($_GET['pid'])       ? (int)$_GET['pid']       : (int)($_SESSION['pid']       ?? 0);
 $encounter = isset($_GET['encounter']) ? (int)$_GET['encounter'] : (int)($_SESSION['encounter'] ?? 0);
 $id        = isset($_GET['id'])        ? (int)$_GET['id']        : 0;
-
 if (!$pid || !$encounter || !$id) {
     die(xlt("Error: Missing required parameters."));
 }
 
 // Load care bundle record
-$row = sqlQuery(
-    "SELECT * FROM form_cuidados WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1",
-    array($id, $pid, $encounter)
-);
-
+$row = sqlQuery("SELECT * FROM form_cuidados WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1", array($id, $pid, $encounter));
 if (!$row) {
     die(xlt("Error: Record not found or insufficient permissions."));
 }
 
 // Load patient data
-$paciente = sqlQuery(
-    "SELECT CONCAT(fname, ' ', lname) AS full_name, pubpid, DOB FROM patient_data WHERE pid = ?",
-    array($pid)
-);
-
+$paciente = sqlQuery("SELECT CONCAT(fname, ' ', lname) AS full_name, pubpid, DOB FROM patient_data WHERE pid = ?", array($pid));
 // Calculate age
 $age = '';
 if (!empty($paciente['DOB'])) {
@@ -49,7 +39,9 @@ $eval_date = !empty($row['date'])         ? date('d/m/Y', strtotime($row['date']
 $eval_time = !empty($row['hora_cuidado']) ? $row['hora_cuidado']                   : '-';
 
 // Helper: boolean table row
-function careRow($label, $val, $obs) {
+function careRow($label, $val, $obs)
+{
+
     $obs_html = ($obs !== '' && $obs !== '-')
         ? htmlspecialchars($obs)
         : '<span style="color:#bbb;font-style:italic;">' . xlt('No observations recorded') . '</span>';
@@ -66,14 +58,18 @@ function careRow($label, $val, $obs) {
 }
 
 // Section header helper
-function secHeader($title, $bg) {
+function secHeader($title, $bg)
+{
+
     return '<div style="background:' . $bg . ';color:#fff;font-size:9px;font-weight:bold;'
          . 'text-transform:uppercase;letter-spacing:1px;padding:7px 12px;margin:12px 0 0 0;">'
          . $title . '</div>';
 }
 
 // Table header row
-function tableHeader($c1, $c2, $c3) {
+function tableHeader($c1, $c2, $c3)
+{
+
     return '<table style="width:100%;border-collapse:collapse;margin-bottom:10px;">'
          . '<thead><tr>'
          . '<th style="background:#34495e;color:#fff;padding:7px 10px;text-align:left;font-size:9px;'
@@ -135,12 +131,14 @@ ob_start();
                     <div style="font-size:7px; color:#888; margin-bottom:2px;"><?php echo xlt('ID'); ?></div>
                     <div style="font-weight:bold; font-size:11px;"><?php echo text($paciente['pubpid'] ?? '-'); ?></div>
                 </td>
-                <?php if (!empty($age)): ?>
+                <?php if (!empty($age)) :
+                    ?>
                 <td style="width:18%; padding:3px 8px;">
                     <div style="font-size:7px; color:#888; margin-bottom:2px;"><?php echo xlt('Age'); ?></div>
                     <div style="font-weight:bold; font-size:11px;"><?php echo text($age); ?></div>
                 </td>
-                <?php endif; ?>
+                    <?php
+                endif; ?>
                 <td style="padding:3px 0 3px 8px;">
                     <div style="font-size:7px; color:#888; margin-bottom:2px;"><?php echo xlt('User'); ?></div>
                     <div style="font-weight:bold; font-size:11px;"><?php echo text($row['user'] ?? '-'); ?></div>
@@ -158,9 +156,11 @@ ob_start();
         <span style="font-size:12px; font-weight:bold; color:#1976d2; margin-left:8px;">
             <?php echo !empty($row['posicion_paciente']) ? text($row['posicion_paciente']) : xlt('Not specified'); ?>
         </span>
-        <?php if (!empty($row['obs_posicion_paciente'])): ?>
+        <?php if (!empty($row['obs_posicion_paciente'])) :
+            ?>
         <div style="margin-top:6px; font-size:9px; color:#444;"><?php echo htmlspecialchars($row['obs_posicion_paciente']); ?></div>
-        <?php endif; ?>
+            <?php
+        endif; ?>
     </div>
 
     <!-- CARE BUNDLE TABLE -->
@@ -202,7 +202,6 @@ ob_start();
 </html>
 <?php
 $html = ob_get_clean();
-
 // ---------------------------------------------------------------
 // Generate PDF with mPDF
 // ---------------------------------------------------------------
@@ -217,10 +216,8 @@ $mpdf = new Mpdf([
     'default_font_size' => 10,
     'tempDir'           => sys_get_temp_dir(),
 ]);
-
 $mpdf->SetTitle(xlt('Nursing Care Bundle') . ' - ' . ($paciente['full_name'] ?? ''));
 $mpdf->WriteHTML($html);
-
 $filename = 'Cuidados_' . preg_replace('/\s+/', '_', $paciente['full_name'] ?? 'paciente') . '_' . date('Ymd_His') . '.pdf';
 $mpdf->Output($filename, 'D');
 exit;

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Nursing Wound Care Form - save.php
  * Handles INSERT (create) and UPDATE (edit) for the curaciones form.
@@ -13,9 +14,7 @@
 require_once("../../globals.php");
 require_once("$srcdir/api.inc");
 require_once("$srcdir/forms.inc");
-
 use OpenEMR\Common\Csrf\CsrfUtils;
-
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     die(xlt("Method not allowed"));
 }
@@ -28,7 +27,6 @@ if (!CsrfUtils::verifyCsrfToken($_POST['csrf_token_form'])) {
 $pid       = (int)($_POST['pid']       ?? 0);
 $encounter = (int)($_POST['encounter'] ?? 0);
 $id        = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-
 if (!$pid || !$encounter) {
     die(xlt("Error: Missing required data (PID or Encounter)"));
 }
@@ -36,7 +34,6 @@ if (!$pid || !$encounter) {
 $user       = $_SESSION['authUser']       ?? 'admin';
 $groupname  = $_SESSION['authProvider']   ?? 'Default';
 $authorized = $_SESSION['userauthorized'] ?? 1;
-
 // Sanitize input fields
 $herida_operatoria      = (int)($_POST['herida_operatoria']      ?? 0);
 $obs_herida_operatoria  = $_POST['obs_herida_operatoria']         ?? '';
@@ -51,21 +48,15 @@ $obs_via_venosa_central = $_POST['obs_via_venosa_central']        ?? '';
 $via_venosa             = (int)($_POST['via_venosa']             ?? 0);
 $obs_via_venosa         = $_POST['obs_via_venosa']                ?? '';
 $hora_operacion         = !empty($_POST['hora_operacion']) ? $_POST['hora_operacion'] : null;
-
 $is_edit = ($id > 0);
-
 if ($is_edit) {
-    // Verify the record belongs to this patient/encounter
-    $check = sqlQuery(
-        "SELECT id FROM form_curaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1",
-        array($id, $pid, $encounter)
-    );
+// Verify the record belongs to this patient/encounter
+    $check = sqlQuery("SELECT id FROM form_curaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1", array($id, $pid, $encounter));
     if (!$check) {
         die(xlt("Error: Record not found or insufficient permissions."));
     }
 
-    $upd = sqlStatement(
-        "UPDATE form_curaciones SET
+    $upd = sqlStatement("UPDATE form_curaciones SET
             date = NOW(), user = ?, groupname = ?, authorized = ?,
             herida_operatoria = ?, obs_herida_operatoria = ?,
             traqueostomia = ?, obs_traqueostomia = ?,
@@ -74,8 +65,7 @@ if ($is_edit) {
             via_venosa_central = ?, obs_via_venosa_central = ?,
             via_venosa = ?, obs_via_venosa = ?,
             hora_operacion = ?
-         WHERE id = ? AND pid = ? AND encounter = ?",
-        array(
+         WHERE id = ? AND pid = ? AND encounter = ?", array(
             $user, $groupname, $authorized,
             $herida_operatoria, $obs_herida_operatoria,
             $traqueostomia, $obs_traqueostomia,
@@ -85,15 +75,12 @@ if ($is_edit) {
             $via_venosa, $obs_via_venosa,
             $hora_operacion,
             $id, $pid, $encounter,
-        )
-    );
-
+        ));
     if ($upd === false) {
         die(xlt("Error: Could not update the record. Please try again."));
     }
 } else {
-    $newid = sqlInsert(
-        "INSERT INTO form_curaciones (
+    $newid = sqlInsert("INSERT INTO form_curaciones (
             date, pid, encounter, user, groupname, authorized, activity,
             herida_operatoria, obs_herida_operatoria,
             traqueostomia, obs_traqueostomia,
@@ -106,8 +93,7 @@ if ($is_edit) {
             NOW(), ?, ?, ?, ?, ?, 1,
             ?, ?, ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?, ?
-         )",
-        array(
+         )", array(
             $pid, $encounter, $user, $groupname, $authorized,
             $herida_operatoria, $obs_herida_operatoria,
             $traqueostomia, $obs_traqueostomia,
@@ -116,9 +102,7 @@ if ($is_edit) {
             $via_venosa_central, $obs_via_venosa_central,
             $via_venosa, $obs_via_venosa,
             $hora_operacion,
-        )
-    );
-
+        ));
     if (!$newid) {
         die(xlt("Error: Could not save the record. Please try again."));
     }
@@ -128,4 +112,3 @@ if ($is_edit) {
 
 formHeader(xlt("Redirecting..."));
 formJump($GLOBALS['webroot'] . "/interface/tableros/lista_internados.php");
-?>

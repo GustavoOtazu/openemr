@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Nursing Wound Care Form - new.php
  * Wound care assessment form for inpatients.
@@ -12,20 +13,16 @@
 
 require_once("../../globals.php");
 require_once("$srcdir/api.inc");
-
 use OpenEMR\Common\Csrf\CsrfUtils;
-
 // Get parameters
 $pid       = isset($_GET['pid'])       ? (int)$_GET['pid']       : (int)($_SESSION['pid'] ?? 0);
 $encounter = isset($_GET['encounter']) ? (int)$_GET['encounter'] : (int)($_SESSION['encounter'] ?? 0);
 $id        = isset($_GET['id'])        ? (int)$_GET['id']        : 0;
-
 if (!$pid || !$encounter) {
     die(xlt("Error: Missing required parameters (PID or Encounter)"));
 }
 
 $is_edit = ($id > 0);
-
 // Initialize field variables
 $herida_operatoria      = 0;
 $obs_herida_operatoria  = '';
@@ -40,13 +37,9 @@ $obs_via_venosa_central = '';
 $via_venosa             = 0;
 $obs_via_venosa         = '';
 $hora_operacion         = '';
-
 // Load existing data in edit mode
 if ($is_edit) {
-    $row = sqlQuery(
-        "SELECT * FROM form_curaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1",
-        array($id, $pid, $encounter)
-    );
+    $row = sqlQuery("SELECT * FROM form_curaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1", array($id, $pid, $encounter));
     if ($row) {
         $herida_operatoria      = (int)($row['herida_operatoria']      ?? 0);
         $obs_herida_operatoria  = $row['obs_herida_operatoria']         ?? '';
@@ -222,9 +215,11 @@ $page_title = $is_edit ? xlt('Edit Wound Care') : xlt('New Wound Care');
             <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>">
             <input type="hidden" name="pid"       value="<?php echo attr($pid); ?>">
             <input type="hidden" name="encounter" value="<?php echo attr($encounter); ?>">
-            <?php if ($is_edit): ?>
+            <?php if ($is_edit) :
+                ?>
             <input type="hidden" name="id" value="<?php echo attr($id); ?>">
-            <?php endif; ?>
+                <?php
+            endif; ?>
 
             <?php
             $fields = [
@@ -235,8 +230,8 @@ $page_title = $is_edit ? xlt('Edit Wound Care') : xlt('New Wound Care');
                 'via_venosa_central' => ['label' => xlt('Central Venous Line'),   'val' => $via_venosa_central,     'obs' => $obs_via_venosa_central],
                 'via_venosa'         => ['label' => xlt('Peripheral IV Line'),    'val' => $via_venosa,             'obs' => $obs_via_venosa],
             ];
-            foreach ($fields as $name => $meta):
-            ?>
+            foreach ($fields as $name => $meta) :
+                ?>
             <div class="form-group">
                 <h3><?php echo text($meta['label']); ?></h3>
                 <div class="radio-container">
@@ -254,7 +249,8 @@ $page_title = $is_edit ? xlt('Edit Wound Care') : xlt('New Wound Care');
                 <textarea name="<?php echo attr('obs_' . $name); ?>" class="observaciones"
                           placeholder="<?php echo attr(xlt('Observations...')); ?>"><?php echo text($meta['obs']); ?></textarea>
             </div>
-            <?php endforeach; ?>
+                <?php
+            endforeach; ?>
 
             <!-- CARE TIME -->
             <div class="form-group">

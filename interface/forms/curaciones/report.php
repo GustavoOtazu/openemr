@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Wound Care Form - report.php
  * Displays the wound care record embedded in the encounter summary.
@@ -11,14 +12,9 @@
  */
 
 require_once("../../globals.php");
-
 function curaciones_report($pid, $encounter, $cols, $id)
 {
-    $row = sqlQuery(
-        "SELECT * FROM form_curaciones WHERE id = ? AND pid = ?",
-        array($id, $pid)
-    );
-
+    $row = sqlQuery("SELECT * FROM form_curaciones WHERE id = ? AND pid = ?", array($id, $pid));
     if (!$row) {
         echo "<p style='color:#c0392b;padding:10px;'>" . xlt("No data found for this record.") . "</p>";
         return;
@@ -32,16 +28,13 @@ function curaciones_report($pid, $encounter, $cols, $id)
         'via_venosa_central' => xlt('Central Venous Line'),
         'via_venosa'         => xlt('Peripheral IV Line'),
     ];
-
     $hora = !empty($row['hora_operacion'])
         ? date('H:i', strtotime($row['hora_operacion']))
         : xlt('Not specified');
-
     $fecha = !empty($row['date'])
         ? date('d/m/Y H:i', strtotime($row['date']))
         : '-';
-
-    // Contar activos
+// Contar activos
     $total_activos = 0;
     foreach (array_keys($items) as $campo) {
         if ((int)($row[$campo] ?? 0) === 1) {
@@ -232,9 +225,11 @@ function curaciones_report($pid, $encounter, $cols, $id)
         <div class="meta-bar">
             <span><strong><?php echo xlt('Care Time'); ?>:</strong> <?php echo text($hora); ?></span>
             <span><strong><?php echo xlt('Recorded'); ?>:</strong> <?php echo text($fecha); ?></span>
-            <?php if (!empty($row['user'])): ?>
+            <?php if (!empty($row['user'])) :
+                ?>
             <span><strong><?php echo xlt('User'); ?>:</strong> <?php echo text($row['user']); ?></span>
-            <?php endif; ?>
+                <?php
+            endif; ?>
         </div>
 
         <!-- TABLA -->
@@ -247,30 +242,39 @@ function curaciones_report($pid, $encounter, $cols, $id)
                 </tr>
             </thead>
             <tbody>
-            <?php foreach ($items as $campo => $label):
+            <?php foreach ($items as $campo => $label) :
                 $valor  = (int)($row[$campo] ?? 0);
                 $obs    = trim($row['obs_' . $campo] ?? '');
                 $rowCls = $valor ? 'row-si' : 'row-no';
                 $tdCls  = $valor ? 'td-nombre activo' : 'td-nombre';
-            ?>
+                ?>
                 <tr class="<?php echo $rowCls; ?>">
                     <td class="<?php echo $tdCls; ?>"><?php echo text($label); ?></td>
                     <td class="td-estado">
-                        <?php if ($valor): ?>
+                        <?php if ($valor) :
+                            ?>
                             <span class="badge-si"><?php echo xlt('Yes'); ?></span>
-                        <?php else: ?>
+                            <?php
+                        else :
+                            ?>
                             <span class="badge-no"><?php echo xlt('No'); ?></span>
-                        <?php endif; ?>
+                            <?php
+                        endif; ?>
                     </td>
                     <td class="td-obs">
-                        <?php if ($obs !== ''): ?>
+                        <?php if ($obs !== '') :
+                            ?>
                             <?php echo nl2br(text($obs)); ?>
-                        <?php else: ?>
+                            <?php
+                        else :
+                            ?>
                             <span class="obs-vacia"><?php echo xlt('No observations recorded'); ?></span>
-                        <?php endif; ?>
+                            <?php
+                        endif; ?>
                     </td>
                 </tr>
-            <?php endforeach; ?>
+                <?php
+            endforeach; ?>
             </tbody>
         </table>
 

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Nursing Evaluations Form - view.php
  * Displays evaluation records for a patient encounter, with PDF export.
@@ -11,22 +12,16 @@
  */
 
 require_once("../../globals.php");
-
 $pid       = isset($_GET['pid'])       ? (int)$_GET['pid']       : (int)($_SESSION['pid'] ?? 0);
 $encounter = isset($_GET['encounter']) ? (int)$_GET['encounter'] : (int)($_SESSION['encounter'] ?? 0);
 $id        = isset($_GET['id'])        ? (int)$_GET['id']        : 0;
-
 if (!$pid || !$encounter) {
     echo "<div style='padding:20px;color:red;'>" . xlt("Could not retrieve PID or Encounter.") . "</div>";
     exit;
 }
 
 // Get patient info
-$paciente = sqlQuery(
-    "SELECT CONCAT(fname, ' ', lname) AS full_name, pubpid, DOB FROM patient_data WHERE pid = ?",
-    array($pid)
-);
-
+$paciente = sqlQuery("SELECT CONCAT(fname, ' ', lname) AS full_name, pubpid, DOB FROM patient_data WHERE pid = ?", array($pid));
 // Calculate age
 $age = '';
 if (!empty($paciente['DOB'])) {
@@ -35,15 +30,9 @@ if (!empty($paciente['DOB'])) {
 }
 
 if ($id > 0) {
-    $result = sqlStatement(
-        "SELECT * FROM form_evaluaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1",
-        array($id, $pid, $encounter)
-    );
+    $result = sqlStatement("SELECT * FROM form_evaluaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1", array($id, $pid, $encounter));
 } else {
-    $result = sqlStatement(
-        "SELECT * FROM form_evaluaciones WHERE pid = ? AND encounter = ? ORDER BY date DESC",
-        array($pid, $encounter)
-    );
+    $result = sqlStatement("SELECT * FROM form_evaluaciones WHERE pid = ? AND encounter = ? ORDER BY date DESC", array($pid, $encounter));
 }
 ?>
 
@@ -200,12 +189,14 @@ if ($id > 0) {
                 <strong><?php echo xlt('ID'); ?>:</strong>
                 <span><?php echo text($paciente['pubpid'] ?? xlt('Not available')); ?></span>
             </div>
-            <?php if (!empty($age)): ?>
+            <?php if (!empty($age)) :
+                ?>
             <div class="info-item">
                 <strong><?php echo xlt('Age'); ?>:</strong>
                 <span><?php echo text($age); ?></span>
             </div>
-            <?php endif; ?>
+                <?php
+            endif; ?>
         </div>
     </div>
 
@@ -214,7 +205,7 @@ if ($id > 0) {
         echo "<div class='no-registros'><h3>" . xlt('No evaluations recorded') . "</h3></div>";
     }
 
-    while ($row = sqlFetchArray($result)):
+    while ($row = sqlFetchArray($result)) :
         $glasgow      = (int)($row['glasgow_total'] ?? 0);
         $glasgow_color = '#28a745';
         $glasgow_level = xlt('Mild');
@@ -225,7 +216,7 @@ if ($id > 0) {
             $glasgow_color = '#ffc107';
             $glasgow_level = xlt('Moderate');
         }
-    ?>
+        ?>
 
     <div class="registro-card" id="registro-<?php echo attr($row['id']); ?>">
         <div class="registro-header">
@@ -274,10 +265,10 @@ if ($id > 0) {
             'pupilas'    => ['label' => xlt('Pupils'),        'obs' => 'obs_pupilas'],
             'mucosas'    => ['label' => xlt('Mucous Membranes'), 'obs' => 'obs_mucosas'],
         ];
-        foreach ($basic_fields as $field => $meta):
+        foreach ($basic_fields as $field => $meta) :
             $val = $row[$field] ?? 'N/A';
             $obs = $row[$meta['obs']] ?? '';
-        ?>
+            ?>
         <div class="evaluacion-detalle">
             <div class="evaluacion-header">
                 <div class="evaluacion-nombre"><?php echo text($meta['label']); ?></div>
@@ -288,7 +279,8 @@ if ($id > 0) {
                 <p><?php echo !empty($obs) ? nl2br(text($obs)) : xlt('No observations recorded'); ?></p>
             </div>
         </div>
-        <?php endforeach; ?>
+                <?php
+        endforeach; ?>
 
         <div class="glasgow-section">
             <h4><?php echo xlt('Glasgow Coma Scale - Detailed'); ?></h4>
@@ -299,10 +291,10 @@ if ($id > 0) {
                 'glasgow_motora' => ['label' => xlt('Motor Response'),  'obs' => 'obs_glasgow_motora'],
                 'glasgow_verbal' => ['label' => xlt('Verbal Response'), 'obs' => 'obs_glasgow_verbal'],
             ];
-            foreach ($glasgow_fields as $field => $meta):
+            foreach ($glasgow_fields as $field => $meta) :
                 $val = $row[$field] ?? 'N/A';
                 $obs = $row[$meta['obs']] ?? '';
-            ?>
+                ?>
             <div class="evaluacion-detalle">
                 <div class="evaluacion-header">
                     <div class="evaluacion-nombre"><?php echo text($meta['label']); ?></div>
@@ -313,11 +305,13 @@ if ($id > 0) {
                     <p><?php echo !empty($obs) ? nl2br(text($obs)) : xlt('No observations recorded'); ?></p>
                 </div>
             </div>
-            <?php endforeach; ?>
+                        <?php
+            endforeach; ?>
         </div>
     </div>
 
-    <?php endwhile; ?>
+        <?php
+    endwhile; ?>
 </div>
 
 </body>

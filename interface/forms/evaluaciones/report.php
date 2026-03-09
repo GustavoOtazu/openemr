@@ -27,17 +27,17 @@ function evaluaciones_report($pid, $encounter, $cols, $id)
         $level_text  = xlt('Mild');
         $level_color = '#27ae60';
         $level_bg    = '#eafaf1';
-        $level_border= '#27ae60';
+        $level_border = '#27ae60';
     } elseif ($score >= 9) {
         $level_text  = xlt('Moderate');
         $level_color = '#e67e22';
         $level_bg    = '#fef5e7';
-        $level_border= '#e67e22';
+        $level_border = '#e67e22';
     } else {
         $level_text  = xlt('Severe');
         $level_color = '#e74c3c';
         $level_bg    = '#fdedec';
-        $level_border= '#e74c3c';
+        $level_border = '#e74c3c';
     }
 
     $hora  = text($result['hora_evaluacion'] ?? '-');
@@ -206,16 +206,16 @@ function evaluaciones_report($pid, $encounter, $cols, $id)
                 'pupilas'    => ['label' => xlt('Pupils'),        'obs' => 'obs_pupilas'],
                 'mucosas'    => ['label' => xlt('Mucous Membranes'), 'obs' => 'obs_mucosas'],
             ];
-            foreach ($basic as $field => $meta):
+            foreach ($basic as $field => $meta) :
                 $val = trim($result[$field] ?? '');
                 $obs = trim($result[$meta['obs']] ?? '');
-            ?>
+                ?>
                 <tr>
                     <td class="td-item"><?php echo text($meta['label']); ?></td>
                     <td class="td-val">
-                        <?php if ($val !== '' && $val !== '-'): ?>
+                        <?php if ($val !== '' && $val !== '-') : ?>
                             <span class="val-badge"><?php echo text($val); ?></span>
-                        <?php else: ?>
+                        <?php else : ?>
                             <span class="obs-vacia">—</span>
                         <?php endif; ?>
                     </td>
@@ -244,16 +244,16 @@ function evaluaciones_report($pid, $encounter, $cols, $id)
                 'glasgow_motora' => ['label' => xlt('Motor Response'),  'obs' => 'obs_glasgow_motora'],
                 'glasgow_verbal' => ['label' => xlt('Verbal Response'), 'obs' => 'obs_glasgow_verbal'],
             ];
-            foreach ($glasgow_fields as $field => $meta):
+            foreach ($glasgow_fields as $field => $meta) :
                 $val = trim($result[$field] ?? '');
                 $obs = trim($result[$meta['obs']] ?? '');
-            ?>
+                ?>
                 <tr>
                     <td class="td-item td-sub"><?php echo text($meta['label']); ?></td>
                     <td class="td-val">
-                        <?php if ($val !== '' && $val !== '-'): ?>
+                        <?php if ($val !== '' && $val !== '-') : ?>
                             <span class="val-badge"><?php echo text($val); ?></span>
-                        <?php else: ?>
+                        <?php else : ?>
                             <span class="obs-vacia">—</span>
                         <?php endif; ?>
                     </td>

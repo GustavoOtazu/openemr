@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Mechanical Ventilation Record Form - new.php
  * Ventilator parameters record for mechanically ventilated patients.
@@ -12,68 +13,94 @@
 
 require_once("../../globals.php");
 require_once("$srcdir/api.inc");
-
 use OpenEMR\Common\Csrf\CsrfUtils;
-
 // Get parameters
 $pid       = isset($_GET['pid'])       ? (int)$_GET['pid']       : (int)($_SESSION['pid'] ?? 0);
 $encounter = isset($_GET['encounter']) ? (int)$_GET['encounter'] : (int)($_SESSION['encounter'] ?? 0);
 $id        = isset($_GET['id'])        ? (int)$_GET['id']        : 0;
-
 if (!$pid || !$encounter) {
     die(xlt("Error: Missing required parameters (PID or Encounter)"));
 }
 
 $is_edit = ($id > 0);
-
 // Initialize all field variables
 $modo_ventilacion            = '';
 $obs_modo                    = '';
-$presion                     = 0; $obs_presion                  = '';
-$volumen                     = 0; $obs_volumen                  = '';
-$simv                        = 0; $obs_simv                     = '';
-$psv                         = 0; $obs_psv                      = '';
-$otros                       = 0; $obs_otros                    = '';
-$frecuencia_respiratoria     = 0; $obs_frecuencia_respiratoria  = '';
-$p_inspiratorio              = 0; $obs_p_inspiratorio           = '';
-$p_media                     = 0; $obs_p_media                  = '';
-$p_max                       = 0; $obs_p_max                    = '';
-$chst                        = 0; $obs_chst                     = '';
-$disparo                     = 0; $obs_disparo                  = '';
-$fvt                         = 0; $obs_fvt                      = '';
-$vol_tidal                   = 0; $obs_vol_tidal                = '';
-$vm_programado               = 0; $obs_vm_programado            = '';
-$petco2                      = 0; $obs_petco2                   = '';
-$vdvt                        = 0; $obs_vdvt                     = '';
-$ko2                         = 0; $obs_ko2                      = '';
+$presion                     = 0;
+$obs_presion                  = '';
+$volumen                     = 0;
+$obs_volumen                  = '';
+$simv                        = 0;
+$obs_simv                     = '';
+$psv                         = 0;
+$obs_psv                      = '';
+$otros                       = 0;
+$obs_otros                    = '';
+$frecuencia_respiratoria     = 0;
+$obs_frecuencia_respiratoria  = '';
+$p_inspiratorio              = 0;
+$obs_p_inspiratorio           = '';
+$p_media                     = 0;
+$obs_p_media                  = '';
+$p_max                       = 0;
+$obs_p_max                    = '';
+$chst                        = 0;
+$obs_chst                     = '';
+$disparo                     = 0;
+$obs_disparo                  = '';
+$fvt                         = 0;
+$obs_fvt                      = '';
+$vol_tidal                   = 0;
+$obs_vol_tidal                = '';
+$vm_programado               = 0;
+$obs_vm_programado            = '';
+$petco2                      = 0;
+$obs_petco2                   = '';
+$vdvt                        = 0;
+$obs_vdvt                     = '';
+$ko2                         = 0;
+$obs_ko2                      = '';
 $hora_registro               = '';
-
 // Load existing data in edit mode
 if ($is_edit) {
-    $row = sqlQuery(
-        "SELECT * FROM form_registro_vm WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1",
-        array($id, $pid, $encounter)
-    );
+    $row = sqlQuery("SELECT * FROM form_registro_vm WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1", array($id, $pid, $encounter));
     if ($row) {
         $modo_ventilacion            = $row['modo_ventilacion']            ?? '';
         $obs_modo                    = $row['obs_modo']                    ?? '';
-        $presion                     = (int)($row['presion']                     ?? 0); $obs_presion                  = $row['obs_presion']                  ?? '';
-        $volumen                     = (int)($row['volumen']                     ?? 0); $obs_volumen                  = $row['obs_volumen']                  ?? '';
-        $simv                        = (int)($row['simv']                        ?? 0); $obs_simv                     = $row['obs_simv']                     ?? '';
-        $psv                         = (int)($row['psv']                         ?? 0); $obs_psv                      = $row['obs_psv']                      ?? '';
-        $otros                       = (int)($row['otros']                       ?? 0); $obs_otros                    = $row['obs_otros']                    ?? '';
-        $frecuencia_respiratoria     = (int)($row['frecuencia_respiratoria']     ?? 0); $obs_frecuencia_respiratoria  = $row['obs_frecuencia_respiratoria']  ?? '';
-        $p_inspiratorio              = (int)($row['p_inspiratorio']              ?? 0); $obs_p_inspiratorio           = $row['obs_p_inspiratorio']           ?? '';
-        $p_media                     = (int)($row['p_media']                     ?? 0); $obs_p_media                  = $row['obs_p_media']                  ?? '';
-        $p_max                       = (int)($row['p_max']                       ?? 0); $obs_p_max                    = $row['obs_p_max']                    ?? '';
-        $chst                        = (int)($row['chst']                        ?? 0); $obs_chst                     = $row['obs_chst']                     ?? '';
-        $disparo                     = (int)($row['disparo']                     ?? 0); $obs_disparo                  = $row['obs_disparo']                  ?? '';
-        $fvt                         = (int)($row['fvt']                         ?? 0); $obs_fvt                      = $row['obs_fvt']                      ?? '';
-        $vol_tidal                   = (int)($row['vol_tidal']                   ?? 0); $obs_vol_tidal                = $row['obs_vol_tidal']                ?? '';
-        $vm_programado               = (int)($row['vm_programado']               ?? 0); $obs_vm_programado            = $row['obs_vm_programado']            ?? '';
-        $petco2                      = (int)($row['petco2']                      ?? 0); $obs_petco2                   = $row['obs_petco2']                   ?? '';
-        $vdvt                        = (int)($row['vdvt']                        ?? 0); $obs_vdvt                     = $row['obs_vdvt']                     ?? '';
-        $ko2                         = (int)($row['ko2']                         ?? 0); $obs_ko2                      = $row['obs_ko2']                      ?? '';
+        $presion                     = (int)($row['presion']                     ?? 0);
+        $obs_presion                  = $row['obs_presion']                  ?? '';
+        $volumen                     = (int)($row['volumen']                     ?? 0);
+        $obs_volumen                  = $row['obs_volumen']                  ?? '';
+        $simv                        = (int)($row['simv']                        ?? 0);
+        $obs_simv                     = $row['obs_simv']                     ?? '';
+        $psv                         = (int)($row['psv']                         ?? 0);
+        $obs_psv                      = $row['obs_psv']                      ?? '';
+        $otros                       = (int)($row['otros']                       ?? 0);
+        $obs_otros                    = $row['obs_otros']                    ?? '';
+        $frecuencia_respiratoria     = (int)($row['frecuencia_respiratoria']     ?? 0);
+        $obs_frecuencia_respiratoria  = $row['obs_frecuencia_respiratoria']  ?? '';
+        $p_inspiratorio              = (int)($row['p_inspiratorio']              ?? 0);
+        $obs_p_inspiratorio           = $row['obs_p_inspiratorio']           ?? '';
+        $p_media                     = (int)($row['p_media']                     ?? 0);
+        $obs_p_media                  = $row['obs_p_media']                  ?? '';
+        $p_max                       = (int)($row['p_max']                       ?? 0);
+        $obs_p_max                    = $row['obs_p_max']                    ?? '';
+        $chst                        = (int)($row['chst']                        ?? 0);
+        $obs_chst                     = $row['obs_chst']                     ?? '';
+        $disparo                     = (int)($row['disparo']                     ?? 0);
+        $obs_disparo                  = $row['obs_disparo']                  ?? '';
+        $fvt                         = (int)($row['fvt']                         ?? 0);
+        $obs_fvt                      = $row['obs_fvt']                      ?? '';
+        $vol_tidal                   = (int)($row['vol_tidal']                   ?? 0);
+        $obs_vol_tidal                = $row['obs_vol_tidal']                ?? '';
+        $vm_programado               = (int)($row['vm_programado']               ?? 0);
+        $obs_vm_programado            = $row['obs_vm_programado']            ?? '';
+        $petco2                      = (int)($row['petco2']                      ?? 0);
+        $obs_petco2                   = $row['obs_petco2']                   ?? '';
+        $vdvt                        = (int)($row['vdvt']                        ?? 0);
+        $obs_vdvt                     = $row['obs_vdvt']                     ?? '';
+        $ko2                         = (int)($row['ko2']                         ?? 0);
+        $obs_ko2                      = $row['obs_ko2']                      ?? '';
         $hora_registro               = $row['hora_registro']                     ?? '';
     } else {
         die(xlt("Error: Record not found or insufficient permissions."));
@@ -85,7 +112,6 @@ $modo_options = [
     'ESPONTANEA'         => xlt('Spontaneous'),
     'VENTILACION MECANICA' => xlt('Mechanical Ventilation'),
 ];
-
 $page_title = $is_edit ? xlt('Edit Ventilation Record') : xlt('New Ventilation Record');
 ?>
 
@@ -253,22 +279,26 @@ $page_title = $is_edit ? xlt('Edit Ventilation Record') : xlt('New Ventilation R
             <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>">
             <input type="hidden" name="pid"       value="<?php echo attr($pid); ?>">
             <input type="hidden" name="encounter" value="<?php echo attr($encounter); ?>">
-            <?php if ($is_edit): ?>
+            <?php if ($is_edit) :
+                ?>
             <input type="hidden" name="id" value="<?php echo attr($id); ?>">
-            <?php endif; ?>
+                <?php
+            endif; ?>
 
             <!-- VENTILATION MODE (multi-option) -->
             <div class="form-group-modo">
                 <h3><?php echo xlt('Ventilation Mode'); ?></h3>
                 <div class="radio-container">
-                    <?php foreach ($modo_options as $val => $label): ?>
+                    <?php foreach ($modo_options as $val => $label) :
+                        ?>
                     <label>
                         <input type="radio" name="modo_ventilacion"
                                value="<?php echo attr($val); ?>"
                                <?php echo ($modo_ventilacion === $val) ? 'checked' : ''; ?>>
                         <?php echo text($label); ?>
                     </label>
-                    <?php endforeach; ?>
+                        <?php
+                    endforeach; ?>
                 </div>
                 <textarea name="obs_modo" class="observaciones"
                           placeholder="<?php echo attr(xlt('Observations...')); ?>"><?php echo text($obs_modo); ?></textarea>
@@ -294,8 +324,8 @@ $page_title = $is_edit ? xlt('Edit Ventilation Record') : xlt('New Ventilation R
                 'vdvt'                    => ['label' => 'VD / VT',                            'val' => $vdvt,                    'obs' => $obs_vdvt],
                 'ko2'                     => ['label' => 'KO2',                                'val' => $ko2,                     'obs' => $obs_ko2],
             ];
-            foreach ($bool_fields as $name => $meta):
-            ?>
+            foreach ($bool_fields as $name => $meta) :
+                ?>
             <div class="form-group">
                 <h3><?php echo text($meta['label']); ?></h3>
                 <div class="radio-container">
@@ -313,7 +343,8 @@ $page_title = $is_edit ? xlt('Edit Ventilation Record') : xlt('New Ventilation R
                 <textarea name="<?php echo attr('obs_' . $name); ?>" class="observaciones"
                           placeholder="<?php echo attr(xlt('Observations...')); ?>"><?php echo text($meta['obs']); ?></textarea>
             </div>
-            <?php endforeach; ?>
+                <?php
+            endforeach; ?>
 
             <!-- RECORD TIME -->
             <div class="form-group">

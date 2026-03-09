@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Nursing Applications Form - save.php
  * Handles INSERT (create) and UPDATE (edit) for the aplicaciones form.
@@ -13,9 +14,7 @@
 require_once("../../globals.php");
 require_once("$srcdir/api.inc");
 require_once("$srcdir/forms.inc");
-
 use OpenEMR\Common\Csrf\CsrfUtils;
-
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     die(xlt("Method not allowed"));
 }
@@ -28,7 +27,6 @@ if (!CsrfUtils::verifyCsrfToken($_POST['csrf_token_form'])) {
 $pid       = (int)($_POST['pid']       ?? 0);
 $encounter = (int)($_POST['encounter'] ?? 0);
 $id        = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-
 if (!$pid || !$encounter) {
     die(xlt("Error: Missing required data (PID or Encounter)"));
 }
@@ -36,7 +34,6 @@ if (!$pid || !$encounter) {
 $user       = $_SESSION['authUser']       ?? 'admin';
 $groupname  = $_SESSION['authProvider']   ?? 'Default';
 $authorized = $_SESSION['userauthorized'] ?? 1;
-
 // Sanitize input fields
 $medicamentos      = (int)($_POST['medicamentos']      ?? 0);
 $obs_medicamentos  = $_POST['obs_medicamentos']         ?? '';
@@ -49,21 +46,15 @@ $obs_expansiones   = $_POST['obs_expansiones']          ?? '';
 $sangre            = (int)($_POST['sangre']            ?? 0);
 $obs_sangre        = $_POST['obs_sangre']               ?? '';
 $hora_registro     = !empty($_POST['hora_registro']) ? $_POST['hora_registro'] : null;
-
 $is_edit = ($id > 0);
-
 if ($is_edit) {
-    // Verify the record belongs to this patient/encounter
-    $check = sqlQuery(
-        "SELECT id FROM form_aplicaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1",
-        array($id, $pid, $encounter)
-    );
+// Verify the record belongs to this patient/encounter
+    $check = sqlQuery("SELECT id FROM form_aplicaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1", array($id, $pid, $encounter));
     if (!$check) {
         die(xlt("Error: Record not found or insufficient permissions."));
     }
 
-    $upd = sqlStatement(
-        "UPDATE form_aplicaciones SET
+    $upd = sqlStatement("UPDATE form_aplicaciones SET
             date = NOW(), user = ?, groupname = ?, authorized = ?,
             medicamentos = ?, obs_medicamentos = ?,
             sueros = ?, obs_sueros = ?,
@@ -71,8 +62,7 @@ if ($is_edit) {
             expansiones = ?, obs_expansiones = ?,
             sangre = ?, obs_sangre = ?,
             hora_registro = ?
-         WHERE id = ? AND pid = ? AND encounter = ?",
-        array(
+         WHERE id = ? AND pid = ? AND encounter = ?", array(
             $user, $groupname, $authorized,
             $medicamentos, $obs_medicamentos,
             $sueros, $obs_sueros,
@@ -81,15 +71,12 @@ if ($is_edit) {
             $sangre, $obs_sangre,
             $hora_registro,
             $id, $pid, $encounter,
-        )
-    );
-
+        ));
     if ($upd === false) {
         die(xlt("Error: Could not update the record. Please try again."));
     }
 } else {
-    $newid = sqlInsert(
-        "INSERT INTO form_aplicaciones (
+    $newid = sqlInsert("INSERT INTO form_aplicaciones (
             date, pid, encounter, user, groupname, authorized, activity,
             medicamentos, obs_medicamentos,
             sueros, obs_sueros,
@@ -101,8 +88,7 @@ if ($is_edit) {
             NOW(), ?, ?, ?, ?, ?, 1,
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?, ?
-         )",
-        array(
+         )", array(
             $pid, $encounter, $user, $groupname, $authorized,
             $medicamentos, $obs_medicamentos,
             $sueros, $obs_sueros,
@@ -110,9 +96,7 @@ if ($is_edit) {
             $expansiones, $obs_expansiones,
             $sangre, $obs_sangre,
             $hora_registro,
-        )
-    );
-
+        ));
     if (!$newid) {
         die(xlt("Error: Could not save the record. Please try again."));
     }
@@ -122,4 +106,3 @@ if ($is_edit) {
 
 formHeader(xlt("Redirecting..."));
 formJump($GLOBALS['webroot'] . "/interface/tableros/lista_internados.php");
-?>

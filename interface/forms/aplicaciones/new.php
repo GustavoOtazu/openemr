@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Nursing Applications Form - new.php
  * Application record form for inpatients (medications, saline, vaccines, etc.)
@@ -12,20 +13,16 @@
 
 require_once("../../globals.php");
 require_once("$srcdir/api.inc");
-
 use OpenEMR\Common\Csrf\CsrfUtils;
-
 // Get parameters
 $pid       = isset($_GET['pid'])       ? (int)$_GET['pid']       : (int)($_SESSION['pid'] ?? 0);
 $encounter = isset($_GET['encounter']) ? (int)$_GET['encounter'] : (int)($_SESSION['encounter'] ?? 0);
 $id        = isset($_GET['id'])        ? (int)$_GET['id']        : 0;
-
 if (!$pid || !$encounter) {
     die(xlt("Error: Missing required parameters (PID or Encounter)"));
 }
 
 $is_edit = ($id > 0);
-
 // Initialize field variables
 $medicamentos      = 0;
 $obs_medicamentos  = '';
@@ -38,13 +35,9 @@ $obs_expansiones   = '';
 $sangre            = 0;
 $obs_sangre        = '';
 $hora_registro     = '';
-
 // Load existing data in edit mode
 if ($is_edit) {
-    $row = sqlQuery(
-        "SELECT * FROM form_aplicaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1",
-        array($id, $pid, $encounter)
-    );
+    $row = sqlQuery("SELECT * FROM form_aplicaciones WHERE id = ? AND pid = ? AND encounter = ? LIMIT 1", array($id, $pid, $encounter));
     if ($row) {
         $medicamentos      = (int)($row['medicamentos']      ?? 0);
         $obs_medicamentos  = $row['obs_medicamentos']         ?? '';
@@ -218,9 +211,11 @@ $page_title = $is_edit ? xlt('Edit Application') : xlt('New Application');
             <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>">
             <input type="hidden" name="pid"       value="<?php echo attr($pid); ?>">
             <input type="hidden" name="encounter" value="<?php echo attr($encounter); ?>">
-            <?php if ($is_edit): ?>
+            <?php if ($is_edit) :
+                ?>
             <input type="hidden" name="id" value="<?php echo attr($id); ?>">
-            <?php endif; ?>
+                <?php
+            endif; ?>
 
             <?php
             $fields = [
@@ -230,8 +225,8 @@ $page_title = $is_edit ? xlt('Edit Application') : xlt('New Application');
                 'expansiones'   => ['label' => xlt('Plasma Expanders'),       'val' => $expansiones,     'obs' => $obs_expansiones],
                 'sangre'        => ['label' => xlt('Blood and Blood Products'),'val' => $sangre,         'obs' => $obs_sangre],
             ];
-            foreach ($fields as $name => $meta):
-            ?>
+            foreach ($fields as $name => $meta) :
+                ?>
             <div class="form-group">
                 <h3><?php echo text($meta['label']); ?></h3>
                 <div class="radio-container">
@@ -249,7 +244,8 @@ $page_title = $is_edit ? xlt('Edit Application') : xlt('New Application');
                 <textarea name="<?php echo attr('obs_' . $name); ?>" class="observaciones"
                           placeholder="<?php echo attr(xlt('Observations...')); ?>"><?php echo text($meta['obs']); ?></textarea>
             </div>
-            <?php endforeach; ?>
+                <?php
+            endforeach; ?>
 
             <!-- RECORD TIME -->
             <div class="form-group">
